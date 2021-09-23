@@ -51,7 +51,7 @@ if __name__ == '__main__':
     "class_size": 20,
     "trainer_assigned": "<staff uuid here>",
     "learners_enrolled": ["bunch of staff uuid here"],
-    "section_list": ["bunch of section_ids here"], # note the section id is a uuid so its most likely unique to help with indexing and retrieva
+    "section_list": ["bunch of section_ids here"], # note the section id is a uuid so its most likely unique to help with indexing and retrieval
 }
 # Class Indexed by course_id (Partition Key), class_id(Sort Key)
 

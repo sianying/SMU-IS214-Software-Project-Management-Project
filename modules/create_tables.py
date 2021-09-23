@@ -272,7 +272,6 @@ def create_staff_table():
     return "Table Created"
 
 
-
 if __name__ == "__main__":
     dynamodb = boto3.resource('dynamodb')
     course_table = create_course_table()
