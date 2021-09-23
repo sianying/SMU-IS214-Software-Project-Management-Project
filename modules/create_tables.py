@@ -77,7 +77,7 @@ def create_section_table():
             TableName='Section',
             KeySchema=[
                 {
-                    'AttributeName': 'course_id', 
+                    'AttributeName': 'section_id', 
                     'KeyType': 'HASH' # Partition Key
                 },
                 {
@@ -96,23 +96,19 @@ def create_section_table():
                 },
                 {
                     'AttributeName': 'section_id',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'section_name',
                     'AttributeType': 'S'
-                },
+                }
             ],
             GlobalSecondaryIndexes=[
                 {
-                    "IndexName": 'SectionIndex',
+                    "IndexName": 'CourseIndex',
                     "KeySchema": [
                         {
-                            'AttributeName': 'section_id',
+                            'AttributeName': 'course_id',
                             'KeyType': 'HASH'
                         },
                         {
-                            'AttributeName': 'section_name',
+                            'AttributeName': 'class_id',
                             'KeyType': 'RANGE'
                         }
                     ],
@@ -142,56 +138,127 @@ def create_quiz_table():
             TableName='Quiz',
             KeySchema=[
                 {
-                    'AttributeName': 'course_id', 
-                    'KeyType': 'HASH' # Partition Key
+                    'AttributeName': 'section_id',
+                    'KeyType': 'HASH' # Sort key
                 },
                 {
-                    'AttributeName': 'class_id',
+                    'AttributeName': 'quiz_id',
                     'KeyType': 'RANGE' # Sort key
                 }
             ],
             AttributeDefinitions=[
                 {
-                    'AttributeName': 'course_id',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'class_id',
-                    'AttributeType': 'N'
-                },
-                {
                     'AttributeName': 'section_id',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'section_name',
                     'AttributeType': 'S'
                 },
                 {
-                    'AttributeName': 'mat_name',
+                    'AttributeName': 'quiz_id',
                     'AttributeType': 'S'
                 }
             ],
-            GlobalSecondaryIndexes=[
+            ProvisionedThroughput={
+                'ReadCapacityUnits':5,
+                'WriteCapacityUnits':5
+            }
+            
+        )
+    except Exception as e:
+        return e
+    return "Table Created"
+
+def create_material_table():
+    try:
+        # Data in with same partition key are stored together sorted by sort key value
+        table = dynamodb.create_table(
+            TableName='Material',
+            KeySchema=[
                 {
-                    "IndexName": 'SectionIndex',
-                    "KeySchema": [
-                        {
-                            'AttributeName': 'section_id',
-                            'KeyType': 'HASH'
-                        },
-                        {
-                            'AttributeName': 'section_name',
-                            'KeyType': 'RANGE'
-                        }
-                    ],
-                    'Projection':{
-                        'ProjectionType': 'ALL'
-                    },
-                    'ProvisionedThroughput':{
-                        "ReadCapacityUnits":1,
-                        "WriteCapacityUnits":1
-                    }
+                    'AttributeName': 'section_id', 
+                    'KeyType': 'HASH' # Partition Key
+                },
+                {
+                    'AttributeName': 'material_id',
+                    'KeyType': 'RANGE' # Sort key
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'section_id',
+                    'AttributeType': 'S'
+                },
+                {
+                    'AttributeName': 'material_id',
+                    'AttributeType': 'S'
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits':5,
+                'WriteCapacityUnits':5
+            }
+            
+        )
+    except Exception as e:
+        return e
+    return "Table Created"
+
+def create_attempt_table():
+    try:
+        # Data in with same partition key are stored together sorted by sort key value
+        table = dynamodb.create_table(
+            TableName='Attempt',
+            KeySchema=[
+                {
+                    'AttributeName': 'quiz_id', 
+                    'KeyType': 'HASH' # Partition Key
+                },
+                {
+                    'AttributeName': 'staff_id',
+                    'KeyType': 'RANGE' # Sort key
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'quiz_id',
+                    'AttributeType': 'S'
+                },
+                {
+                    'AttributeName': 'staff_id',
+                    'AttributeType': 'S'
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits':5,
+                'WriteCapacityUnits':5
+            }
+            
+        )
+    except Exception as e:
+        return e
+    return "Table Created"
+
+def create_staff_table():
+    try:
+        # Data in with same partition key are stored together sorted by sort key value
+        table = dynamodb.create_table(
+            TableName='Staff',
+            KeySchema=[
+                {
+                    'AttributeName': 'staff_id', 
+                    'KeyType': 'HASH' # Partition Key
+                },
+                {
+                    'AttributeName': 'staff_name',
+                    'KeyType': 'RANGE' # Sort key
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'staff_id',
+                    'AttributeType': 'S'
+                },
+                {
+                    'AttributeName': 'staff_name',
+                    'AttributeType': 'S'
                 }
             ],
             ProvisionedThroughput={
@@ -211,6 +278,14 @@ if __name__ == "__main__":
     course_table = create_course_table()
     class_table = create_class_table()
     section_table = create_section_table()
-    print("Table status:", course_table)
-    print("Table status:", class_table)
-    print("Table status:", section_table)
+    quiz_table = create_quiz_table()
+    material_table = create_material_table()
+    attempt_table = create_attempt_table()
+    staff_table = create_staff_table()
+    print("Course Table status:", course_table)
+    print("Class Table status:", class_table)
+    print("Section Table status:", section_table)
+    print("Quiz Table status:", quiz_table)
+    print("Material Table status:", material_table)
+    print("Attempt Table status:", attempt_table)
+    print("Staff Table status:", staff_table)
