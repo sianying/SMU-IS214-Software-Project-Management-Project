@@ -1,7 +1,7 @@
 import boto3
 import os
 from boto3.dynamodb.conditions import Key
-os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
+os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
 dynamodb = boto3.resource('dynamodb')
 
 table = dynamodb.Table('Class')

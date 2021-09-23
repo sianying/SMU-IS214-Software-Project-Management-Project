@@ -1,6 +1,6 @@
 import boto3
 import os
-os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
+os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
 
 
 def create_course_table():

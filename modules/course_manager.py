@@ -1,5 +1,6 @@
+import json
 class Course:
-    def __init__(self, course_id, course_name, class_list = [], prerequisite_course = []):
+    def __init__(self, course_id, course_name, prerequisite_course = [],class_list = []):
         self.__course_id = course_name
         self.__course_name = course_name
         self.__class_list = class_list # stores a list of primary keys for the class objects
@@ -24,4 +25,4 @@ class Course:
     def add_prerequisite_course(self, course_obj_pri_key):
         self.__prerequisite_course.append(course_obj_pri_key)
         # add code to update object in dynamodb
-    
+
