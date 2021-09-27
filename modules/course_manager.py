@@ -5,18 +5,35 @@ from boto3.dynamodb.conditions import Key, Attr
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
 
 class Course:
-    def __init__(self, course_id, course_name, prerequisite_course = [],class_list = []):
-        self.__course_id = course_name
-        self.__course_name = course_name
-        self.__class_list = class_list # stores a list of primary keys for the class objects
-        self.__prerequisite_course = prerequisite_course # stores a list of primary keys for the course objects
-    
-    def __init__(self, course_dict):
-        self.__course_id = course_dict['course_id']
-        self.__course_name = course_dict['course_name']
-        self.__class_list = course_dict['class_list']
-        self.__prerequisite_course = course_dict['prerequisite_course']
 
+    def __init__(self, *args, **kwargs):
+        '''__init__(
+            course_id: String, 
+            course_name: String, 
+            class_list: List, 
+            prerequisite_course: List 
+            )
+
+            __init__(course_dict)
+        '''
+        if len(args) > 1:
+            self.__course_id = args[0]
+            self.__course_name = args[1]
+            try:
+                self.__class_list = kwargs['class_list'] # stores a list of primary keys for the class objects
+            except:
+                self.__class_list = []
+            try:
+                self.__prerequisite_course = kwargs['prerequisite_course'] # stores a list of primary keys for the course objects
+            except:
+                self.__prerequisite_course = []
+        elif isinstance(args[0], dict):
+            self.__course_id = args[0]['course_id']
+            self.__course_name = args[0]['course_name']
+            self.__class_list = args[0]['class_list']
+            self.__prerequisite_course = args[0]['prerequisite_course']
+
+    # Getter Methods
     def get_course_id(self):
         return self.__course_id
     
@@ -29,6 +46,7 @@ class Course:
     def get_prerequisite_course(self):
         return self.__prerequisite_course
 
+    # Setter Methods
     def add_class(self, class_object):
         self.__class_list.append(class_object)
 
@@ -41,7 +59,6 @@ class CourseDAO:
     
     #Create
     def insert_course(self, course_id, course_name, class_list, prerequisite_course):
-        # method takes in course variables, insert it to DB and return a Course object
         try: 
             response = self.table.put_item(
                 Item = {
@@ -62,7 +79,7 @@ class CourseDAO:
     
     #Read
     def retrieve_all(self):
-        # retrieve all items and add them to a list of Course objects
+            # retrieve all items and add them to a list of Course objects
         response = self.table.scan()
         data = response['Items']
 
@@ -70,7 +87,7 @@ class CourseDAO:
         while 'LastEvaluatedKey' in response:
             response = self.table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
             data.extend(response['Items'])
-        
+
         course_list = []
 
         for item in data:
@@ -87,19 +104,19 @@ class CourseDAO:
         return Course(response['Items'][0])
 
     #Update
-    def update_course(self, Course):
+    def update_course(self, CourseObj):
         # method updates the DB if there is new prereq course, removing of prereq course, adding new class
         # assumes course_id and course_name cannot be updated
         try:
             response = self.table.update_item(
                 Key = {
-                    'course_id': Course.get_course_id(),
-                    'course_name': Course.get_course_name()
+                    'course_id': CourseObj.get_course_id(),
+                    'course_name': CourseObj.get_course_name()
                 },
                 UpdateExpression= "set prerequisite_course = :p, class_list = :c",
                 ExpressionAttributeValues ={
-                    ":p": Course.get_prerequisite_course(),
-                    ':c': Course.get_class_list()
+                    ":p": CourseObj.get_prerequisite_course(),
+                    ':c': CourseObj.get_class_list()
                 }
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
@@ -110,12 +127,12 @@ class CourseDAO:
             return "Update Failure with Exception: "+str(e)
 
     #Delete
-    def delete_course(self, Course):
+    def delete_course(self, CourseObj):
         try:
             response = self.table.delete_item(
                 Key = {
-                    'course_id': Course.get_course_id(),
-                    'course_name': Course.get_course_name()
+                    'course_id': CourseObj.get_course_id(),
+                    'course_name': CourseObj.get_course_name()
                 }
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
