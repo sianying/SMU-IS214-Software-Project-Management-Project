@@ -10,8 +10,8 @@ class Course:
         '''__init__(
             course_id: String, 
             course_name: String, 
-            class_list: List, 
-            prerequisite_course: List 
+            class_list = []: List, 
+            prerequisite_course = []: List 
             )
 
             __init__(course_dict)
@@ -67,10 +67,10 @@ class CourseDAO:
                     "prerequisite_course": prerequisite_course,
                     "class_list": class_list
                 },
-                ConditionExpression=Attr("course_id").not_exists()
+                ConditionExpression=Attr("course_id").not_exists(),
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return 'Course Added'
+                return Course(course_id, course_name, class_list=class_list, prerequisite_course=prerequisite_course)
             return 'Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             return "Course Already Exists"
@@ -120,7 +120,7 @@ class CourseDAO:
                 }
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return 'Course Update'
+                return 'Course Updated'
             return 'Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
             
         except Exception as e:

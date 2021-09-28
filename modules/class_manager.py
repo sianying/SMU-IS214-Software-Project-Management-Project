@@ -128,7 +128,7 @@ class ClassDAO:
                 ConditionExpression=Attr("course_id").not_exists() & Attr('class_id').not_exists()
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return 'Class Added'
+                return Class(course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = trainer_assigned, learners_enrolled=learners_enrolled, section_list= section_list)
             return 'Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             return "Class Already Exists"
@@ -147,12 +147,12 @@ class ClassDAO:
             response = self.table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
             data.extend(response['Items'])
 
-        course_list = []
+        class_list = []
 
         for item in data:
-            course_list.append(Class(item))
+            class_list.append(Class(item))
 
-        return course_list
+        return class_list
     
     def retrieve_one(self, course_id, class_id):
         response = self.table.get_item(Key={'course_id': course_id, 'class_id': class_id})
@@ -204,11 +204,10 @@ class ClassDAO:
         except Exception as e:
             return "Delete Failure with Exception: "+str(e)
 
-
 if __name__ == "__main__":
     dao = ClassDAO()
     # print(dao.retrieve_all())
-    # print(dao.insert_class("IS111",1, datetime(2021,9,27,8,0,0), datetime(2021,10,27,8,0,0), 40))
+    # print(dao.insert_class("IS111",2, datetime(2021,9,27,8,0,0), datetime(2021,10,27,8,0,0), 40))
 
     # class1 = dao.retrieve_all()[0]
     # print(dao.delete_class(class1))
