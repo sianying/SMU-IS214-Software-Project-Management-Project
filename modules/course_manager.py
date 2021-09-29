@@ -55,10 +55,10 @@ class Course:
 
     def json(self):
         return {
-            "course_id": self.__course_id,
-            "course_name": self.__course_name,
-            "class_list": self.__class_list,
-            "prerequisite_course": self.__prerequisite_course
+            "course_id": self.get_course_id(),
+            "course_name": self.get_course_name(),
+            "class_list": self.get_class_list(),
+            "prerequisite_course": self.get_prerequisite_course()
         }
 
 

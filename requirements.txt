@@ -2,3 +2,5 @@ boto3
 uuid
 flask
 simplejson
+wheel
+ddbmock
