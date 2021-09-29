@@ -53,6 +53,15 @@ class Course:
     def add_prerequisite_course(self, course_obj_pri_key):
         self.__prerequisite_course.append(course_obj_pri_key)
 
+    def json(self):
+        return {
+            "course_id": self.__course_id,
+            "course_name": self.__course_name,
+            "class_list": self.__class_list,
+            "prerequisite_course": self.__prerequisite_course
+        }
+
+
 class CourseDAO:
     def __init__(self):
         self.table = boto3.resource('dynamodb').Table('Course')
@@ -79,7 +88,7 @@ class CourseDAO:
     
     #Read
     def retrieve_all(self):
-            # retrieve all items and add them to a list of Course objects
+        # retrieve all items and add them to a list of Course objects
         response = self.table.scan()
         data = response['Items']
 
