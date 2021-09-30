@@ -4,6 +4,7 @@ import boto3
 import os
 from decimal import Decimal
 from modules.course_manager import Course, CourseDAO
+from modules.class_manager import Class, ClassDAO
 
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
 
@@ -27,6 +28,27 @@ def retrieve_all_courses():
             "data": [course.json() for course in course_list]
         }
     )
+
+@app.route("/classes/<string:course_id>")
+def retrieve_all_classes(course_id):
+    dao = ClassDAO()
+    class_list = dao.retrieve_all_from_course(course_id)
+    if len(class_list):
+        return jsonify(
+            {    
+                "code":200,
+                "data": [classObj.json() for classObj in class_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No classes found for course "+course_id
+        }
+    )
+
+
 
 
 if __name__ == "__main__":
