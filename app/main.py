@@ -3,8 +3,9 @@ from flask_cors import CORS
 import boto3
 import os
 from decimal import Decimal
-from modules.course_manager import Course, CourseDAO
-from modules.class_manager import Class, ClassDAO
+from modules.course_manager import CourseDAO
+from modules.class_manager import ClassDAO
+
 
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
 
@@ -22,10 +23,18 @@ CORS(app)
 def retrieve_all_courses():
     dao = CourseDAO()
     course_list = dao.retrieve_all()
+    if len(course_list):
+        return jsonify(
+            {    
+                "code":200,
+                "data": [course.json() for course in course_list]
+            }
+        )
+    
     return jsonify(
-        {    
-            "code":200,
-            "data": [course.json() for course in course_list]
+        {
+            "code": 404,
+            "data": "No courses found"
         }
     )
 
@@ -47,9 +56,6 @@ def retrieve_all_classes(course_id):
             "data": "No classes found for course "+course_id
         }
     )
-
-
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port = 5000, debug= True)

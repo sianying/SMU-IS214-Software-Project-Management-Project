@@ -35,6 +35,7 @@ def create_course_table(dynamodb):
         return e
     return "Table Created"
 
+
 def create_class_table(dynamodb):
     try:
         # Data in with same partition key are stored together sorted by sort key value
@@ -129,6 +130,7 @@ def create_section_table(dynamodb):
     except Exception as e:
         return e
     return "Table Created"
+
 
 def create_quiz_table(dynamodb):
     try:
@@ -234,6 +236,7 @@ def create_attempt_table(dynamodb):
     except Exception as e:
         return e
     return "Table Created"
+
 
 def create_staff_table(dynamodb):
     try:
