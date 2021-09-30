@@ -61,7 +61,6 @@ class Course:
             "prerequisite_course": self.get_prerequisite_course()
         }
 
-
 class CourseDAO:
     def __init__(self):
         self.table = boto3.resource('dynamodb').Table('Course')
@@ -82,7 +81,7 @@ class CourseDAO:
                 return Course(course_id, course_name, class_list=class_list, prerequisite_course=prerequisite_course)
             return 'Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
-            return "Course Already Exists"
+            return "Course already exists"
         except Exception as e:
             return "Insert Failure with Exception: "+str(e)
     

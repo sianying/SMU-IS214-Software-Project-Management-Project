@@ -2,8 +2,7 @@ import boto3
 import os
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
 
-
-def create_course_table():
+def create_course_table(dynamodb):
     try:
         table = dynamodb.create_table(
             TableName='Course',
@@ -36,7 +35,8 @@ def create_course_table():
         return e
     return "Table Created"
 
-def create_class_table():
+
+def create_class_table(dynamodb):
     try:
         # Data in with same partition key are stored together sorted by sort key value
         table = dynamodb.create_table(
@@ -70,7 +70,7 @@ def create_class_table():
         return e
     return "Table Created"
 
-def create_section_table():
+def create_section_table(dynamodb):
     try:
         # Data in with same partition key are stored together sorted by sort key value
         table = dynamodb.create_table(
@@ -131,7 +131,8 @@ def create_section_table():
         return e
     return "Table Created"
 
-def create_quiz_table():
+
+def create_quiz_table(dynamodb):
     try:
         # Data in with same partition key are stored together sorted by sort key value
         table = dynamodb.create_table(
@@ -166,7 +167,7 @@ def create_quiz_table():
         return e
     return "Table Created"
 
-def create_material_table():
+def create_material_table(dynamodb):
     try:
         # Data in with same partition key are stored together sorted by sort key value
         table = dynamodb.create_table(
@@ -201,7 +202,7 @@ def create_material_table():
         return e
     return "Table Created"
 
-def create_attempt_table():
+def create_attempt_table(dynamodb):
     try:
         # Data in with same partition key are stored together sorted by sort key value
         table = dynamodb.create_table(
@@ -236,7 +237,8 @@ def create_attempt_table():
         return e
     return "Table Created"
 
-def create_staff_table():
+
+def create_staff_table(dynamodb):
     try:
         # Data in with same partition key are stored together sorted by sort key value
         table = dynamodb.create_table(
@@ -274,13 +276,13 @@ def create_staff_table():
 
 if __name__ == "__main__":
     dynamodb = boto3.resource('dynamodb')
-    course_table = create_course_table()
-    class_table = create_class_table()
-    section_table = create_section_table()
-    quiz_table = create_quiz_table()
-    material_table = create_material_table()
-    attempt_table = create_attempt_table()
-    staff_table = create_staff_table()
+    course_table = create_course_table(dynamodb)
+    class_table = create_class_table(dynamodb)
+    section_table = create_section_table(dynamodb)
+    quiz_table = create_quiz_table(dynamodb)
+    material_table = create_material_table(dynamodb)
+    attempt_table = create_attempt_table(dynamodb)
+    staff_table = create_staff_table(dynamodb)
     print("Course Table status:", course_table)
     print("Class Table status:", class_table)
     print("Section Table status:", section_table)

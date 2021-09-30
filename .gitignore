@@ -2,3 +2,4 @@
 dynamodb_credentials.csv
 aws_credentials
 __pycache__
+.vscode

@@ -6,6 +6,7 @@ from decimal import Decimal
 from modules.course_manager import CourseDAO
 from modules.class_manager import ClassDAO
 
+
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
 
 class JSONEncoder_Improved(json.JSONEncoder):

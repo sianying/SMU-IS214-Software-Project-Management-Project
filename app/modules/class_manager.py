@@ -119,7 +119,6 @@ class Class:
             "section_list": self.get_section_list(),
         }
 
-
 class ClassDAO:
     def __init__(self):
         self.table = boto3.resource('dynamodb').Table('Class')
