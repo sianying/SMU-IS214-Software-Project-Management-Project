@@ -107,6 +107,19 @@ class Class:
     def remove_section(self, section):
         self.__section_list.remove(section)
     
+    def json(self):
+        return {
+            "course_id": self.get_course_id(),
+            "class_id": self.get_class_id(),
+            "start_datetime": self.get_start_datetime(),
+            "end_datetime": self.get_end_datetime(),
+            "class_size": self.get_class_size(),
+            "trainer_assigned": self.get_trainer_assigned(),
+            "learners_enrolled": self.get_learners_enrolled(),
+            "section_list": self.get_section_list(),
+        }
+
+
 class ClassDAO:
     def __init__(self):
         self.table = boto3.resource('dynamodb').Table('Class')
@@ -147,20 +160,23 @@ class ClassDAO:
             response = self.table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
             data.extend(response['Items'])
 
-        class_list = []
-
-        for item in data:
-            class_list.append(Class(item))
-
-        return class_list
+        return [Class(item) for item in response['Items']]
     
     def retrieve_one(self, course_id, class_id):
         response = self.table.get_item(Key={'course_id': course_id, 'class_id': class_id})
         
         if response['Items'] == []:
-            return 
+            return []
         
         return Class(response['Items'][0])
+
+    def retrieve_all_from_course(self, course_id):
+        response = self.table.query(KeyConditionExpression=Key('course_id').eq(course_id))
+
+        if response['Items'] == []:
+            return []
+    
+        return [Class(item) for item in response['Items']]
 
     #Update
     def update_class(self, ClassObj):
