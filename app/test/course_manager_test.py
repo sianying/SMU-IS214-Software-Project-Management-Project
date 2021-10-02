@@ -1,6 +1,7 @@
 import unittest
 import boto3
 import sys
+import os
 sys.path.append('../')
 from decimal import Decimal
 from moto import mock_dynamodb2
@@ -27,13 +28,24 @@ ITEM3 = {
     "class_list": []
 }
 
+class TestCourse(unittest.TestCase):
+    def setUp(self):
+        self.test_course = Course(ITEM1)
+    
+    def tearDown(self):
+        self.test_course = None
+
+    def test_json(self):
+        self.assertEqual(ITEM1, self.test_course.json(), "Course does not match")
+        self.assertNotEqual(ITEM2, self.test_course.json(), "Course does not match")
+
 @mock_dynamodb2
 class TestCourseDAO(unittest.TestCase):
 
     def setUp(self):
         from modules import create_tables
         from modules.course_manager import CourseDAO 
-        self.dynamodb = boto3.resource('dynamodb')
+        self.dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
         results = create_tables.create_course_table(self.dynamodb)
         # print(results)
         self.table = self.dynamodb.Table('Course')

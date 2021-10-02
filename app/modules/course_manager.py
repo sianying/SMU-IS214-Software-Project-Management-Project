@@ -63,7 +63,7 @@ class Course:
 
 class CourseDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb').Table('Course')
+        self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Course')
     
     #Create
     def insert_course(self, course_id, course_name, class_list, prerequisite_course):
