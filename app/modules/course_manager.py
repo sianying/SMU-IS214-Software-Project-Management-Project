@@ -1,6 +1,7 @@
 import boto3
 import os
 from boto3.dynamodb.conditions import Key, Attr
+import copy
 
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
 
@@ -20,18 +21,18 @@ class Course:
             self.__course_id = args[0]
             self.__course_name = args[1]
             try:
-                self.__class_list = kwargs['class_list'] # stores a list of primary keys for the class objects
+                self.__class_list = [int(class_id) for class_id in kwargs['class_list']] # stores a list of primary keys for the class objects
             except:
                 self.__class_list = []
             try:
-                self.__prerequisite_course = kwargs['prerequisite_course'] # stores a list of primary keys for the course objects
+                self.__prerequisite_course = copy.deepcopy(kwargs['prerequisite_course']) # stores a list of primary keys for the course objects
             except:
                 self.__prerequisite_course = []
         elif isinstance(args[0], dict):
             self.__course_id = args[0]['course_id']
             self.__course_name = args[0]['course_name']
-            self.__class_list = args[0]['class_list']
-            self.__prerequisite_course = args[0]['prerequisite_course']
+            self.__class_list = [int(class_id) for class_id in args[0]['class_list']]
+            self.__prerequisite_course = copy.deepcopy(args[0]['prerequisite_course'])
 
     # Getter Methods
     def get_course_id(self):
@@ -47,11 +48,11 @@ class Course:
         return self.__prerequisite_course
 
     # Setter Methods
-    def add_class(self, class_object):
-        self.__class_list.append(class_object)
+    def add_class(self, class_id):
+        self.__class_list.append(int(class_id))
 
-    def add_prerequisite_course(self, course_obj_pri_key):
-        self.__prerequisite_course.append(course_obj_pri_key)
+    def add_prerequisite_course(self, course_id):
+        self.__prerequisite_course.append(course_id)
 
     def json(self):
         return {
@@ -79,11 +80,11 @@ class CourseDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return Course(course_id, course_name, class_list=class_list, prerequisite_course=prerequisite_course)
-            return 'Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
-            return "Course already exists"
+            raise ValueError("Course already exists")
         except Exception as e:
-            return "Insert Failure with Exception: "+str(e)
+            raise Exception("Insert Failure with Exception: "+str(e))
     
     #Read
     def retrieve_all(self):

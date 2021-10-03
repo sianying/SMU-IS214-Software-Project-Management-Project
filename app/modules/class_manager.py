@@ -1,7 +1,8 @@
 import boto3
 import os
-from boto3.dynamodb.conditions import Key, Attr, Size
+from boto3.dynamodb.conditions import Key, Attr
 from datetime import datetime
+import copy
 
 os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
 
@@ -12,7 +13,7 @@ class Class:
             class_id: Integer, 
             start_datetime: DateTime, 
             end_datetime: DateTime, 
-            class_size: Integer , 
+            class_size: Integer, 
             trainer_assigned=None: staff_id, 
             learners_enrolled = []: List 
             section_list = []: List
@@ -22,7 +23,7 @@ class Class:
         '''
         if len(args) > 1:
             self.__course_id = args[0]
-            self.__class_id = args[1]
+            self.__class_id = int(args[1])
             self.__start_datetime = args[2]
             if isinstance(self.__start_datetime, str):
                 self.__start_datetime = datetime.strptime(self.__start_datetime, "%Y-%m-%dT%H:%M:%S")
@@ -31,22 +32,24 @@ class Class:
             if isinstance(self.__end_datetime, str):
                 self.__end_datetime = datetime.strptime(self.__end_datetime, "%Y-%m-%dT%H:%M:%S")
 
-            self.__class_size = args[4]
+            self.__class_size = int(args[4])
+            
             try:
                 self.__trainer_assigned = kwargs['trainer_assigned']
             except:
                 self.__trainer_assigned = None
             try:
-                self.__learners_enrolled = kwargs['learners_enrolled']
+                self.__learners_enrolled = copy.deepcopy(kwargs['learners_enrolled'])
             except:
                 self.__learners_enrolled = []
             try:
-                self.__section_list = kwargs['section_list']
+                self.__section_list = copy.deepcopy(kwargs['section_list'])
             except:
                 self.__section_list = []
+
         elif isinstance(args[0], dict):
             self.__course_id = args[0]['course_id']
-            self.__class_id = args[0]['class_id']
+            self.__class_id = int(args[0]['class_id'])
             self.__start_datetime = args[0]['start_datetime']
             if isinstance(self.__start_datetime, str):
                 self.__start_datetime = datetime.strptime(self.__start_datetime, "%Y-%m-%dT%H:%M:%S")
@@ -54,11 +57,11 @@ class Class:
             self.__end_datetime = args[0]['end_datetime']
             if isinstance(self.__end_datetime, str):
                 self.__end_datetime = datetime.strptime(self.__end_datetime, "%Y-%m-%dT%H:%M:%S")
-            
-            self.__class_size = args[0]['class_size']
+
+            self.__class_size = int(args[0]['class_size'])
             self.__trainer_assigned = args[0]['trainer_assigned']
-            self.__learners_enrolled = args[0]['learners_enrolled']
-            self.__section_list = args[0]['section_list']
+            self.__learners_enrolled = copy.deepcopy(args[0]['learners_enrolled'])
+            self.__section_list = copy.deepcopy(args[0]['section_list'])
 
     # Getter Methods
     def get_course_id(self):
@@ -87,32 +90,53 @@ class Class:
     
     # Setter Methods
     def set_class_size(self, size):
-        self.__class_size = Size
+        self.__class_size = int(size)
     
     def set_trainer(self, trainer):
         self.__trainer_assigned = trainer
     
     def set_start_datetime(self, start_datetime):
+        if isinstance(start_datetime, str):
+            start_datetime = datetime.strptime(start_datetime, "%Y-%m-%dT%H:%M:%S")
+
+        if start_datetime > self.get_end_datetime():
+            raise ValueError("Start datetime cannot be later than End datetime")
+        
         self.__start_datetime = start_datetime
     
     def set_end_datetime(self, end_datetime):
+        if isinstance(end_datetime, str):
+            end_datetime = datetime.strptime(end_datetime, "%Y-%m-%dT%H:%M:%S")
+
+        if end_datetime < self.get_start_datetime():
+            raise ValueError("End datetime cannot be later than Start datetime")
+        
         self.__end_datetime = end_datetime
     
     def add_section(self, section):
-        self.__section_list.append(section)
+        if section in self.__section_list:
+            raise ValueError(str(section)+" section already exists")
+
+        self.__section_list.append(str(section))
     
     def enrol_learner(self, staff):
-        self.__learners_enrolled.append(staff)
+        if len(self.__learners_enrolled) == self.get_class_size():
+            raise Exception("Class is full")
+
+        if staff in self.__learners_enrolled:
+            raise ValueError(str(staff)+" already enrolled")
+
+        self.__learners_enrolled.append(str(staff))
     
     def remove_section(self, section):
-        self.__section_list.remove(section)
+        self.__section_list.remove(str(section))
     
     def json(self):
         return {
             "course_id": self.get_course_id(),
             "class_id": self.get_class_id(),
-            "start_datetime": self.get_start_datetime(),
-            "end_datetime": self.get_end_datetime(),
+            "start_datetime": self.get_start_datetime().isoformat(),
+            "end_datetime": self.get_end_datetime().isoformat(),
             "class_size": self.get_class_size(),
             "trainer_assigned": self.get_trainer_assigned(),
             "learners_enrolled": self.get_learners_enrolled(),
@@ -125,12 +149,18 @@ class ClassDAO:
 
     #Create
     def insert_class(self, course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = None, learners_enrolled= [], section_list=[]):
+        if(isinstance(start_datetime, datetime)):
+            start_datetime = start_datetime.isoformat()
+
+        if(isinstance(end_datetime, datetime)):
+            end_datetime = end_datetime.isoformat()
+
         try:
             response = self.table.put_item(
                 Item = {
                     "class_id": class_id,
-                    "start_datetime": start_datetime.isoformat(),
-                    'end_datetime' : end_datetime.isoformat(),
+                    "start_datetime": start_datetime,
+                    'end_datetime' : end_datetime,
                     'class_size': class_size,
                     'trainer_assigned': trainer_assigned,
                     'learners_enrolled': learners_enrolled,
@@ -141,11 +171,11 @@ class ClassDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return Class(course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = trainer_assigned, learners_enrolled=learners_enrolled, section_list= section_list)
-            return 'Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
-            return "Class Already Exists"
+            raise ValueError("Class already exists")
         except Exception as e:
-            return "Insert Failure with Exception: "+str(e)
+            raise Exception("Insert Failure with Exception: "+str(e))
     
     #Read
     def retrieve_all(self):
@@ -164,14 +194,15 @@ class ClassDAO:
     def retrieve_one(self, course_id, class_id):
         response = self.table.get_item(Key={'course_id': course_id, 'class_id': class_id})
         
-        if response['Items'] == []:
-            return []
+        if 'Item' in response:
+            return Class(response['Item'])
         
-        return Class(response['Items'][0])
+        return
+    
 
     def retrieve_all_from_course(self, course_id):
         response = self.table.query(KeyConditionExpression=Key('course_id').eq(course_id))
-
+        
         if response['Items'] == []:
             return []
     
@@ -199,10 +230,10 @@ class ClassDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Class Updated'
-            return 'Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
             
         except Exception as e:
-            return "Update Failure with Exception: "+str(e)
+            raise Exception("Update Failure with Exception: "+str(e))
 
     #Delete
     def delete_class(self, ClassObj):
@@ -215,18 +246,18 @@ class ClassDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Class Deleted'
-            return 'Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except Exception as e:
-            return "Delete Failure with Exception: "+str(e)
+            raise Exception("Delete Failure with Exception: "+str(e))
 
 if __name__ == "__main__":
     dao = ClassDAO()
     # print(dao.retrieve_all())
     # print(dao.insert_class("IS111",2, datetime(2021,9,27,8,0,0), datetime(2021,10,27,8,0,0), 40))
-
     # class1 = dao.retrieve_all()[0]
     # print(dao.delete_class(class1))
-    # print(class1.get_start_datetime())
+    # print(class1.json())
     # class1.set_start_datetime(datetime(2021,9,28,16,0,0))
     # print(class1.get_start_datetime())
     # print(dao.update_class(class1))
+    # print(dao.retrieve_one("IS111",1))
