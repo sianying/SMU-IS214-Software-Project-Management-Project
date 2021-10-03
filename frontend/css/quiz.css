@@ -1,0 +1,49 @@
+.section-card {
+    width: 80%;
+    /* justify-content: center; */
+}
+
+#breadcrumb-div{
+    width: 95%;
+}
+
+#alert-no-qn{
+    text-align: center;
+    width: 35%;
+}
+
+#add-qn-button, #submit-and-cancel-button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.question-div{
+    width: 50%;
+    margin-left: 40px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+#question-label, #answer-label{
+    color: #3C64B1;
+}
+
+#form-div, #duplicate-qn-alert {
+    width: 90%;
+}
+
+#score {
+    float: right;
+}
+
+#scoreDiv {
+    width: 70%;
+    margin-left: 40px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+#submit-btn {
+    margin-top: 50px;
+}

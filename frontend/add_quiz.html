@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <!-- Quiz CSS -->
+    <link rel='stylesheet' href='quiz.css'>
+
+    <!-- Nav CSS -->
+    <link rel='stylesheet' href='nav.css'>
+
+    <title>Add Question</title>
+
+    <!-- Vue link -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+    <!-- jQuery link -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+</head>
+<body>
+    <div id='nav'>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#"  id="navlogo">ONE STOP LMS</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">Disabled</a>
+                    </li>
+                </ul>  
+            </div>
+            <a class="nav-link" href="#"><img src="images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
+        </nav>
+    </div>
+
+    <div id='breadcrumb-div' class='mx-auto mt-4'>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item"><a href="#">Courses</a></li>
+                <li class="breadcrumb-item"><a href="#">IC111</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Quiz</li>
+            </ol>
+        </nav>
+    </div>
+    <div id='alert-and-button'>
+        <div id='alert-no-qn' class="alert alert-danger mx-auto" role="alert">
+            There are no questions. Add one by clicking the button below!
+        </div>
+    
+        <div id='add-qn-button' class='mx-auto'>
+            <button id='true-false-button' type="button" class="btn btn-outline-primary">Add T/F Question</button>
+        </div>
+    </div>
+
+    <div id='duplicate-qn'></div>
+    <div id='form-div' class='mx-auto'></div>
+    <div id='question-div' class='question-div'></div>
+    <div id='submit-btn' class='d-none' >
+        <div class='container'>
+            <div class='row'>
+                <div class="col"></div>
+                <div class='col mx-auto' id='submit-and-cancel-button'>
+                    <button type="button" class="btn btn-success mr-2">Confirm</button>
+                    <button type="button" class="btn btn-danger ml-2">Cancel</button>
+                </div>
+                <div class='col'></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var questionList = [];
+
+        document.getElementById("true-false-button").addEventListener("click", function() {
+            document.getElementById("alert-and-button").innerHTML = "";
+            document.getElementById("form-div").innerHTML = `<form>
+                                                                    <div class="form-group">
+                                                                        <label for="question">Question Title</label>
+                                                                        <input type="text" maxlength="128" class="form-control" id="question">
+                                                                    </div>
+                                                                    <button id='question-title-submit-btn' type='button' onclick='createQuestion()' class="btn btn-primary">Confirm</button>
+                                                            </form>`;
+            document.getElementById('submit-btn').className = 'my-3';
+        });
+
+        function createQuestion(){            
+            const questionInput = document.getElementById('question').value;
+            const questionDiv = document.getElementById('question-div');
+            if(questionList.includes(questionInput.toLowerCase())) [
+                document.getElementById('question').value = "",
+                document.getElementById('duplicate-qn').innerHTML = `<div id='duplicate-qn-alert' class="alert alert-danger mx-auto text-center justify-content-center" role="alert">
+                                            Duplicate question alert! Enter another question.
+                                        </div>`
+            ]
+            else if((!questionList.includes(questionInput.toLowerCase())) && (questionInput !== "")){
+                document.getElementById('duplicate-qn').innerHTML = '';
+                questionList.push(questionInput.toLowerCase())
+                const questionDiv = document.getElementById('question-div');
+                
+                let questionIndex = questionList.indexOf(questionInput) + 1;
+                const questionInputNode = document.createElement('p');
+                questionInputNode.innerText = `${questionIndex}. ${questionInput}`;
+                questionInputNode.className ='h5 ml-4 mt-4';
+                questionInputNode.setAttribute('id', 'question-title')
+
+                questionDiv.appendChild(questionInputNode);
+                questionDiv.innerHTML += `<div class='ml-4'>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="trueOption" value="option1">
+                                                <label class="form-check-label" for="inlineRadio1">True</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="falseOption" value="option2">
+                                                <label class="form-check-label" for="inlineRadio2">False</label>
+                                            </div>
+                                        </div>`;
+                document.getElementById('question').value = "";
+
+            }
+
+        }
+
+        $(document).ready(function() {
+            $(window).keydown(function(event){
+                if(event.keyCode == 13) {
+                event.preventDefault();
+                return false;
+                }
+            });
+        });
+
+    </script>
+    
+
+
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+    
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
+
+</body>
+</html>
