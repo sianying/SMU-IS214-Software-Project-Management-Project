@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+body {
+    font-family: 'Open Sans', 'Oswald', sans-serif;
+} 
+
+.wrapper {
+    padding: 0;
+    margin: 0;
+}
+
+#breadcrumb {
+    padding: 25px 10px 0px 10px;
+}
+
+/* .card { */
+    /* background-color: #F8f9fb; */
+    /* background-color: white; */
+    /* min-width: 400px;
+    max-width: 540px; */
+    /* height: 100%; */
+/* } */
+
+.border {
+    /* padding: 30px 0; */
+    margin: 0px 10px 0px 10px;
+    border: solid 1px #ebebeb;
+    background-color: white; 
+}
+
+.plus-button {
+    background-color: white;
+    border: none; 
+    width: 100%;
+    padding: 30px 0;
+}
+
+.form-border {
+    padding: 50px 50px 15px 50px;
+    margin: 0px 10px 0px 10px;
+    border: solid 1px #ebebeb;
+}
+
+.form-group {
+    /* font-size: 18px; */
+    font-weight: bold;
+}
+
+
+/* Specific Course Page */
+/* .specific-course-card {
+    margin: 10px 10px 0 10px;
+} */
+
+
+.card-title > a {
+    font-size: 35px !important;
+    color: black !important;
+
+}

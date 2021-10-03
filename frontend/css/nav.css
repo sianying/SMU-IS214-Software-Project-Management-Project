@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body {
+    font-family: 'Oswald', sans-serif;
+}
+
+#navlogo{
+    margin-left: 30px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #3C64B1;
+}
+#navbarNav {
+    left: 40%;
+    list-style: none;
+    position: absolute;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Roboto', sans-serif;
+}
+
+.navbar {
+    background-color: #F3F6FA !important;
+}
+
+#profilelogo{
+    width: 30px; height: 30px;left: 95%; bottom: 25%; list-style: none;position: absolute;
+}

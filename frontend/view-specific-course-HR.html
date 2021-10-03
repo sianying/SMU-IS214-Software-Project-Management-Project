@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- VueJS -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <!-- Navbar css-->
+    <link rel="stylesheet" href="nav.css">
+    <!-- Main css -->
+    <link rel="stylesheet" href="main.css">
+    <!-- Iconify -->
+    <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#"  id="navlogo">ONE STOP LMS</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav">
+                <a class="nav-link" href="./view-list-of-courses-HR.html">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-link active" href="#">All Courses</a>
+                <a class="nav-link" href="#">My Courses</a>
+            </div>
+        </div>
+        <a class="nav-link" href="#"><img src="../images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
+    </nav>
+</head>
+
+<body>
+    <div id="app" class="wrapper container mx-auto">
+        <div id="breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add New Course</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div class="card text-center m-2">
+            <!-- <div class="card-header bg-white">
+                Featured
+            </div> -->
+            <div class="card-body pt-4 px-5">
+                <h2 class="card-title font-weight-bold">{{ code }} {{ title }}</h2>
+                <p class="card-text">{{ description }}</p>
+                <a href="#" class="btn btn-primary">View Availability</a>
+            </div>
+            <!-- <div class="card-footer text-muted bg-white">
+                2 days ago
+            </div> -->
+        </div>
+
+    </div>
+    
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            title: "",
+            code: "",
+            description: "",
+            selected: 'not selected',
+            courses: [
+            {
+                    "title": "Printers and Inks fundamentals",
+                    "code": "IC111",
+                    "description": "This course focuses on ink replacement techniques. It teaches us how to be good ink replacement engineers.",
+                },
+                {
+                    "title": "Printers fundamentals",
+                    "code": "IC112",
+                    "description": "Lorem ipsum dolor  libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                },
+                {
+                    "title": "Inks fundamentals",
+                    "code": "IC113",
+                    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                },
+                {
+                    "title": "Circuit basics",
+                    "code": "IC114",
+                    "description": "Lorem ipsum dolor elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                },
+                {
+                    "title": "Customer Service fundamentals",
+                    "code": "IC115",
+                    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                },
+                {
+                    "title": "Introduction to Time Management",
+                    "code": "IC116",
+                    "description": "Lorem ipsu elit. gendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                },
+            ],
+        },
+        methods: {
+        },
+        mounted: function() {
+            const urlSearchParams = new URLSearchParams(window.location.search);
+            const params = Object.fromEntries(urlSearchParams.entries());
+            const selectedCourse = this.courses.filter(course => course.code === params.id)[0];
+            this.title = selectedCourse.title;
+            this.code = selectedCourse.code;
+            this.description = selectedCourse.description;
+
+        }
+    })
+
+</script>
+
+
+<!-- Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+</body>
+</html>
