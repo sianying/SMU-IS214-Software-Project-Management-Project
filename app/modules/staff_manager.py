@@ -65,7 +65,7 @@ class Staff:
 
 class StaffDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb').Table('Staff')
+        self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Staff')
 
     #Create
     def insert_staff(self, staff_name, role, staff_id = None, courses_completed= [], courses_enrolled = []):
