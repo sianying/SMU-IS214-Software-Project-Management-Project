@@ -89,7 +89,6 @@ class TestQuizDAO(unittest.TestCase):
         self.table = None
         self.dynamodb = None
 
-
     def test_insert_Quiz(self):
         insertTest = self.dao.insert_quiz(ITEM3['section_id'], ITEM3['quiz_id'], ITEM3['questions']).json()
         duplicateTest = self.dao.insert_quiz(ITEM3['section_id'], ITEM3['quiz_id'], ITEM3['questions'])

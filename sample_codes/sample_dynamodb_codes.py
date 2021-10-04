@@ -102,8 +102,8 @@ if __name__ == '__main__':
         }
     ]
 }
-# Quiz indexed by section_id (Partition Key), quiz_id (Sort key)
-
+# Quiz indexed by quiz_id (Partition Key), section_id (Sort key)
+# Quiz secondary index (SectionIndex) - section_id (Partition key)
 
 # Attempt Table
 {

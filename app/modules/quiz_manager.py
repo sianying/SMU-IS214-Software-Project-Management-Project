@@ -103,7 +103,6 @@ class QuizDAO:
     
     def retrieve_one(self, quiz_id):
         response = self.table.query(KeyConditionExpression=Key('quiz_id').eq(quiz_id))
-        
         if response['Items'] == []:
             return 
         
@@ -111,7 +110,7 @@ class QuizDAO:
 
 
     def retrieve_by_section(self, section_id):
-        response = self.table.query(KeyConditionExpression=Key('section_id').eq(section_id))
+        response = self.table.query(IndexName = "SectionIndex", KeyConditionExpression=Key('section_id').eq(section_id))
         
         if response['Items'] == []:
             return 
