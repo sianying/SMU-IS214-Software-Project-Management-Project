@@ -9,6 +9,7 @@ from moto import mock_dynamodb2
 ITEM1= {
     "course_id": "IS111",
     "course_name": "Intro to Programming",
+    "course_description": "lorem ipsum",
     "prerequisite_course": ["IS110", "IS113","IS114"],
     "class_list": [1, 2]
 }
@@ -16,6 +17,7 @@ ITEM1= {
 ITEM2 = {
     "course_id": "IS110",
     "course_name": "Test Course",
+    "course_description": "lorem_ipsum",
     "prerequisite_course": [],
     "class_list": []
 }
@@ -23,6 +25,7 @@ ITEM2 = {
 ITEM3 = {
     "course_id": "IS113",
     "course_name": "Test Course 2",
+    "course_description": "lorem ipsum",
     "prerequisite_course": [],
     "class_list": []
 }
@@ -69,11 +72,11 @@ class TestCourseDAO(unittest.TestCase):
         self.dynamodb = None
 
     def test_insert_course(self):
-        insertTest = self.dao.insert_course(ITEM3['course_id'], ITEM3['course_name'], ITEM3['class_list'], ITEM3['prerequisite_course']).json()
+        insertTest = self.dao.insert_course(ITEM3['course_id'], ITEM3['course_name'], ITEM3['course_description'], ITEM3['class_list'], ITEM3['prerequisite_course']).json()
 
         self.assertEqual(ITEM3, insertTest, "CourseDAO insert test failure")
         with self.assertRaises(ValueError, msg = "Failed to prevent duplicate insert") as context:
-            self.dao.insert_course(ITEM2['course_id'], ITEM2['course_name'], ITEM2['class_list'], ITEM2['prerequisite_course'])
+            self.dao.insert_course(ITEM2['course_id'], ITEM2['course_name'], ITEM2['course_description'], ITEM2['class_list'], ITEM2['prerequisite_course'])
 
         self.assertTrue("Course already exists" == str(context.exception))
 

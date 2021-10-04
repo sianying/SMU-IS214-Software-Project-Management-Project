@@ -10,7 +10,8 @@ class Course:
     def __init__(self, *args, **kwargs):
         '''__init__(
             course_id: String, 
-            course_name: String, 
+            course_name: String,
+            description: String, 
             class_list = []: List, 
             prerequisite_course = []: List 
             )
@@ -20,6 +21,7 @@ class Course:
         if len(args) > 1:
             self.__course_id = args[0]
             self.__course_name = args[1]
+            self.__course_description = args[2]
             try:
                 self.__class_list = [int(class_id) for class_id in kwargs['class_list']] # stores a list of primary keys for the class objects
             except:
@@ -31,6 +33,7 @@ class Course:
         elif isinstance(args[0], dict):
             self.__course_id = args[0]['course_id']
             self.__course_name = args[0]['course_name']
+            self.__course_description = args[0]['course_description']
             self.__class_list = [int(class_id) for class_id in args[0]['class_list']]
             self.__prerequisite_course = copy.deepcopy(args[0]['prerequisite_course'])
 
@@ -40,6 +43,9 @@ class Course:
     
     def get_course_name(self):
         return self.__course_name
+
+    def get_course_description(self):
+        return self.__course_description
 
     def get_class_list(self):
         return self.__class_list
@@ -58,6 +64,7 @@ class Course:
         return {
             "course_id": self.get_course_id(),
             "course_name": self.get_course_name(),
+            "course_description": self.get_course_description(),
             "class_list": self.get_class_list(),
             "prerequisite_course": self.get_prerequisite_course()
         }
@@ -67,19 +74,20 @@ class CourseDAO:
         self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Course')
     
     #Create
-    def insert_course(self, course_id, course_name, class_list, prerequisite_course):
+    def insert_course(self, course_id, course_name, course_description, class_list, prerequisite_course):
         try: 
             response = self.table.put_item(
                 Item = {
                     "course_id": course_id,
                     "course_name": course_name,
+                    "course_description": course_description,
                     "prerequisite_course": prerequisite_course,
                     "class_list": class_list
                 },
                 ConditionExpression=Attr("course_id").not_exists(),
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return Course(course_id, course_name, class_list=class_list, prerequisite_course=prerequisite_course)
+                return Course(course_id, course_name, course_description, class_list=class_list, prerequisite_course=prerequisite_course)
             raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             raise ValueError("Course already exists")
@@ -153,7 +161,8 @@ class CourseDAO:
 
 if __name__ == "__main__":
     dao = CourseDAO()
-    # print(dao.retrieve_all())
+    # course1 = dao.retrieve_all()[0]
+    # print(course1.json())
     # print(dao.retrieve_one("IS111").get_prerequisite_course())
     # is111 = dao.retrieve_one("IS111")
     # is111.add_class(1)

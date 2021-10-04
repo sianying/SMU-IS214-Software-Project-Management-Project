@@ -36,6 +36,7 @@ if __name__ == '__main__':
 {
     "course_name": "Intro to Programming",
     "course_id": "IS111", # this is the course code must be unique 
+    "course_description": "lorem ipsum",
     "prerequisite_course": ["IS110","IS113"], # this stores a list of course_id
     "class_list": [] # this stores a list of class_id
 }
