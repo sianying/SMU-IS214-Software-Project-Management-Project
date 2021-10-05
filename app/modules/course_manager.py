@@ -11,7 +11,7 @@ class Course:
         '''__init__(
             course_id: String, 
             course_name: String,
-            description: String, 
+            course_description: String, 
             class_list = []: List, 
             prerequisite_course = []: List 
             )
@@ -88,7 +88,7 @@ class CourseDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return Course(course_id, course_name, course_description, class_list=class_list, prerequisite_course=prerequisite_course)
-            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+            raise ValueError('Insert Failure with course_id: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             raise ValueError("Course already exists")
         except Exception as e:
@@ -114,7 +114,7 @@ class CourseDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return Course(course_dict)
-            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+            raise ValueError('Insert Failure with course_id: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             raise ValueError("Course already exists")
         except Exception as e:
@@ -164,7 +164,7 @@ class CourseDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Course Updated'
-            raise ValueError('Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+            raise ValueError('Update Failure with course_id: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
             
         except Exception as e:
             raise Exception("Update Failure with Exception: "+str(e))
@@ -180,19 +180,11 @@ class CourseDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Course Deleted'
-            raise ValueError('Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+            raise ValueError('Delete Failure with course_id: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except Exception as e:
             raise Exception("Delete Failure with Exception: "+str(e))
 
 
 if __name__ == "__main__":
     dao = CourseDAO()
-    # course1 = dao.retrieve_all()[0]
-    # print(course1.json())
-    # print(dao.retrieve_one("IS111").get_prerequisite_course())
-    # is111 = dao.retrieve_one("IS111")
-    # is111.add_class(1)
-    # print(dao.update_course(is111))
-    # print(dao.insert_course("IS110","test_course",[],[]))
-    # is110 = dao.retrieve_one("IS110")
-    # print(dao.delete_course(is110))
+    
