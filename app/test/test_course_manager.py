@@ -3,7 +3,6 @@ import boto3
 import sys
 import os
 sys.path.append('../')
-from decimal import Decimal
 from moto import mock_dynamodb2
 
 ITEM1= {
@@ -39,6 +38,7 @@ class TestCourse(unittest.TestCase):
         self.test_course = None
 
     def test_json(self):
+        self.assertTrue(isinstance(self.test_course.json(),dict), "Course JSON is not a dictionary object")
         self.assertEqual(ITEM1, self.test_course.json(), "Course does not match")
         self.assertNotEqual(ITEM2, self.test_course.json(), "Course matched when it should not")
 
@@ -72,11 +72,21 @@ class TestCourseDAO(unittest.TestCase):
         self.dynamodb = None
 
     def test_insert_course(self):
-        insertTest = self.dao.insert_course(ITEM3['course_id'], ITEM3['course_name'], ITEM3['course_description'], ITEM3['class_list'], ITEM3['prerequisite_course']).json()
+        insertTest = self.dao.insert_course(ITEM3['course_id'], ITEM3['course_name'], ITEM3['course_description'], ITEM3['class_list'], ITEM3['prerequisite_course'])
 
-        self.assertEqual(ITEM3, insertTest, "CourseDAO insert test failure")
+        self.assertEqual(ITEM3, insertTest.json(), "CourseDAO insert test failure")
+        
         with self.assertRaises(ValueError, msg = "Failed to prevent duplicate insert") as context:
             self.dao.insert_course(ITEM2['course_id'], ITEM2['course_name'], ITEM2['course_description'], ITEM2['class_list'], ITEM2['prerequisite_course'])
+
+        self.assertTrue("Course already exists" == str(context.exception))
+
+    def test_insert_course_w_dict(self):
+        insertTest = self.dao.insert_course_w_dict(ITEM3)
+
+        self.assertEqual(ITEM3, insertTest.json(), "CourseDAO insert test with dictionary failure")
+        with self.assertRaises(ValueError, msg = "Failed to prevent duplicate insert") as context:
+            self.dao.insert_course_w_dict(ITEM2)
 
         self.assertTrue("Course already exists" == str(context.exception))
 
@@ -91,7 +101,7 @@ class TestCourseDAO(unittest.TestCase):
     def test_update_course(self):
         from modules.course_manager import Course
         courseObj = Course(ITEM1)
-        courseObj.add_class(Decimal('3'))
+        courseObj.add_class(3)
         courseObj.add_prerequisite_course("IS211")
         self.dao.update_course(courseObj)
         toCheck = self.table.get_item(Key={'course_id':courseObj.get_course_id(), 'course_name':courseObj.get_course_name()})['Item']
@@ -104,7 +114,6 @@ class TestCourseDAO(unittest.TestCase):
         key = {'course_id':courseObj.get_course_id(), 'course_name': courseObj.get_course_name()}
         with self.assertRaises(Exception, msg="CourseDAO delete test failure"):
             self.table.get_item(Key = key)['Item']
-
 
 if __name__ == "__main__":
     unittest.main()
