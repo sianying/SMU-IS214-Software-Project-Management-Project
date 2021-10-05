@@ -162,6 +162,10 @@ class TestClassDAO(unittest.TestCase):
         self.dynamodb = None
 
     def test_insert_class(self):
+        from modules.class_manager import Class
+        insertDefault = self.dao.insert_class("abcde", 1, "2021-08-21T08:00:00", "2021-09-21T08:00:00", 20)
+        self.assertTrue(isinstance(insertDefault, Class))
+
         insertTest = self.dao.insert_class(ITEM3['course_id'], ITEM3['class_id'], ITEM3['start_datetime'], ITEM3['end_datetime'], ITEM3['class_size'], ITEM3['trainer_assigned'], ITEM3['learners_enrolled'], ITEM3['section_list'])
 
         self.assertEqual(ITEM3, insertTest.json(), "ClassDAO insert test failure")
@@ -172,6 +176,9 @@ class TestClassDAO(unittest.TestCase):
         self.assertTrue("Class already exists" == str(context.exception))
 
     def test_insert_class_w_dict(self):
+        from modules.class_manager import Class
+        insertDefault = self.dao.insert_class_w_dict({"course_id": "asvde", "class_id":1, "start_datetime": "2021-08-21T08:00:00", "end_datetime":"2021-09-21T08:00:00", "class_size":20})
+        self.assertTrue(isinstance(insertDefault, Class))
         insertTest = self.dao.insert_class_w_dict(ITEM3)
 
         self.assertEqual(ITEM3, insertTest.json(), "ClassDAO insert with dict test failure")
