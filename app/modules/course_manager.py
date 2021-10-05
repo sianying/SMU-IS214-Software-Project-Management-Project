@@ -74,7 +74,7 @@ class CourseDAO:
         self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Course')
     
     #Create
-    def insert_course(self, course_id, course_name, course_description, class_list, prerequisite_course):
+    def insert_course(self, course_id, course_name, course_description, class_list=[], prerequisite_course=[]):
         try: 
             response = self.table.put_item(
                 Item = {
@@ -94,6 +94,32 @@ class CourseDAO:
         except Exception as e:
             raise Exception("Insert Failure with Exception: "+str(e))
     
+    def insert_course_w_dict(self, course_dict):
+        try:
+            if 'class_list' not in course_dict:
+                course_dict['class_list'] = []
+            
+            if 'prerequisite_course' not in course_dict:
+                course_dict['prerequisite_course'] = []
+
+            response = self.table.put_item(
+                Item = {
+                    "course_id": course_dict['course_id'],
+                    "course_name": course_dict['course_name'],
+                    "course_description": course_dict['course_description'],
+                    "prerequisite_course": course_dict['prerequisite_course'],
+                    "class_list": course_dict['class_list']
+                },
+                ConditionExpression=Attr("course_id").not_exists(),
+            )
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return Course(course_dict)
+            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+        except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
+            raise ValueError("Course already exists")
+        except Exception as e:
+            raise Exception("Insert Failure with Exception: "+str(e))
+
     #Read
     def retrieve_all(self):
         # retrieve all items and add them to a list of Course objects
@@ -138,10 +164,10 @@ class CourseDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Course Updated'
-            return 'Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
             
         except Exception as e:
-            return "Update Failure with Exception: "+str(e)
+            raise Exception("Update Failure with Exception: "+str(e))
 
     #Delete
     def delete_course(self, CourseObj):
@@ -154,9 +180,9 @@ class CourseDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Course Deleted'
-            return 'Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except Exception as e:
-            return "Delete Failure with Exception: "+str(e)
+            raise Exception("Delete Failure with Exception: "+str(e))
 
 
 if __name__ == "__main__":
