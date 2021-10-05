@@ -133,7 +133,7 @@ class SectionDAO:
     def insert_section(self, section_name, course_id, class_id, section_id = None, materials = [], quiz = None): 
         try: 
             if section_id == None:
-                section_id = uuid4()
+                section_id = str(uuid4())
 
             response = self.table.put_item(
                 Item = {
@@ -157,7 +157,7 @@ class SectionDAO:
     def insert_section_w_dict(self, section_dict): 
         try: 
             if 'section_id' not in section_dict:
-                section_dict['section_id'] = uuid4()
+                section_dict['section_id'] = str(uuid4())
 
             if 'materials' not in section_dict:
                 section_dict['materials'] = []

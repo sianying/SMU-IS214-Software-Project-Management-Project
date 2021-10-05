@@ -146,6 +146,28 @@ class CourseDAO:
         
         return Course(response['Items'][0])
 
+    def retrieve_all_in_list(self, course_list):
+        try:
+            response = self.table.scan(
+                FilterExpression= Attr("course_id").is_in(course_list)
+            )
+            data = response['Items']
+
+            while 'LastEvaluatedKey' in response:
+                response = self.table.scan(
+                    FilterExpression= Attr("course_id").is_in(course_list),
+                    ExclusiveStartKey=response['LastEvaluatedKey']
+                )
+                data.extend(response['Items'])
+            
+            course_list = []
+            for item in data:
+                course_list.append(Course(item))
+            
+            return course_list
+        except Exception as e:
+            raise ValueError("List entered is empty")
+
     #Update
     def update_course(self, CourseObj):
         # method updates the DB if there is new prereq course, removing of prereq course, adding new class
