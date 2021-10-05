@@ -19,6 +19,8 @@ app = Flask(__name__)
 app.json_encoder= JSONEncoder_Improved
 CORS(app)
 
+# ============= Read ===================
+
 @app.route("/courses")
 def retrieve_all_courses():
     dao = CourseDAO()
@@ -36,7 +38,7 @@ def retrieve_all_courses():
             "code": 404,
             "data": "No courses found"
         }
-    )
+    ), 404
 
 @app.route("/classes/<string:course_id>")
 def retrieve_all_classes(course_id):
@@ -55,7 +57,44 @@ def retrieve_all_classes(course_id):
             "code": 404,
             "data": "No classes found for course "+course_id
         }
-    )
+    ), 404
+
+
+# ============= Create ==================
+@app.route("/courses", methods =['POST'])
+def create_course():
+    data = request.get_json()
+    dao = CourseDAO()
+    try:
+        results = dao.insert_course_w_dict(data)
+        return jsonify(
+            {
+                "code": 201,
+                "data": results.json()
+            }
+        ), 201
+    except ValueError as e:
+        if str(e) == "Course already exists":
+            return jsonify(
+                {
+                    "code": 409,
+                    "data": str(e)
+                }
+            ), 409
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the course."
+            }
+        ), 500
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the course."
+            }
+        ), 500
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port = 5000, debug= True)

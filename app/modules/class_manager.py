@@ -188,7 +188,7 @@ class ClassDAO:
             class_dict['trainer_assigned'] = None
         
         if 'learners_enrolled' not in class_dict:
-            class_dict['leaners_enrolled'] = []
+            class_dict['learners_enrolled'] = []
         
         if 'section_list' not in class_dict:
             class_dict['section_list'] = []
