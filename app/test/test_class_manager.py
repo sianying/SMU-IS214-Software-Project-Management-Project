@@ -51,6 +51,7 @@ class TestClass(unittest.TestCase):
         del self.test_class2 
 
     def test_json(self):
+        self.assertTrue(isinstance(self.test_class.json(),dict), "Class JSON is not a dictionary object")
         self.assertEqual(ITEM1, self.test_class.json(), "Class does not match")
         self.assertNotEqual(ITEM2, self.test_class.json(), "Class matched when it should not")
 
@@ -161,12 +162,22 @@ class TestClassDAO(unittest.TestCase):
         self.dynamodb = None
 
     def test_insert_class(self):
-        insertTest = self.dao.insert_class(ITEM3['course_id'], ITEM3['class_id'], ITEM3['start_datetime'], ITEM3['end_datetime'], ITEM3['class_size'], ITEM3['trainer_assigned'], ITEM3['learners_enrolled'], ITEM3['section_list']).json()
+        insertTest = self.dao.insert_class(ITEM3['course_id'], ITEM3['class_id'], ITEM3['start_datetime'], ITEM3['end_datetime'], ITEM3['class_size'], ITEM3['trainer_assigned'], ITEM3['learners_enrolled'], ITEM3['section_list'])
 
-        self.assertEqual(ITEM3, insertTest, "ClassDAO insert test failure")
+        self.assertEqual(ITEM3, insertTest.json(), "ClassDAO insert test failure")
 
         with self.assertRaises(ValueError, msg = "Failed to raise exception for duplicates") as context:
             self.dao.insert_class(ITEM2['course_id'], ITEM2['class_id'], ITEM2['start_datetime'], ITEM2['end_datetime'], ITEM2['class_size'], ITEM2['trainer_assigned'], ITEM2['learners_enrolled'], ITEM2['section_list'])
+        
+        self.assertTrue("Class already exists" == str(context.exception))
+
+    def test_insert_class_w_dict(self):
+        insertTest = self.dao.insert_class_w_dict(ITEM3)
+
+        self.assertEqual(ITEM3, insertTest.json(), "ClassDAO insert with dict test failure")
+
+        with self.assertRaises(ValueError, msg = "Failed to raise exception for duplicates") as context:
+            self.dao.insert_class_w_dict(ITEM2)
         
         self.assertTrue("Class already exists" == str(context.exception))
 
@@ -181,8 +192,8 @@ class TestClassDAO(unittest.TestCase):
     def test_retrieve_all_from_course(self):
         class_list = self.dao.retrieve_all_from_course("IS110")
         class_list2 = self.dao.retrieve_all_from_course("IS113")
-        self.assertEqual([ITEM1], [classObj.json() for classObj in class_list])
-        self.assertEqual([], [classObj.json() for classObj in class_list2])
+        self.assertEqual([ITEM1], [classObj.json() for classObj in class_list], "Failed to retrieve all classes from a course")
+        self.assertEqual([], [classObj.json() for classObj in class_list2], "Retrieved objects when nothing should be retrieved")
 
     def test_update_class(self):
         from modules.class_manager import Class

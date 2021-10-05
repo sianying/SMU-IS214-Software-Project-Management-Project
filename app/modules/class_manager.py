@@ -177,6 +177,44 @@ class ClassDAO:
         except Exception as e:
             raise Exception("Insert Failure with Exception: "+str(e))
     
+    def insert_class_w_dict(self, class_dict):
+        if(isinstance(class_dict['start_datetime'], datetime)):
+            class_dict['start_datetime'] = class_dict['start_datetime'].isoformat()
+
+        if(isinstance(class_dict['end_datetime'], datetime)):
+            class_dict['end_datetime'] = class_dict['end_datetime'].isoformat()
+
+        if 'trainer_assigned' not in class_dict:
+            class_dict['trainer_assigned'] = None
+        
+        if 'learners_enrolled' not in class_dict:
+            class_dict['leaners_enrolled'] = []
+        
+        if 'section_list' not in class_dict:
+            class_dict['section_list'] = []
+
+        try:
+            response = self.table.put_item(
+                Item = {
+                    "class_id": class_dict['class_id'],
+                    "start_datetime": class_dict['start_datetime'],
+                    'end_datetime' : class_dict['end_datetime'],
+                    'class_size': class_dict['class_size'],
+                    'trainer_assigned': class_dict['trainer_assigned'],
+                    'learners_enrolled': class_dict['learners_enrolled'],
+                    "section_list": class_dict['section_list'],
+                    "course_id": class_dict['course_id']
+                },
+                ConditionExpression=Attr("course_id").not_exists() & Attr('class_id').not_exists()
+            )
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return Class(class_dict)
+            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+        except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
+            raise ValueError("Class already exists")
+        except Exception as e:
+            raise Exception("Insert Failure with Exception: "+str(e))
+    
     #Read
     def retrieve_all(self):
         
@@ -199,15 +237,11 @@ class ClassDAO:
         
         return
     
-
     def retrieve_all_from_course(self, course_id):
         response = self.table.query(KeyConditionExpression=Key('course_id').eq(course_id))
-        
-        if response['Items'] == []:
-            return []
     
         return [Class(item) for item in response['Items']]
-
+        
     #Update
     def update_class(self, ClassObj):
         # method updates the DB if there is new prereq course, removing of prereq course, adding new class
