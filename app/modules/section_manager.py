@@ -127,7 +127,7 @@ class Material:
 
 class SectionDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name='us-east-1').Table('Section')
+        self.table = boto3.resource('dynamodb', region_name='ap-southeast-1').Table('Section')
     
     #Create
     def insert_section(self, section_name, course_id, class_id, section_id = None, materials = [], quiz = None): 

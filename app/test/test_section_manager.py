@@ -99,7 +99,7 @@ class TestSectionDAO(unittest.TestCase):
     def setUp(self):
         from modules import create_tables
         from modules.section_manager import SectionDAO
-        self.dynamodb = boto3.resource('dynamodb', region_name = 'us-east-1')
+        self.dynamodb = boto3.resource('dynamodb', region_name = 'ap-southeast-1')
         results = create_tables.create_section_table(self.dynamodb)
         self.table=self.dynamodb.Table('Section')
         self.table.put_item(Item = SECTION1)
