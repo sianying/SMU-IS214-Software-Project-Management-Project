@@ -5,6 +5,7 @@ import os
 from decimal import Decimal
 from modules.course_manager import CourseDAO
 from modules.class_manager import ClassDAO
+from modules.staff_manager import StaffDAO
 
 
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
@@ -39,6 +40,26 @@ def retrieve_all_courses():
             "data": "No courses found"
         }
     ), 404
+
+@app.route("/courses/eligible/<string:staff_id>")
+def retrieve_eligible_courses(staff_id):
+    dao = StaffDAO()
+    course_list = dao.retrieve_all_eligible_to_enroll(staff_id)
+    if len(course_list):
+        return jsonify(
+            {
+                "code":200,
+                'data': [course.json() for course in course_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No courses found"
+        }
+    ), 404
+
 
 @app.route("/classes/<string:course_id>")
 def retrieve_all_classes(course_id):
