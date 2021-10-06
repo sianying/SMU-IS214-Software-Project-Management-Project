@@ -119,14 +119,14 @@ class Class:
 
         self.__section_list.append(str(section))
     
-    def enrol_learner(self, staff):
+    def enrol_learner(self, staff_id):
         if len(self.__learners_enrolled) == self.get_class_size():
-            raise Exception("Class is full")
+            raise ValueError("Class is full")
 
-        if staff in self.__learners_enrolled:
-            raise ValueError(str(staff)+" already enrolled")
+        if staff_id in self.__learners_enrolled:
+            raise ValueError("Staff "+ str(staff_id)+" already enrolled")
 
-        self.__learners_enrolled.append(str(staff))
+        self.__learners_enrolled.append(str(staff_id))
     
     def remove_section(self, section):
         self.__section_list.remove(str(section))
@@ -145,7 +145,7 @@ class Class:
 
 class ClassDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Class')
+        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Class')
 
     #Create
     def insert_class(self, course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = None, learners_enrolled= [], section_list=[]):

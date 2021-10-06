@@ -77,7 +77,7 @@ class Course:
 
 class CourseDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Course')
+        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Course')
     
     #Create
     def insert_course(self, course_id, course_name, course_description, class_list=[], prerequisite_course=[]):

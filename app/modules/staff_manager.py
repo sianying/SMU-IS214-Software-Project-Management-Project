@@ -65,6 +65,9 @@ class Staff:
         self.__courses_completed.append(course)
     
     def add_enrolled(self, course):
+        if course in self.__courses_completed:
+            raise ValueError(str(course) + " already completed")
+
         if course in self.__courses_enrolled:
             raise ValueError("Already enrolled in "+str(course))
         self.__courses_enrolled.append(course)
@@ -83,7 +86,7 @@ class Staff:
 
 class StaffDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Staff')
+        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Staff')
 
     #Create
     def insert_staff(self, staff_name, role, staff_id = None, courses_completed= [], courses_enrolled = []):
@@ -193,10 +196,10 @@ class StaffDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Staff Updated'
-            return 'Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
             
         except Exception as e:
-            return "Update Failure with Exception: "+str(e)
+            raise Exception("Update Failure with Exception: "+str(e))
 
     #Delete
     def delete_staff(self, StaffObj):
@@ -209,9 +212,9 @@ class StaffDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Staff Deleted'
-            return 'Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except Exception as e:
-            return "Delete Failure with Exception: "+str(e)
+            raise ValueError("Delete Failure with Exception: "+str(e))
 
 if __name__ == "__main__":
     dao = StaffDAO()

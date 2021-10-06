@@ -147,7 +147,7 @@ class TestClassDAO(unittest.TestCase):
     def setUp(self):
         from modules import create_tables
         from modules.class_manager import ClassDAO 
-        self.dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
+        self.dynamodb = boto3.resource('dynamodb', region_name="ap-southeast-1")
         results = create_tables.create_class_table(self.dynamodb)
         # print(results)
         self.table = self.dynamodb.Table('Class')
