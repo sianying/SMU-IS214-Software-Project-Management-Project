@@ -10,7 +10,7 @@ ITEM1 = {
     "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
     "staff_name": "George",
     "courses_completed": ["IS110", "IS113"],
-    "courses_enrolled": ['IS111'],
+    "courses_enrolled": ['IS112'],
     "role": "Engineer"
 }
 
@@ -63,15 +63,15 @@ class TestStaff(unittest.TestCase):
     
     def test_add_enrolled(self):
         self.test_staff.add_enrolled("IS114")
-        self.assertEqual(["IS111","IS114"], self.test_staff.get_courses_enrolled(), "Failed to add enrolled course")
+        self.assertEqual(["IS112","IS114"], self.test_staff.get_courses_enrolled(), "Failed to add enrolled course")
         
         with self.assertRaises(ValueError, msg="Failed to raise exception when adding duplicate") as context:
-            self.test_staff.add_enrolled("IS111")
+            self.test_staff.add_enrolled("IS112")
         
-        self.assertTrue("Already enrolled in IS111" == str(context.exception))
+        self.assertTrue("Already enrolled in IS112" == str(context.exception))
 
     def test_remove_enrolled(self):
-        self.test_staff.remove_enrolled("IS111")
+        self.test_staff.remove_enrolled("IS112")
         self.assertEqual([], self.test_staff.get_courses_enrolled(), "Failed to remove enrolled course")
 
         with self.assertRaises(ValueError, msg="Able to remove a course that doesn't exist"):
@@ -153,6 +153,12 @@ class TestStaffDAO(unittest.TestCase):
     def test_retrieve_all_courses_enrolled(self, mock_course_dao):
         mock_course_dao().retrieve_all_in_list.return_value = [IS111]
         course_list = self.dao.retrieve_all_courses_enrolled(ITEM1["staff_id"])
+        self.assertEqual([IS111], course_list)
+
+    @patch("modules.staff_manager.CourseDAO")
+    def test_retrieve_all_eligible_to_enroll(self, mock_course_dao):
+        mock_course_dao().retrieve_eligible_course.return_value = [IS111]
+        course_list = self.dao.retrieve_all_eligible_to_enroll(ITEM1["staff_id"])
         self.assertEqual([IS111], course_list)
 
 if __name__ == "__main__":

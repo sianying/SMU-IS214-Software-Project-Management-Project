@@ -60,6 +60,12 @@ class Course:
     def add_prerequisite_course(self, course_id):
         self.__prerequisite_course.append(course_id)
 
+    def check_eligible(self, courses_completed):
+        for course in self.get_prerequisite_course():
+            if course not in courses_completed:
+                return False
+        return True
+
     def json(self):
         return {
             "course_id": self.get_course_id(),
@@ -168,6 +174,41 @@ class CourseDAO:
         except Exception as e:
             raise ValueError("List entered is empty")
 
+    def retrieve_all_not_in_list(self, course_list):
+        try:
+            response = self.table.scan(
+                FilterExpression=~Attr("course_id").is_in(course_list)
+            )
+            data = response['Items']
+
+            while 'LastEvaluatedKey' in response:
+                response = self.table.scan(
+                    FilterExpression= Attr("course_id").is_in(course_list),
+                    ExclusiveStartKey=response['LastEvaluatedKey']
+                )
+                data.extend(response['Items'])
+            
+            course_list = []
+            for item in data:
+                course_list.append(Course(item))
+            
+            return course_list
+        except Exception as e:
+            raise ValueError("List entered is empty")
+
+    def retrieve_eligible_course(self, courses_completed, courses_enrolled):
+        try:
+            course_list = self.retrieve_all_not_in_list(courses_completed+courses_enrolled)
+        except ValueError:
+            course_list = self.retrieve_all()
+        
+        result_list = []
+        for course in course_list:
+            if course.check_eligible(courses_completed):
+                result_list.append(course)
+
+        return result_list
+    
     #Update
     def update_course(self, CourseObj):
         # method updates the DB if there is new prereq course, removing of prereq course, adding new class
