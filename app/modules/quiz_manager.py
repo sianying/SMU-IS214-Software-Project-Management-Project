@@ -10,8 +10,8 @@ class Quiz:
     def __init__(self, *args, **kwargs):
         '''
             __init__(
-                quiz_id: int,
-                section_id: int
+                quiz_id: string,
+                section_id: string,
                 questions = []: List
             )
 
