@@ -10,8 +10,8 @@ class Quiz:
     def __init__(self, *args, **kwargs):
         '''
             __init__(
-                quiz_id: int,
-                section_id: int
+                quiz_id: string,
+                section_id: string,
                 questions = []: List
             )
 
@@ -81,6 +81,31 @@ class QuizDAO:
         except Exception as e:
             return "Insert Failure with Exception: "+str(e)
     
+    def insert_quiz_w_dict(self, quiz_dict):
+        try:
+            if 'questions' not in quiz_dict:
+                quiz_dict['questions'] = []
+
+            if 'quiz_id' not in quiz_dict:
+                quiz_dict['quiz_id'] = str(uuid4())
+
+            response = self.table.put_item(
+                Item = {
+                    "quiz_id": quiz_dict['quiz_id'],
+                    "section_id": quiz_dict['section_id'],
+                    "questions": quiz_dict['questions']
+                },
+                ConditionExpression=Attr("section_id").not_exists(),
+            )
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return Quiz(quiz_dict)
+            raise ValueError('Insert Failure with quiz_id: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+        except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
+            raise ValueError("Quiz already exists")
+        except Exception as e:
+            raise Exception("Insert Failure with Exception: "+str(e))
+
+
     #Read
     def retrieve_all(self):
         

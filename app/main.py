@@ -7,9 +7,11 @@ from modules.course_manager import CourseDAO
 from modules.class_manager import ClassDAO
 from modules.staff_manager import StaffDAO
 from modules.section_manager import SectionDAO
+from modules.quiz_manager import QuizDAO
 
 
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
+os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 class JSONEncoder_Improved(json.JSONEncoder):
     def default(self,obj):
@@ -61,7 +63,7 @@ def retrieve_eligible_courses(staff_id):
         }
     ), 404
 
-@app.route("/classes/<string:course_id>")
+@app.route("/class/<string:course_id>")
 def retrieve_all_classes(course_id):
     dao = ClassDAO()
     class_list = dao.retrieve_all_from_course(course_id)
@@ -199,6 +201,85 @@ def enroll_learners():
                 "data": "An error occurred when enrolling staff"
             }
         ), 500
+
+
+@app.route("/quiz/create", methods=['POST'])
+def insert_quiz():
+    data=request.get_json()
+
+    dao = QuizDAO()
+    try:
+        results = dao.insert_quiz_w_dict(data)
+        return jsonify(
+            {
+                "code": 201,
+                "data": results.json()
+            }
+        ), 201
+    except ValueError as e:
+        if str(e) == "Quiz already exists":
+            return jsonify(
+                {
+                    "code": 403,
+                    "data": str(e)
+                }
+            ), 403
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the quiz."
+            }
+        ), 500
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the quiz."
+            }
+        ), 500
+
+
+
+@app.route("/quiz/<string:quiz_id>")
+def retrieve_quiz_by_ID(quiz_id):
+    dao = QuizDAO()
+    quizObj = dao.retrieve_one(quiz_id)
+
+    if quizObj:
+        return jsonify(
+            {
+                "code":200,
+                "data": quizObj.json()
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No quiz was found with id " + quiz_id
+        }
+    )
+
+@app.route("/quiz/section/<string:section_id>")
+def retrieve_quiz_by_section(section_id):
+    dao = QuizDAO()
+    quizObj = dao.retrieve_one(section_id)
+
+    if quizObj:
+        return jsonify(
+            {
+                "code":200,
+                "data": quizObj.json()
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No quiz was found for section " + section_id
+        }
+    )
+
 
 
 if __name__ == "__main__":
