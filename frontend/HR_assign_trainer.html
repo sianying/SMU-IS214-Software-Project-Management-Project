@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- Required meta tags -->
@@ -8,13 +8,13 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
 
-    <!-- Enrolment CSS -->
-    <link rel='stylesheet' href='css/enrolment.css'>
+    <!-- Quiz CSS -->
+    <link rel='stylesheet' href='css/assignment.css'>
 
     <!-- Nav CSS -->
     <link rel='stylesheet' href='css/nav.css'>
 
-    <!-- Quiz CSS -->
+    <!-- Nav CSS -->
     <link rel='stylesheet' href='css/quiz.css'>
 
     <!-- Vue link -->
@@ -23,8 +23,8 @@
     <!-- jQuery link -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
-
-    <title>HR Enrol Learners</title>
+    
+    <title>HR Assign Trainers</title>
 </head>
 <body>
     <div id='nav'>
@@ -57,36 +57,36 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item"><a href="#">Courses</a></li>
                 <li class="breadcrumb-item"><a href="#">IC111</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Enrol Learner</li>
+                <li class="breadcrumb-item"><a href="#">Class 1</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Assign Trainer</li>
             </ol>
         </nav>
     </div>
-
+</head>
+<body>
     <div id='app'>
         <div>
-            <p class='text-center h3 mt-3 mb-4'>Enrol Learner</p>
+            <p class='text-center h3 mt-3 mb-4'>Assign a Trainer</p>
         </div>
-        <div id='confirmation' v-if='enrolled'>
+        <div id='confirmation' v-if='assigned'>
             <div class="alert alert-success w-50 mx-auto text-center" role="alert">
-                {{selectedName}} has been enrolled successfully!
+                {{selectedName}} has been assigned successfully!
             </div>
         </div>
-        <div id='alert-message' v-if='num_items'>
+        <div id='alert-message' v-if='num_trainers'>
             <div class="alert alert-danger mx-auto w-50 text-center" role="alert">
-                There are no eligible learners for selection.
+                There are no qualified trainers for selection.
             </div>
         </div>
-        <div class='mx-auto' id='learners-div'>
-            <div v-for='learner in learners'>
-                <span class='h3 ml-1'><b>{{learner.name}}</b></span>
-                <span class='h6 ml-2'>{{learner.role}}</span>
+        <div class='mx-auto' id='trainers-div'>
+            <div v-for='trainer in trainers'>
+                <span class='h3 ml-1'><b>{{trainer.name}}</b></span>
+                <span class='h6 ml-2'>{{trainer.role}}</span>
                 <div class='mt-2'>
-                    <span class="badge badge-pill badge-success py-2 my-2">{{learner.status}}</span>
-                    <span class="badge badge-pill badge-warning py-2 my-2">{{learner.enrolmentStatus}}</span>
+                    <span v-if='trainer.qualified' class="badge badge-pill badge-success py-2 my-2">Trainer is qualified</span>
                     <span>
-                        <button id='enrol-btn' type='button' v-on:click='enrolLearner(learner.name)' class="btn btn-primary">Enrol</button>
+                        <button id='assign-btn' type='button' v-on:click='assignTrainer(trainer.name)' class="btn btn-primary">Assign Trainer</button>
                     </span>
                 </div>
                 <hr>
@@ -97,8 +97,7 @@
                 <div class='row'>
                     <div class="col"></div>
                     <div class='col mx-auto' id='submit-and-cancel-button'>
-                        <!-- <button type="button" class="btn btn-success mr-2">Confirm</button> -->
-                        <button type="button" class="btn btn-danger ml-2">Cancel</button>
+                        <button type="button" class="btn btn-danger">Cancel</button>
                     </div>
                     <div class='col'></div>
                 </div>
@@ -110,35 +109,32 @@
         var app = new Vue({
             el: '#app',
             data: {
-                learners: [
+                trainers: [
                     {'name': 'David',
-                    'role': 'Junior Printer Engineer',
+                    'role': 'Senior Printer Engineer',
                     'status': 'Completed Pre-requisites',
-                    'enrolmentStatus': 'Not previously enrolled'},
+                    'qualified': true},
                     {'name': 'Helen',
-                    'role': 'Junior Printer Engineer',
-                    'status': 'Completed Pre-requisites',
-                    'enrolmentStatus': 'Not previously enrolled'},
+                    'role': 'Senior Printer Engineer',
+                    'qualified': true},
                     {'name': 'John',
-                    'role': 'Junior Printer Engineer',
+                    'role': 'Senior Printer Engineer',
                     'status': 'Completed Pre-requisites',
-                    'enrolmentStatus': 'Not previously enrolled'}
+                    'qualified': true}
                 ],
                 selectedName:"",
-                updatedEnrolmentStatus:"",
-                enrolled:false
+                assigned: false
             },
             methods: {
-                enrolLearner(selected){
-                    this.selectedName  = selected;
-                    this.updatedEnrolmentStatus = 'Enrolled';
-                    this.enrolled = true;
+                assignTrainer(assigned){
+                    this.selectedName = assigned;
+                    this.assigned = true
 
-                    for(item of this.items){
-                        if(item.name == this.selectedName){
-                            const index = this.learners.indexOf(item);
+                    for(trainer of this.trainers){
+                        if(trainer.name == this.selectedName){
+                            const index = this.trainers.indexOf(trainer);
                             if (index > -1) {
-                                this.learners.splice(index, 1);
+                                this.trainers.splice(index, 1);
                             }
                         }
                     }
@@ -146,8 +142,8 @@
 
             },
             computed: {
-                num_learners: function(){
-                    if(this.learners.length>0){
+                num_trainers: function(){
+                    if(this.trainers.length>0){
                         return false;
                     }
                     else{
@@ -160,19 +156,5 @@
 
 
     </script>
-
-
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
-    -->
 </body>
 </html>
