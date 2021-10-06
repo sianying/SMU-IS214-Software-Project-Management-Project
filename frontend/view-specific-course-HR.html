@@ -9,9 +9,9 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <!-- Navbar css-->
-    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="./css/nav.css">
     <!-- Main css -->
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
     
@@ -37,7 +37,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-light">
                     <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Add New Course</li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ courseId }} {{ courseName }}</li>
                 </ol>
             </nav>
         </div>
@@ -47,70 +47,82 @@
                 Featured
             </div> -->
             <div class="card-body pt-4 px-5">
-                <h2 class="card-title font-weight-bold">{{ code }} {{ title }}</h2>
-                <p class="card-text">{{ description }}</p>
+                <h2 class="card-title font-weight-bold">{{ courseId }} {{ courseName }}</h2>
+                <p class="card-text">{{ courseDescription }}</p>
                 <a href="#" class="btn btn-primary">View Availability</a>
             </div>
-            <!-- <div class="card-footer text-muted bg-white">
-                2 days ago
-            </div> -->
+            <div class="card-footer text-muted bg-white">
+            </div>
         </div>
 
     </div>
     
 <script>
-    var app = new Vue({
-        el: '#app',
-        data: {
-            title: "",
-            code: "",
-            description: "",
-            selected: 'not selected',
-            courses: [
-            {
-                    "title": "Printers and Inks fundamentals",
-                    "code": "IC111",
-                    "description": "This course focuses on ink replacement techniques. It teaches us how to be good ink replacement engineers.",
-                },
-                {
-                    "title": "Printers fundamentals",
-                    "code": "IC112",
-                    "description": "Lorem ipsum dolor  libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                {
-                    "title": "Inks fundamentals",
-                    "code": "IC113",
-                    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                {
-                    "title": "Circuit basics",
-                    "code": "IC114",
-                    "description": "Lorem ipsum dolor elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                {
-                    "title": "Customer Service fundamentals",
-                    "code": "IC115",
-                    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                {
-                    "title": "Introduction to Time Management",
-                    "code": "IC116",
-                    "description": "Lorem ipsu elit. gendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-            ],
-        },
-        methods: {
-        },
-        mounted: function() {
-            const urlSearchParams = new URLSearchParams(window.location.search);
-            const params = Object.fromEntries(urlSearchParams.entries());
-            const selectedCourse = this.courses.filter(course => course.code === params.id)[0];
-            this.title = selectedCourse.title;
-            this.code = selectedCourse.code;
-            this.description = selectedCourse.description;
 
-        }
-    })
+var app = new Vue({
+    el: '#app',
+    data: {
+        courseName: "",
+        courseId: "",
+        courseDescription: "",
+        selected: 'not selected',
+        courses: [
+            {
+                "course_name": "Printers and Inks fundamentals",
+                "course_id": "IC111", 
+                "course_description": "This course focuses on ink replacement techniques. It teaches us how to be good ink replacement engineers.",
+                "prerequisite_course": ["IC110","IC113"],
+                "class_list": []
+            },
+            {
+                "course_name": "Printers fundamentals",
+                "course_id": "IC112", 
+                "course_description": "Lorem ipsum dolor  libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                "prerequisite_course": ["IC111"],
+                "class_list": []
+            },
+            {
+                "course_name": "Inks fundamentals",
+                "course_id": "IC113", 
+                "course_description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                "prerequisite_course": [],
+                "class_list": []
+            },
+            {
+                "course_name": "Circuit basics",
+                "course_id": "IC114", 
+                "course_description": "Lorem ipsum dolor elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                "prerequisite_course": ["IC112"],
+                "class_list": []
+            },
+            {
+                "course_name": "Customer Service fundamentals",
+                "course_id": "IC115", 
+                "course_description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                "prerequisite_course": [],
+                "class_list": []
+            },
+            {
+                "course_name": "Introduction to Time Management",
+                "course_id": "IC116", 
+                "course_description": "Lorem ipsu elit. gendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
+                "prerequisite_course": [],
+                "class_list": []
+            },
+        ],
+    },
+    methods: {
+    },
+    mounted: function() {
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const params = Object.fromEntries(urlSearchParams.entries());
+        const selectedCourse = this.courses.filter(course => course.course_id === params.id)[0];
+        this.courseName = selectedCourse.course_name;
+        this.courseId = selectedCourse.course_id;
+        this.courseDescription = selectedCourse.course_description;
+
+    }
+})
 
 </script>
 
