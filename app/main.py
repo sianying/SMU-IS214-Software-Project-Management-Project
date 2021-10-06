@@ -6,6 +6,7 @@ from decimal import Decimal
 from modules.course_manager import CourseDAO
 from modules.class_manager import ClassDAO
 from modules.staff_manager import StaffDAO
+from modules.section_manager import SectionDAO
 
 
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
@@ -78,6 +79,26 @@ def retrieve_all_classes(course_id):
             "data": "No classes found for course "+course_id
         }
     ), 404
+
+@app.route("/section/<string:course_id>/<int:class_id>")
+def retrieve_all_section_from_class(course_id, class_id):
+    dao = SectionDAO()
+    section_list = dao.retrieve_all_from_class(course_id, class_id)
+    if len(section_list):
+        return jsonify(
+            {
+                "code": 200,
+                "data": [sectionObj.json() for sectionObj in section_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No section found for Course {}, Class {}".format(course_id, class_id)
+        }
+    ), 404
+
 
 # ============= Create ==================
 @app.route("/courses", methods =['POST'])
