@@ -182,8 +182,40 @@ def enroll_learners():
         ), 500
 
 
-@app.route("/quiz/section=<string:section_id>/questions=<string:questions>", methods=['POST'])
-def insert_quiz(section_id, questions, answers):
+@app.route("/quiz/create", methods=['POST'])
+def insert_quiz():
+    data=request.get_json()
+
+    dao = QuizDAO()
+    try:
+        results = dao.insert_quiz_w_dict(data)
+        return jsonify(
+            {
+                "code": 201,
+                "data": results.json()
+            }
+        ), 201
+    except ValueError as e:
+        if str(e) == "Quiz already exists":
+            return jsonify(
+                {
+                    "code": 403,
+                    "data": str(e)
+                }
+            ), 403
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the quiz."
+            }
+        ), 500
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the quiz."
+            }
+        ), 500
 
 
 

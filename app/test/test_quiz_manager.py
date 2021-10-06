@@ -96,6 +96,15 @@ class TestQuizDAO(unittest.TestCase):
         self.assertEqual(ITEM3, insertTest, "QuizDAO insert test failure")
         self.assertEqual("Quiz already exists", duplicateTest, "QuizDAO insert duplicate test failure")
 
+    def test_insert_Quiz_w_dict(self):
+        insertTest = self.dao.insert_quiz_w_dict(ITEM3)
+
+        self.assertEqual(ITEM3, insertTest.json(), "QuizDAO insert test with dictionary failure")
+        with self.assertRaises(ValueError, msg = "Failed to prevent duplicate insert") as context:
+            self.dao.insert_quiz_w_dict(ITEM2)
+
+        self.assertTrue("Quiz already exists" == str(context.exception))
+
 
     def test_retrieve_all(self):
         quiz_list = self.dao.retrieve_all()
