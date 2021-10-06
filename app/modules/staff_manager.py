@@ -170,6 +170,11 @@ class StaffDAO:
         dao = CourseDAO()        
         return dao.retrieve_all_in_list(course_id_list)
 
+    def retrieve_all_eligible_to_enroll(self, staff_id):
+        staff = self.retrieve_one(staff_id)
+        dao = CourseDAO()
+        return dao.retrieve_eligible_course(staff.get_courses_completed(), staff.get_courses_enrolled())
+
     #Update
     def update_staff(self, StaffObj):
         # method updates the DB if there is new prereq course, removing of prereq course, adding new class
