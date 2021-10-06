@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 
 body {
-    font-family: 'Open Sans', 'Oswald', sans-serif;
+    font-family: 'Oswald', 'Open Sans', sans-serif;
 } 
 
 .wrapper {
@@ -45,4 +45,16 @@ body {
     font-size: 35px !important;
     color: black !important;
 
+}
+
+.form-error {
+    color: red;
+    font-size: 12px;
+    font-weight: 200;
+}
+
+.form-notice {
+    color: black;
+    font-size: 12px;
+    font-weight: 200;
 }

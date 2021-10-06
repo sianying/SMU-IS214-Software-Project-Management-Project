@@ -46,7 +46,7 @@
                     </li>
                 </ul>  
             </div>
-            <a class="nav-link" href="#"><img src="images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
+            <a class="nav-link" href="#"><img src="../images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
         </nav>
     </div>
 
@@ -54,8 +54,9 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item"><a href="#">Courses</a></li>
-                <li class="breadcrumb-item active" aria-current="page">IC111</li>
+                <li class="breadcrumb-item"><a href="#">IC111</a></li>
+                <li class="breadcrumb-item"><a href="#">Class 1</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Sections</li>
             </ol>
         </nav>
     </div>
@@ -64,24 +65,20 @@
         <div v-for='(section, index) in sections' class='section-card mx-auto'>
             <div class="card mt-4">
                 <div class="card-header h3">
-                    {{section.sectionTitle}}
+                    {{section.section_name}}
                 </div>
                 <div class="card-body"> 
                     <p class="card-text">{{section.sectionDescription}}</p>
-                    <!-- <a href="#" class="btn btn-info mr-2">Add Material</a> -->
                     <p>
-                        <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample1" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
                             View Materials
                         </a>
-                        <!-- <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                        Button with data-target
-                        </button> -->
-                        <a href="#" class="btn btn-warning ml-2">Add Quiz</a>
+                        <a href="#" class="btn btn-warning ml-2">Attempt Quiz</a>
                     </p>
-                    <div class="collapse" id="collapseExample1">
+                    <div class="collapse" :id="'collapseExample' + index">
                         <div class="card card-body">
                             <div v-for ='material in section.materials'>
-                                <a href={{material}}>hi</a>
+                                <a :href="material.url" target='_blank'>{{material.mat_name}}</a>
                             </div>
                         </div>
                     </div> 
@@ -94,15 +91,44 @@
         var app = new Vue({
             el: '#app',
             data: {
-                sections: [
-                    {'sectionTitle': 'Section 1',
-                    'sectionDescription': 'Some placeholder description',
-                    'materials': ['https://www.google.com', 'www.youtube.com']},
-                    {'sectionTitle': 'Section 2',
-                    'sectionDescription': 'Some placeholder description',
-                    'materials': ['www.google.com', 'www.youtube.com']}
-                ]
+                sections: [{"section_id": "0a08ff5c-d72a-4207-b1de-9bbe99efa7fd",
+                            "section_name": "Printer Ink",
+                            "course_id": "IS111", 
+                            "class_id": 1, 
+                            "materials":[
+                                        {
+                                            "mat_name": "Printer Ink Chapter 1",
+                                            "mat_type": "doc",
+                                            "url" : "www.s3bucket.com"
+                                        },
+                                        {
+                                            "mat_name": "Printer Ink Chapter 2",
+                                            "mat_type": "doc",
+                                            "url" : "www.s3bucket.com"
+                                        }
+                            ],
+                                "quiz_id": "e565b935-2adc-43b2-9d1c-c8fc29eee91a" 
+                            },
+                            {"section_id": "0a08ff5c-d72a-4207-b1de-9bbe99efa7fe",
+                            "section_name": "Paper Feeder",
+                            "course_id": "IS111", 
+                            "class_id": 1, 
+                            "materials":[
+                                        {
+                                            "mat_name": "Paper Feeder Chapter 1",
+                                            "mat_type": "doc",
+                                            "url" : "www.s3bucket.com"
+                                        },
+                                        {
+                                            "mat_name": "Paper Feeder Chapter 2",
+                                            "mat_type": "doc",
+                                            "url" : "www.s3bucket.com"
+                                        }
+                            ],
+                                "quiz_id": "e565b935-2adc-43b2-9d1c-c8fc29eee91a"
+                            }]
             },
+
             methods: {
                 
             }

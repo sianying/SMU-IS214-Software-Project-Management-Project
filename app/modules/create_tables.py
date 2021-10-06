@@ -139,11 +139,11 @@ def create_quiz_table(dynamodb):
             TableName='Quiz',
             KeySchema=[
                 {
-                    'AttributeName': 'section_id',
+                    'AttributeName': 'quiz_id',
                     'KeyType': 'HASH' # Sort key
                 },
                 {
-                    'AttributeName': 'quiz_id',
+                    'AttributeName': 'section_id',
                     'KeyType': 'RANGE' # Sort key
                 }
             ],
@@ -155,6 +155,24 @@ def create_quiz_table(dynamodb):
                 {
                     'AttributeName': 'quiz_id',
                     'AttributeType': 'S'
+                }
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": 'SectionIndex',
+                    "KeySchema": [
+                        {
+                            'AttributeName': 'section_id',
+                            'KeyType': 'HASH'
+                        }
+                    ],
+                    'Projection':{
+                        'ProjectionType': 'ALL'
+                    },
+                    'ProvisionedThroughput':{
+                        "ReadCapacityUnits":1,
+                        "WriteCapacityUnits":1
+                    }
                 }
             ],
             ProvisionedThroughput={

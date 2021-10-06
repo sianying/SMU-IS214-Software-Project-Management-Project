@@ -4,6 +4,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from uuid import uuid4
 
 os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
+os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 class Quiz:
     def __init__(self, *args, **kwargs):
@@ -18,8 +19,8 @@ class Quiz:
         '''
 
         if len(args) > 1:
-            self.__quiz_id = args[0]
-            self.__section_id=args[1]
+            self.__section_id=args[0]
+            self.__quiz_id = args[1]
 
             try:
                 self.__questions = kwargs['questions']
@@ -28,8 +29,8 @@ class Quiz:
             
 
         elif isinstance(args[0], dict):
-            self.__quiz_id = args[0]['quiz_id']
             self.__section_id= args[0]['section_id']
+            self.__quiz_id = args[0]['quiz_id']
             self.__questions = args[0]['questions']
         
     def get_quiz_id(self):
@@ -41,16 +42,23 @@ class Quiz:
     def get_questions(self):
         return self.__questions
     
-    def add_questions(self, question):
+    def add_question(self, question):
         self.__questions.append(question)
     
     def remove_question(self, question):
-        self.__courses_enrolled.remove(question)
+        self.__questions.remove(question)
+
+    def json(self):
+        return {
+            "section_id": self.get_section_id(),
+            "quiz_id": self.get_quiz_id(),
+            "questions": self.get_questions()
+        }
 
 
 class QuizDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb').Table('Quiz')
+        self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Quiz')
 
     #Create
     def insert_quiz(self, section_id, quiz_id = None, questions= []):
@@ -59,17 +67,17 @@ class QuizDAO:
                 quiz_id = str(uuid4())
             response = self.table.put_item(
                 Item = {
-                    "quiz_id": quiz_id,
                     "section_id": section_id,
+                    "quiz_id": quiz_id,
                     "questions": questions
                 },
                 ConditionExpression=Attr("quiz_id").not_exists()
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return Quiz(quiz_id, questions=questions)
+                return Quiz(section_id, quiz_id, questions=questions)
             return 'Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
-            return "Quiz Already Exists"
+            return "Quiz already exists"
         except Exception as e:
             return "Insert Failure with Exception: "+str(e)
     
@@ -92,9 +100,9 @@ class QuizDAO:
 
         return quiz_list
     
+    
     def retrieve_one(self, quiz_id):
         response = self.table.query(KeyConditionExpression=Key('quiz_id').eq(quiz_id))
-        
         if response['Items'] == []:
             return 
         
@@ -102,7 +110,7 @@ class QuizDAO:
 
 
     def retrieve_by_section(self, section_id):
-        response = self.table.query(KeyConditionExpression=Key('section_id').eq(section_id))
+        response = self.table.query(IndexName = "SectionIndex", KeyConditionExpression=Key('section_id').eq(section_id))
         
         if response['Items'] == []:
             return 
@@ -134,7 +142,7 @@ class QuizDAO:
             return "Update Failure with Exception: "+str(e)
 
     #Delete
-    def delete_Quiz(self, QuizObj):
+    def delete_quiz(self, QuizObj):
         try:
             response = self.table.delete_item(
                 Key = {
@@ -150,22 +158,3 @@ class QuizDAO:
 
 if __name__ == "__main__":
     dao = QuizDAO()
-
-
-
-
-    # print(dao.retrieve_all())
-    # print(dao.insert_staff("Johnny", "HR"))
-    # print(dao.insert_staff("Tom", "Engineer"))
-    # staff1 = dao.retrieve_all()[1]
-    # print(staff1.get_staff_id())
-    # print(dao.delete_staff(staff1))
-    # tom = dao.retrieve_one("6724873a-b951-4ee7-a835-cb0f9f784c45")
-    # tom.add_completed("IS110")
-    # tom.add_enrolled("IS111")
-    # print(dao.update_staff(johnny))
-    # print(tom.get_courses_enrolled())
-    # print(tom.get_courses_completed())
-
-    # for staff in dao.retrieve_all():
-    #     print(staff.get_staff_id())

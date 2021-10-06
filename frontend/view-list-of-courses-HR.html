@@ -9,9 +9,9 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <!-- Navbar css-->
-    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="./css/nav.css">
     <!-- Main css -->
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
     
@@ -33,7 +33,8 @@
     <div id="homebar">
     <a href="www.youtube.com" style="color: #3C64B1;">Home</a>
     /   Courses
-    </div> -->
+    </div>
+    <nav-bar></nav-bar> -->
 </head>
 
 
@@ -62,10 +63,15 @@
                     <div class="card m-3">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">
-                                <a :href="'./view-specific-course-HR.html?id=' + course.code">{{ course.code }} {{ course.title }}</a>
+                                <a :href="'./view-specific-course-HR.html?id=' + course.code">{{ course.course_id }} {{ course.course_name }}</a>
                             </h5>
-                            <p class="card-text">{{ course.description }}</p>
-                            <a :href="'./view-specific-course-HR.html?id=' + course.code" class="btn btn-outline-info mt-auto">View Details</a>
+                            <p class="card-text">{{ course.course_description }}</p>
+                            <a :href="'./view-specific-course-HR.html?id=' + course.course_id" class="btn btn-outline-info mt-auto">View Details</a>
+                            <div class="ml-auto">
+                                <span v-if = "course.eligibility" class="badge badge-success">Eligible</span>
+                                <span v-else class="badge badge-danger">Not Eligible</span>
+                                <span v-for ="prereq in course.prerequisite_course" class="badge badge-primary mr-1">{{ prereq }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -74,62 +80,61 @@
     </div>
 </div>
 
-<script>
-    var app = new Vue({
-        el: '#app',
-        data: {
-            courses: [
-                {
-                    "title": "Printers and Inks fundamentals",
-                    "code": "IC111",
-                    "description": "This course focuses on ink replacement techniques. It teaches us how to be good ink replacement engineers.",
-                },
-                {
-                    "title": "Printers fundamentals",
-                    "code": "IC112",
-                    "description": "Lorem ipsum dolor  libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                {
-                    "title": "Inks fundamentals",
-                    "code": "IC113",
-                    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                {
-                    "title": "Circuit basics",
-                    "code": "IC114",
-                    "description": "Lorem ipsum dolor elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                {
-                    "title": "Customer Service fundamentals",
-                    "code": "IC115",
-                    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                {
-                    "title": "Introduction to Time Management",
-                    "code": "IC116",
-                    "description": "Lorem ipsu elit. gendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                },
-                // {
-                //     "title": "Course 7",
-                //     "code": "IC117",
-                //     "description": "Lorem ipsu elit. gendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                // },
-                // {
-                //     "title": "Course 8",
-                //     "code": "IC118",
-                //     "description": "Lorem ipsu elit. gendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                // },
-                // {
-                //     "title": "Course 9",
-                //     "code": "IC119",
-                //     "description": "Lorem ipsu elit. gendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                // },
-            ]
-        },
-        // mounted: {
-        //     //call API to get all courses
-        // }
-    })
+<script type="module">
+import { getAllCourses } from "./callAPI/coursesAPI.js";
+
+var app = new Vue({
+    el: '#app',
+    data: {
+        // eligible: false,
+        courses: [],
+        // e.g. accountDetails taken from session e.g. session.accountDetails
+        accountDetails: {
+            "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
+            "staff_name": "George",
+            "courses_completed": ["IC110", "IC113"],
+            "courses_enrolled": ["IC111"],
+            "role": "Engineer"
+        }
+    },
+    methods: {
+        validateEligibility(course, coursesCompleted) {
+            // check for eligibility of each course
+            let eligibility = true;
+            if (course.prerequisite_course.length !== 0) {
+                if (coursesCompleted.length !== course.prerequisite_course.length) {
+                    eligibility = false;
+                } else {
+                    for (let courseCompleted in coursesCompleted) {
+                        if (course.prerequisite_course.includes(courseCompleted)) {
+                            eligibility = false;
+                        }
+                    }
+                }
+            }
+            return eligibility;
+        }
+    },
+    mounted: function () {
+        //call API to get all courses
+        const courses = getAllCourses();
+        for (let course of courses) {
+            let eligibility = this.validateEligibility(course, this.accountDetails.courses_completed);
+            course.eligibility = eligibility;
+        }
+        this.courses = courses;
+    }
+
+    //sample code for a course 
+    // {
+    //     "course_name": "Printers and Inks fundamentals",
+    //     "course_id": "IC111", 
+    //     "course_description": "This course focuses on ink replacement techniques. It teaches us how to be good ink replacement engineers.",
+    //     "prerequisite_course": ["IC110","IC113"],
+    //     "class_list": []
+    // }
+    
+})
 
 </script>
 
@@ -140,3 +145,4 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
 </body>
 </html>
+
