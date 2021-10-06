@@ -60,7 +60,6 @@ def retrieve_eligible_courses(staff_id):
         }
     ), 404
 
-
 @app.route("/classes/<string:course_id>")
 def retrieve_all_classes(course_id):
     dao = ClassDAO()
@@ -80,7 +79,6 @@ def retrieve_all_classes(course_id):
         }
     ), 404
 
-
 # ============= Create ==================
 @app.route("/courses", methods =['POST'])
 def create_course():
@@ -98,10 +96,10 @@ def create_course():
         if str(e) == "Course already exists":
             return jsonify(
                 {
-                    "code": 409,
+                    "code": 403,
                     "data": str(e)
                 }
-            ), 409
+            ), 403
         return jsonify(
             {
                 "code": 500,
@@ -113,6 +111,71 @@ def create_course():
             {
                 "code": 500,
                 "data": "An error occurred when creating the course."
+            }
+        ), 500
+
+# ============= Update ==================
+@app.route("/class/enroll", methods=['PUT'])
+def enroll_learners():
+    data = request.get_json()
+
+    if "course_id" not in data or "class_id" not in data or "staff_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "course_id, class_id or staff_id not in Request Body"
+            }
+        ), 400
+
+    class_dao = ClassDAO()
+    class_to_enroll = class_dao.retrieve_one(data['course_id'], data['class_id'])
+    staff_dao = StaffDAO()
+    staff = staff_dao.retrieve_one(data['staff_id'])
+
+    if class_to_enroll == None or staff == None:
+        return jsonify(
+            {
+                "code": 404,
+                "data": "Class or Staff to enroll not found"
+            }
+        ), 404
+
+
+    try:
+        class_to_enroll.enrol_learner(data['staff_id'])
+    except ValueError as e:
+        return jsonify(
+            {
+                "code":403,
+                "data": str(e)
+            }
+        ), 403
+    
+    try:
+        staff.add_enrolled(data['course_id'])
+    except ValueError as e:
+        return jsonify(
+            {
+                "code": 403,
+                "data": str(e)
+            }
+        ), 403
+
+    try:
+        staff_dao.update_staff(staff)
+        class_dao.update_class(class_to_enroll)
+
+        return jsonify(
+            {
+                "code": 200,
+                "data": "Staff enrolled"
+            }
+        )
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when enrolling staff"
             }
         ), 500
 

@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from uuid import uuid4
 
 os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
-os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
+os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
 
 class Quiz:
     def __init__(self, *args, **kwargs):
@@ -58,7 +58,7 @@ class Quiz:
 
 class QuizDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="us-east-1").Table('Quiz')
+        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Quiz')
 
     #Create
     def insert_quiz(self, section_id, quiz_id = None, questions= []):

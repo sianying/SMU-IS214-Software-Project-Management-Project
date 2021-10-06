@@ -62,7 +62,7 @@ class TestCourseDAO(unittest.TestCase):
     def setUp(self):
         from modules import create_tables
         from modules.course_manager import CourseDAO 
-        self.dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
+        self.dynamodb = boto3.resource('dynamodb', region_name="ap-southeast-1")
         results = create_tables.create_course_table(self.dynamodb)
         # print(results)
         self.table = self.dynamodb.Table('Course')

@@ -83,7 +83,7 @@ class TestStaffDAO(unittest.TestCase):
     def setUp(self):
         from modules import create_tables
         from modules.staff_manager import StaffDAO
-        self.dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+        self.dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
         results = create_tables.create_staff_table(self.dynamodb)
         self.table = self.dynamodb.Table('Staff')
         self.table.put_item(Item= ITEM1)
@@ -148,6 +148,7 @@ class TestStaffDAO(unittest.TestCase):
         key = {'staff_id': staffObj.get_staff_id(), 'staff_name': staffObj.get_staff_name()}
         with self.assertRaises(Exception, msg = 'StaffDAO delete test failure'):
             self.table.get_item(Key = key)['Item']
+    
     
     @patch("modules.staff_manager.CourseDAO")
     def test_retrieve_all_courses_enrolled(self, mock_course_dao):
