@@ -14,21 +14,14 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
-    
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#"  id="navlogo">ONE STOP LMS</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <div class="navbar-nav">
-                <a class="nav-link" href="./view-list-of-courses-HR.html">Home <span class="sr-only">(current)</span></a>
-                <a class="nav-link active" href="#">All Courses</a>
-                <a class="nav-link" href="#">My Courses</a>
-            </div>
-        </div>
-        <a class="nav-link" href="#"><img src="../images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
-    </nav>
+    <!-- NavBar -->
+    <div id="nav-bar-component">
+        <nav-bar
+        home-link="#"
+        all-courses-link="./view-list-of-courses-HR.html"
+        my-courses-link="#">
+        </nav-bar>
+    </div>
 </head>
 
 <body>
@@ -43,83 +36,117 @@
         </div>
 
         <div class="card text-center m-2">
-            <!-- <div class="card-header bg-white">
-                Featured
-            </div> -->
             <div class="card-body pt-4 px-5">
                 <h2 class="card-title font-weight-bold">{{ courseId }} {{ courseName }}</h2>
                 <p class="card-text">{{ courseDescription }}</p>
-                <a href="#" class="btn btn-primary">View Availability</a>
+                <div class="mx-auto">
+                    <span v-if = "prerequisiteCourses.length === 0" class="badge badge-info mr-1">No pre-requisites</span>
+                    <span v-else v-for ="prereq in prerequisiteCourses" class="badge badge-info mr-1">{{ prereq }}</span>
+                </div>
             </div>
-            <div class="card-footer text-muted bg-white">
+        </div>
+
+        <!-- "Add New Class" Button for HR -->
+        <div class="container d-flex justify-content-end p-0">
+            <a href = "./add-new-course-HR.html" class="btn btn-outline-info mt-2 mr-2">
+                Add New Class <span class="iconify" data-icon="akar-icons:circle-plus"></span>
+            </a>
+        </div>
+
+        <div class="row">
+            <div v-for = "selectedClass in classList" class="col-6 p-0 d-flex justify-content-center">
+                <div class="card m-3" style="width: 540px;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            <a href="#">G{{ selectedClass.class_id }}</a>
+                        </h5>
+                        <p class="card-text">
+                            <b>Duration: </b> {{ datetimeToDate(selectedClass.start_datetime, selectedClass.end_datetime) }}
+                            <br>
+                            <b>Availability: </b> {{ getAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
+                        </p>
+                        <a v-if="selectedClass.learners_enrolled.length !== selectedClass.class_size" href="#" class="btn btn-outline-info mt-auto">Edit</a>
+                        <!-- <button v-else href="#" class="btn btn-light mt-auto" disabled>Enroll</button> -->
+                        
+                    </div>
+                </div>
             </div>
+        </div>
+        <div v-if="classList.length === 0" class="alert alert-danger m-2 mt-3 text-center" role="alert">
+            There are no classes available!
         </div>
 
     </div>
     
-<script>
+<script type="module">
+import { URL, retrieveSpecificCourse, retrieveAllClasses } from "./callAPI/endpoints.js";
+import navBar from "./components/navBar.js"
+
+new Vue({
+    el: '#nav-bar-component' 
+});
 
 var app = new Vue({
     el: '#app',
     data: {
+        accountDetails: {
+            "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
+            "staff_name": "George",
+            "courses_completed": ["IC110", "IC113"],
+            "courses_enrolled": ["IC111"],
+            "role": "Engineer"
+        },
         courseName: "",
         courseId: "",
         courseDescription: "",
+        prerequisiteCourses: [],
+        classList: [],
         selected: 'not selected',
-        courses: [
-            {
-                "course_name": "Printers and Inks fundamentals",
-                "course_id": "IC111", 
-                "course_description": "This course focuses on ink replacement techniques. It teaches us how to be good ink replacement engineers.",
-                "prerequisite_course": ["IC110","IC113"],
-                "class_list": []
-            },
-            {
-                "course_name": "Printers fundamentals",
-                "course_id": "IC112", 
-                "course_description": "Lorem ipsum dolor  libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                "prerequisite_course": ["IC111"],
-                "class_list": []
-            },
-            {
-                "course_name": "Inks fundamentals",
-                "course_id": "IC113", 
-                "course_description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                "prerequisite_course": [],
-                "class_list": []
-            },
-            {
-                "course_name": "Circuit basics",
-                "course_id": "IC114", 
-                "course_description": "Lorem ipsum dolor elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                "prerequisite_course": ["IC112"],
-                "class_list": []
-            },
-            {
-                "course_name": "Customer Service fundamentals",
-                "course_id": "IC115", 
-                "course_description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, libero perferendis sed distinctio voluptates dolores id cumque, eligendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                "prerequisite_course": [],
-                "class_list": []
-            },
-            {
-                "course_name": "Introduction to Time Management",
-                "course_id": "IC116", 
-                "course_description": "Lorem ipsu elit. gendi culpa molestiae nostrum quos eos inventore ipsum at minus sit accusantium vel aliquid. Et, mollitia nihil unde est, deleniti cupiditate vitae fugiat voluptas id natus accusamus corrupti culpa nostrum odio, iusto beatae!",
-                "prerequisite_course": [],
-                "class_list": []
-            },
-        ],
+        courses:[]
     },
     methods: {
+        datetimeToDate(startDatetime, endDatetime) {
+            const startDatetimeStr = new Date(startDatetime);
+            const startDate = startDatetimeStr.toLocaleDateString();
+
+            const endDatetimeStr = new Date(endDatetime);
+            const endDate = endDatetimeStr.toLocaleDateString();
+
+            return startDate + " to " + endDate;
+        },
+        getAvailability(learnersEnrolled, classSize){
+            return (learnersEnrolled.length).toString() + "/" + (classSize).toString();
+        }
     },
     mounted: function() {
+        //Retrieve course id from URL
         const urlSearchParams = new URLSearchParams(window.location.search);
         const params = Object.fromEntries(urlSearchParams.entries());
+        console.log(params.id)
+        //Call retrieveSpecificCourse API
+        retrieveSpecificCourse(URL, params.id).then(result => {
+            if (result.code == 200){
+                const course = result.data;
+                this.courseName = course.course_title;
+                this.courseId = course.course_id;
+                this.courseDescription = course.course_description;
+                this.prerequisiteCourses = course.prerequisite_course
+            }
+        });
+        //Call retrieveAllClasses API
+        retrieveAllClasses(URL, params.id).then(result => {
+            if (result.code == 200){
+                console.log(result);
+                const classes = result.data;
+                this.classList = classes;
+            }
+        });
+
         const selectedCourse = this.courses.filter(course => course.course_id === params.id)[0];
         this.courseName = selectedCourse.course_name;
         this.courseId = selectedCourse.course_id;
         this.courseDescription = selectedCourse.course_description;
+        this.classList = selectedCourse.class_list;
 
     }
 })
