@@ -209,13 +209,13 @@ class StaffDAO:
         dao = CourseDAO()
         return dao.retrieve_all_in_list(course_id_can_teach)
 
-    def retrieve_all_trainers_can_teach(self, course):
+    def retrieve_all_trainers_can_teach(self, course_id):
         staff_list = self.retrieve_all()
 
         returned_list=[]
         for staff in staff_list:
             courses_can_teach = staff.get_courses_can_teach()
-            if course in courses_can_teach:
+            if course_id in courses_can_teach:
                 returned_list.append(staff)
 
         return returned_list

@@ -63,6 +63,25 @@ def retrieve_eligible_courses(staff_id):
         }
     ), 404
 
+@app.route("courses/qualified/<string:course_id>")
+def retrieve_trainers_can_teach_course(course_id):
+    dao = StaffDAO()
+    staff_list = dao.retrieve_all_trainers_can_teach(course_id)
+    if len(staff_list):
+        return jsonify(
+            {
+                "code":200,
+                'data': [staffObj.json() for staffObj in staff_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No staff found"
+        }
+    ), 404
+
 @app.route("/class/<string:course_id>")
 def retrieve_all_classes(course_id):
     dao = ClassDAO()
