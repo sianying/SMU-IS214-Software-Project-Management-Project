@@ -63,7 +63,28 @@ def retrieve_eligible_courses(staff_id):
         }
     ), 404
 
-@app.route("courses/qualified/<string:course_id>")
+@app.route("/course/<string:course_id>")
+def retrieve_specific_course(course_id):
+    dao = CourseDAO()
+    course = dao.retrieve_one(course_id)
+
+    if course != None:
+        return jsonify(
+            {
+                "code":200,
+                "data": course.json()
+            }
+        )
+
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No course found with id "+course_id
+        }
+    ), 404
+
+
+@app.route("/courses/qualified/<string:course_id>")
 def retrieve_trainers_can_teach_course(course_id):
     dao = StaffDAO()
     staff_list = dao.retrieve_all_trainers_can_teach(course_id)
