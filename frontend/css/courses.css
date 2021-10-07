@@ -3,8 +3,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 
 body {
-    font-family: 'Oswald', 'Open Sans', sans-serif;
+    font-family: 'Open Sans', 'Oswald', sans-serif;
 } 
+
+.badge-info, .btn-info {
+    background-color: #3C64B1 !important;
+}
+
+.btn-outline-info {
+    color: #3C64B1;
+    border-color: #3C64B1;
+}
 
 .wrapper {
     padding: 0;
