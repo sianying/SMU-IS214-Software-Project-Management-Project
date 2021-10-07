@@ -11,7 +11,8 @@ ITEM1 = {
     "staff_name": "George",
     "courses_completed": ["IS110", "IS113"],
     "courses_enrolled": ['IS112'],
-    "role": "Engineer"
+    "courses_can_teach": ['IS115'],
+    "role": "Engineer",
 }
 
 ITEM2 = {
@@ -19,6 +20,7 @@ ITEM2 = {
     "staff_name": "Tom",
     "courses_completed": [],
     "courses_enrolled": [],
+    "courses_can_teach": ['IS120'],
     "role": "HR"
 }
 
@@ -27,6 +29,7 @@ ITEM3 = {
     "staff_name": "Tom",
     "courses_completed": [],
     "courses_enrolled": [],
+    "courses_can_teach": [],
     "role": "HR"
 }
 
@@ -76,6 +79,22 @@ class TestStaff(unittest.TestCase):
 
         with self.assertRaises(ValueError, msg="Able to remove a course that doesn't exist"):
             self.test_staff.remove_enrolled("IS21321")
+
+    def test_add_can_teach(self):
+        self.test_staff.add_can_teach("IS116")
+        self.assertEqual(["IS115","IS116"], self.test_staff.get_courses_can_teach(), "Failed to add a teachable course.")
+        
+        with self.assertRaises(ValueError, msg="Failed to raise exception when adding duplicate") as context:
+            self.test_staff.add_can_teach("IS115")
+        
+        self.assertTrue("IS115 has already been recorded as a teachable course." == str(context.exception))
+
+    def test_remove_can_teach(self):
+        self.test_staff.remove_can_teach("IS115")
+        self.assertEqual([], self.test_staff.get_courses_can_teach(), "Failed to remove enrolled course")
+
+        with self.assertRaises(ValueError, msg="Able to remove a course that doesn't exist"):
+            self.test_staff.remove_can_teach("IS21321")
 
 
 @mock_dynamodb2
@@ -132,6 +151,14 @@ class TestStaffDAO(unittest.TestCase):
         self.assertEqual(ITEM1, self.dao.retrieve_one(ITEM1['staff_id']).json(), "StaffDAO retrieve existing one test failure")
         self.assertEqual(None, self.dao.retrieve_one("abcdea"), "StaffDAO retrieve not existing one test failure")
 
+    def test_retrieve_all_trainers_can_teach(self):
+        staff_can_teach = self.dao.retrieve_all_trainers_can_teach("IS120")
+        self.assertEqual([ITEM2], [staffObj.json() for staffObj in staff_can_teach], "StaffDAO did not retrieve correct trainer who can teach IS120.")
+
+        none_can_teach = self.dao.retrieve_all_trainers_can_teach("IS13437346743")
+        self.assertEqual([], [staffObj2.json() for staffObj2 in none_can_teach], "Should have returned empty list.")
+
+
     def test_update_staff(self):
         from modules.staff_manager import Staff
         staffObj = Staff(ITEM1)
@@ -160,6 +187,12 @@ class TestStaffDAO(unittest.TestCase):
     def test_retrieve_all_eligible_to_enroll(self, mock_course_dao):
         mock_course_dao().retrieve_eligible_course.return_value = [IS111]
         course_list = self.dao.retrieve_all_eligible_to_enroll(ITEM1["staff_id"])
+        self.assertEqual([IS111], course_list)
+
+    @patch("modules.staff_manager.CourseDAO")
+    def test_retrieve_all_courses_can_teach(self, mock_course_dao):
+        mock_course_dao().retrieve_all_in_list.return_value = [IS111]
+        course_list = self.dao.retrieve_all_courses_can_teach(ITEM1["staff_id"])
         self.assertEqual([IS111], course_list)
 
 if __name__ == "__main__":
