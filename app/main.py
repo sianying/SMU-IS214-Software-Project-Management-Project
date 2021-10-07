@@ -223,6 +223,11 @@ def insert_quiz():
     dao = QuizDAO()
     try:
         results = dao.insert_quiz_w_dict(data)
+        section_dao = SectionDAO()
+        sectionObj = section_dao.retrieve_one(results.get_section_id())
+        sectionObj.add_quiz(results.get_quiz_id())
+        section_dao.update_section(sectionObj)
+
         return jsonify(
             {
                 "code": 201,

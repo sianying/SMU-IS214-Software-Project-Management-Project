@@ -262,3 +262,18 @@ class SectionDAO:
 if __name__ == "__main__":
     dao = SectionDAO()
     
+    # section1 = dao.retrieve_one("4b22008c-5d47-426b-aa78-726b528da512")
+    # section2 = dao.retrieve_one("367e514e-41a5-4afb-a010-2a1b740069ad")
+    # section3 = dao.retrieve_one("33cd4a6e-0a51-4f2c-8014-d8eee1acf6f5")
+
+    # mat1 = Material("Printer Fundamentals Document", "docx", "https://s3.ap-southeast-1.amazonaws.com/spmprojectbucket/PrinterFundamentals.docx")
+    # mat2 = Material("Printer Fundamentals Powerpoint", "pptx", "https://s3.ap-southeast-1.amazonaws.com/spmprojectbucket/PrinterFundamentals.pptx")
+    # mat3 = Material("Printer Fundamentals PDF", "PDF", "https://s3.ap-southeast-1.amazonaws.com/spmprojectbucket/PrinterFundamentals.pdf")
+    
+    # section1.add_material(mat1)
+    # section2.add_material(mat2)
+    # section3.add_material(mat3)
+
+    # dao.update_section(section1)
+    # dao.update_section(section2)
+    # dao.update_section(section3)
