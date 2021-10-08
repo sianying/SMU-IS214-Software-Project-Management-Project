@@ -228,7 +228,7 @@ def retrieve_quiz_by_ID(quiz_id):
 @app.route("/quiz/section/<string:section_id>")
 def retrieve_quiz_by_section(section_id):
     dao = QuizDAO()
-    quizObj = dao.retrieve_one(section_id)
+    quizObj = dao.retrieve_by_section(section_id)
 
     if quizObj:
         return jsonify(
