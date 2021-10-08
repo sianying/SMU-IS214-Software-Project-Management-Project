@@ -90,13 +90,8 @@
         </div>
     </div>
     
-    <script>
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-        const course_id = urlParams.get('course_id')
-        document.getElementById('breadcrumb-2').innerText = course_id
-        const class_id = urlParams.get('class_id')
-        document.getElementById('breadcrumb-3').innerText = "Class " + class_id
+    <script type="module">
+        import { URL, retrieveAllSectionsFromClass } from "./callAPI/endpoints.js";
 
         var app = new Vue({
             el: '#app',
@@ -105,14 +100,24 @@
             },
 
             created: function() {
-                axios.get(`http://localhost:5000/section/${course_id}/${class_id}`)
-                .then(response => {
-                    results = response.data
-                    for (result of results.data){
-                        this.sections.push(result)
-                    }
-                })
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+
+                const course_id = urlParams.get('courseId')
+
+                document.getElementById('breadcrumb-2').innerText = course_id
+
+                const class_id = urlParams.get('classId')
+                document.getElementById('breadcrumb-3').innerText = "Class " + class_id
                 
+                retrieveAllSectionsFromClass(URL, course_id, class_id).then(result => {
+                    if(result.code == 200){
+                        this.sections = result.data
+                    }
+                    // else {
+                    //     console.log(`${result.code} ${result.data}`)
+                    // }
+                })                
             }
         })
     </script>
