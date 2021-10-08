@@ -74,9 +74,7 @@ def retrieve_eligible_courses(staff_id):
             "data": "No courses found"
         }
     ), 404
-  
 
-=======
 @app.route("/course/<string:course_id>")
 def retrieve_specific_course(course_id):
     dao = CourseDAO()
