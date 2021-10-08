@@ -15,7 +15,12 @@ export async function retrieveAllCourses(URL) {
             return result;
         }
     } catch(e) {
-        alert("Error: No connection!");
+        // alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
     }
     
 }
@@ -30,6 +35,11 @@ export async function retrieveSpecificCourse(URL, courseId) {
         }
     } catch(e) {
         alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
     }
     
 }
@@ -44,6 +54,11 @@ export async function retrieveEligibleCourses(URL, staffId) {
         }
     } catch(e) {
         alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
     }
     
 }
@@ -58,6 +73,11 @@ export async function retrieveAllClasses(URL, courseId) {
         }
         } catch(e) {
         alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
     }
     
 }
@@ -72,6 +92,11 @@ export async function retrieveAllSectionsFromClass(URL, courseId, classId) {
         }
         } catch(e) {
         alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
     }
     
 }
@@ -86,6 +111,11 @@ export async function retrieveSpecificSection(URL, sectionId) {
         }
         } catch(e) {
         alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
     }
     
 }
@@ -100,6 +130,11 @@ export async function retrieveQuizById(URL, quizId) {
         }
         } catch(e) {
         alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
     }
     
 }
@@ -114,6 +149,62 @@ export async function retrieveQuizBySection(URL, sectionId) {
         }
         } catch(e) {
         alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
     }
     
+}
+
+// ====== create ========
+//Create course
+export async function createCourse(URL, body) {
+    try {
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        }
+        const response = await fetch(`${URL}/courses`, data)
+        if (response) {
+            const result = await response.json()
+            return result;
+        }
+    } catch(e) {
+        // alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+//Create quiz
+export async function createQuiz(URL, body) {
+    try {
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        }
+        const response = await fetch(`${URL}/quiz/create`, data)
+        if (response) {
+            const result = await response.json()
+            return result;
+        }
+    } catch(e) {
+        alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
 }

@@ -95,6 +95,7 @@ def retrieve_specific_course(course_id):
         }
     ), 404
 
+
 @app.route("/courses/qualified/<string:course_id>")
 def retrieve_trainers_can_teach_course(course_id):
     dao = StaffDAO()

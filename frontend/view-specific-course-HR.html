@@ -17,7 +17,7 @@
     <!-- NavBar -->
     <div id="nav-bar-component">
         <nav-bar
-        home-link="#"
+        home-link="./home.html"
         all-courses-link="./view-list-of-courses-HR.html"
         my-courses-link="#">
         </nav-bar>
@@ -65,7 +65,7 @@
                             <br>
                             <b>Availability: </b> {{ getAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
                         </p>
-                        <a v-if="selectedClass.learners_enrolled.length !== selectedClass.class_size" href="#" class="btn btn-outline-info mt-auto">Edit</a>
+                        <a v-if="selectedClass.learners_enrolled.length !== selectedClass.class_size" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">View Sections</a>
                         <!-- <button v-else href="#" class="btn btn-light mt-auto" disabled>Enroll</button> -->
                         
                     </div>
