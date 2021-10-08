@@ -3,10 +3,6 @@ import os
 from boto3.dynamodb.conditions import Key, Attr
 from uuid import uuid4
 import copy
-try:
-    from course_manager import CourseDAO
-except:
-    from modules.course_manager import CourseDAO
 
 os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
 
@@ -93,6 +89,18 @@ class Staff:
 
     def remove_can_teach(self, course):
         self.__courses_can_teach.remove(course)
+
+    def can_enrol(self, course_id_to_enroll, prerequisite_list):
+        if course_id_to_enroll in self.get_courses_completed() or course_id_to_enroll in self.get_courses_enrolled():
+            return False
+        
+        completed_list = self.get_courses_completed()
+
+        for course in prerequisite_list:
+            if course not in completed_list:
+                return False
+        
+        return True
 
     def json(self):
         return {
@@ -192,23 +200,6 @@ class StaffDAO:
         
         return Staff(response['Items'][0])
 
-    def retrieve_all_courses_enrolled(self, staff_id):
-        staff = self.retrieve_one(staff_id)
-        course_id_list = staff.get_courses_enrolled()
-        dao = CourseDAO()        
-        return dao.retrieve_all_in_list(course_id_list)
-
-    def retrieve_all_eligible_to_enroll(self, staff_id):
-        staff = self.retrieve_one(staff_id)
-        dao = CourseDAO()
-        return dao.retrieve_eligible_course(staff.get_courses_completed(), staff.get_courses_enrolled())
-
-    def retrieve_all_courses_can_teach(self, staff_id):
-        staff = self.retrieve_one(staff_id)
-        course_id_can_teach = staff.get_courses_can_teach()
-        dao = CourseDAO()
-        return dao.retrieve_all_in_list(course_id_can_teach)
-
     def retrieve_all_trainers_can_teach(self, course_id):
         staff_list = self.retrieve_all()
 
@@ -220,6 +211,17 @@ class StaffDAO:
 
         return returned_list
 
+    def retrieve_eligible_staff_to_enrol(self, courseObj):
+        staff_list = self.retrieve_all()
+        prereq_course = courseObj.get_prerequisite_course()
+        course_id_to_enroll = courseObj.get_course_id()
+
+        result_list = []
+        for staff in staff_list:
+            if staff.can_enrol(course_id_to_enroll, prereq_course):
+                result_list.append(staff)
+        
+        return result_list
 
     #Update
     def update_staff(self, StaffObj):
@@ -265,5 +267,3 @@ class StaffDAO:
 
 if __name__ == "__main__":
     dao = StaffDAO()
-    # course_list = dao.retrieve_all_courses_enrolled("6724873a-b951-4ee7-a835-cb0f9f784c45")
-    # print([course.json() for course in course_list])

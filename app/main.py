@@ -46,8 +46,20 @@ def retrieve_all_courses():
 
 @app.route("/courses/eligible/<string:staff_id>")
 def retrieve_eligible_courses(staff_id):
-    dao = StaffDAO()
-    course_list = dao.retrieve_all_eligible_to_enroll(staff_id)
+    staff_dao = StaffDAO()
+    staff = staff_dao.retrieve_one(staff_id)
+
+    if staff == None:
+        return jsonify(
+            {
+                "code": 404,
+                "data": "Staff "+staff_id+" does not exist."
+            }
+        ), 404
+
+    course_dao = CourseDAO()
+    course_list = course_dao.retrieve_eligible_course(staff.get_courses_completed(),staff.get_courses_enrolled())
+
     if len(course_list):
         return jsonify(
             {
@@ -62,6 +74,29 @@ def retrieve_eligible_courses(staff_id):
             "data": "No courses found"
         }
     ), 404
+  
+
+=======
+@app.route("/course/<string:course_id>")
+def retrieve_specific_course(course_id):
+    dao = CourseDAO()
+    course = dao.retrieve_one(course_id)
+
+    if course != None:
+        return jsonify(
+            {
+                "code":200,
+                "data": course.json()
+            }
+        )
+
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No course found with id "+course_id
+        }
+    ), 404
+
 
 @app.route("/courses/qualified/<string:course_id>")
 def retrieve_trainers_can_teach_course(course_id):
@@ -81,6 +116,38 @@ def retrieve_trainers_can_teach_course(course_id):
             "data": "No staff found"
         }
     ), 404
+
+@app.route("/staff/eligible/<string:course_id>")
+def retrieve_eligible_staff(course_id):
+    course_dao = CourseDAO()
+    courseObj = course_dao.retrieve_one(course_id)
+
+    if courseObj == None:
+        return jsonify(
+            {
+                "code":404,
+                "data": course_id + " does not exist."
+            }
+        ), 404
+    
+    staff_dao = StaffDAO()
+    staff_list = staff_dao.retrieve_eligible_staff_to_enrol(courseObj)
+
+    if len(staff_list):
+        return jsonify(
+            {
+                "code":200,
+                'data': [staff.json() for staff in staff_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No staff found"
+        }
+    ), 404    
+
 
 @app.route("/class/<string:course_id>")
 def retrieve_all_classes(course_id):
@@ -223,6 +290,11 @@ def insert_quiz():
     dao = QuizDAO()
     try:
         results = dao.insert_quiz_w_dict(data)
+        section_dao = SectionDAO()
+        sectionObj = section_dao.retrieve_one(results.get_section_id())
+        sectionObj.add_quiz(results.get_quiz_id())
+        section_dao.update_section(sectionObj)
+
         return jsonify(
             {
                 "code": 201,

@@ -14,27 +14,15 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
-    
-    <nav class="navbar navbar-expand-sm navbar-light bg-light">
-        <a class="navbar-brand" href="#"  id="navlogo">ONE STOP LMS</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <div class="navbar-nav">
-                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                <a class="nav-link active" href="./view-list-of-courses-HR.html">All Courses</a>
-                <a class="nav-link" href="#">My Courses</a>
-            </div>
-        </div>
-        <a class="nav-link" href="#"><img src="../images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
-    </nav>
-    <!-- 
-    <div id="homebar">
-    <a href="www.youtube.com" style="color: #3C64B1;">Home</a>
-    /   Courses
+    <!-- NavBar -->
+    <div id="nav-bar-component">
+        <nav-bar
+        home-link="#"
+        all-courses-link="./view-list-of-courses-HR.html"
+        my-courses-link="#">
+        </nav-bar>
     </div>
-    <nav-bar></nav-bar> -->
+
 </head>
 
 
@@ -63,14 +51,15 @@
                     <div class="card m-3">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">
-                                <a :href="'./view-specific-course-HR.html?id=' + course.code">{{ course.course_id }} {{ course.course_name }}</a>
+                                <a :href="'./view-specific-course-HR.html?id=' + course.course_id">{{ course.course_id }} {{ course.course_name }}</a>
                             </h5>
                             <p class="card-text">{{ course.course_description }}</p>
                             <a :href="'./view-specific-course-HR.html?id=' + course.course_id" class="btn btn-outline-info mt-auto">View Details</a>
                             <div class="ml-auto">
-                                <span v-if = "course.eligibility" class="badge badge-success">Eligible</span>
-                                <span v-else class="badge badge-danger">Not Eligible</span>
-                                <span v-for ="prereq in course.prerequisite_course" class="badge badge-primary mr-1">{{ prereq }}</span>
+                                <!-- <span v-if = "validateEligibility(course, accountDetails.courses_completed)" class="badge badge-success">Eligible</span>
+                                <span v-else class="badge badge-danger">Not Eligible</span> -->
+                                <span v-if = "course.prerequisite_course.length === 0" class="badge badge-info mr-1">No pre-requisites</span>
+                                <span v-else v-for ="prereq in course.prerequisite_course" class="badge badge-info mr-1">{{ prereq }}</span>
                             </div>
                         </div>
                     </div>
@@ -81,7 +70,12 @@
 </div>
 
 <script type="module">
-import { getAllCourses } from "./callAPI/coursesAPI.js";
+import { URL, retrieveAllCourses } from "./callAPI/endpoints.js";
+import navBar from "./components/navBar.js"
+
+new Vue({
+    el: '#nav-bar-component' 
+});
 
 var app = new Vue({
     el: '#app',
@@ -93,46 +87,23 @@ var app = new Vue({
             "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
             "staff_name": "George",
             "courses_completed": ["IC110", "IC113"],
-            "courses_enrolled": ["IC111"],
+            "courses_enrolled": ["IC110"],
             "role": "Engineer"
         }
     },
     methods: {
-        validateEligibility(course, coursesCompleted) {
-            // check for eligibility of each course
-            let eligibility = true;
-            if (course.prerequisite_course.length !== 0) {
-                if (coursesCompleted.length !== course.prerequisite_course.length) {
-                    eligibility = false;
-                } else {
-                    for (let courseCompleted in coursesCompleted) {
-                        if (course.prerequisite_course.includes(courseCompleted)) {
-                            eligibility = false;
-                        }
-                    }
-                }
-            }
-            return eligibility;
-        }
+
     },
     mounted: function () {
         //call API to get all courses
-        const courses = getAllCourses();
-        for (let course of courses) {
-            let eligibility = this.validateEligibility(course, this.accountDetails.courses_completed);
-            course.eligibility = eligibility;
-        }
-        this.courses = courses;
+        retrieveAllCourses(URL).then(result => {
+            const courses = result.data.filter(course => {
+                return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
+            });
+            //sort courses according to course id in ascending order
+            this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+        });
     }
-
-    //sample code for a course 
-    // {
-    //     "course_name": "Printers and Inks fundamentals",
-    //     "course_id": "IC111", 
-    //     "course_description": "This course focuses on ink replacement techniques. It teaches us how to be good ink replacement engineers.",
-    //     "prerequisite_course": ["IC110","IC113"],
-    //     "class_list": []
-    // }
     
 })
 

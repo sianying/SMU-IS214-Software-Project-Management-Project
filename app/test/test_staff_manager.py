@@ -37,10 +37,17 @@ IS111 = {
     "course_id": "IS111",
     "course_name": "Intro to Programming",
     "course_description": "lorem ipsum",
-    "prerequisite_course": ["IS110", "IS113","IS114"],
+    "prerequisite_course": ["IS110", "IS113"],
     "class_list": [1, 2]
 }
 
+IS300 = {
+    "course_id": "IS300",
+    "course_name": "Advanced Programming",
+    "course_description": "lorem ipsum",
+    "prerequisite_course": [],
+    "class_list": [1, 2]
+}
 
 class TestStaff(unittest.TestCase):
     def setUp(self):
@@ -96,6 +103,11 @@ class TestStaff(unittest.TestCase):
         with self.assertRaises(ValueError, msg="Able to remove a course that doesn't exist"):
             self.test_staff.remove_can_teach("IS21321")
 
+    def test_can_enrol(self):
+        self.assertTrue(self.test_staff.can_enrol("IS300", ["IS110"]), "Failed check for enrolment")
+        self.assertTrue(self.test_staff.can_enrol("IS300", []), "Failed check for enrolment with no prereq")
+        self.assertFalse(self.test_staff.can_enrol("IS300", ["IS700"]), "Failed check not eligible for enrolment")
+        self.assertFalse(self.test_staff.can_enrol("IS300", ["IS112"]), "Failed check not eligible for enrolment for enrolled course")
 
 @mock_dynamodb2
 class TestStaffDAO(unittest.TestCase):
@@ -158,7 +170,6 @@ class TestStaffDAO(unittest.TestCase):
         none_can_teach = self.dao.retrieve_all_trainers_can_teach("IS13437346743")
         self.assertEqual([], [staffObj2.json() for staffObj2 in none_can_teach], "Should have returned empty list.")
 
-
     def test_update_staff(self):
         from modules.staff_manager import Staff
         staffObj = Staff(ITEM1)
@@ -176,24 +187,14 @@ class TestStaffDAO(unittest.TestCase):
         with self.assertRaises(Exception, msg = 'StaffDAO delete test failure'):
             self.table.get_item(Key = key)['Item']
     
-    
-    @patch("modules.staff_manager.CourseDAO")
-    def test_retrieve_all_courses_enrolled(self, mock_course_dao):
-        mock_course_dao().retrieve_all_in_list.return_value = [IS111]
-        course_list = self.dao.retrieve_all_courses_enrolled(ITEM1["staff_id"])
-        self.assertEqual([IS111], course_list)
+    def test_retrieve_eligible_staff_to_enrol(self):
+        from modules.course_manager import Course
+        staff_list = self.dao.retrieve_eligible_staff_to_enrol(Course(IS300))
+        self.assertEqual([ITEM1, ITEM2], [staff.json() for staff in staff_list], "Eligible staff doesn't match for course with no prerequisite")
 
-    @patch("modules.staff_manager.CourseDAO")
-    def test_retrieve_all_eligible_to_enroll(self, mock_course_dao):
-        mock_course_dao().retrieve_eligible_course.return_value = [IS111]
-        course_list = self.dao.retrieve_all_eligible_to_enroll(ITEM1["staff_id"])
-        self.assertEqual([IS111], course_list)
+        staff_list2 = self.dao.retrieve_eligible_staff_to_enrol(Course(IS111))
+        self.assertEqual([ITEM1], [staff.json() for staff in staff_list2], "Eligible staff doesn't match for course with prerequisite")
 
-    @patch("modules.staff_manager.CourseDAO")
-    def test_retrieve_all_courses_can_teach(self, mock_course_dao):
-        mock_course_dao().retrieve_all_in_list.return_value = [IS111]
-        course_list = self.dao.retrieve_all_courses_can_teach(ITEM1["staff_id"])
-        self.assertEqual([IS111], course_list)
 
 if __name__ == "__main__":
     unittest.main()
