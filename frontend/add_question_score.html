@@ -53,10 +53,10 @@
     <div id='breadcrumb-div' class='mx-auto mt-4'>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item"><a href="#">Courses</a></li>
-                <li class="breadcrumb-item"><a href="#">IC111</a></li>
-                <li class="breadcrumb-item"><a href="#">Create Quiz</a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
                 <li class="breadcrumb-item active" aria-current="page">Enter Question Score</li>
             </ol>
         </nav>
@@ -64,6 +64,7 @@
 
     <div id='app'>
         <div class='text-center h3 mt-4 mb-5'>Enter a score and select the correct answer for a question</div>
+        <div id='error-quiz-creation' class="d-none alert alert-danger mx-auto text-center justify-content-center" role="alert"></div>
         <div id='scoreDiv' class='mx-auto'>
             <div class='ml-4 mb-4' v-for='(question, index) in questions'>
                 <div class ='h5 mb-3'>
@@ -71,11 +72,11 @@
                 </div>
                 <div class='ml-4'>
                     <span class="form-check form-check-inline py-2 my-2">
-                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="true" v-model=questions[index].correct_option>
+                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="True" v-model=questions[index].correct_option>
                         <label class="form-check-label" for="inlineRadio1">True</label>
                     </span>
                     <span class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="false" v-model=questions[index].correct_option>
+                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="False" v-model=questions[index].correct_option>
                         <label class="form-check-label" for="inlineRadio2">False</label>
                     </span>
                     <span id='score' class='pt-3'>
@@ -83,9 +84,9 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Score</span>
                             </div>
-                            <input type="number" aria-label="score" min='1' max='99' class="form-control text-center" v-model='questions[index].marks' @change='checkValue'>
+                            <input type="number" aria-label="score" min='1' max='99' class="form-control text-center" v-model='questions[index].marks' @change='checkValue(index)'>
                         </div>
-                        <div v-if='questions[index].invalidNumber' class='text-danger'> Please enter a number more than 1!</div>
+                        <div :id="'error' + index" class='text-danger'></div>
                     </span>
                 </div>
             </div>
@@ -95,7 +96,7 @@
                 <div class='row'>
                     <div class="col"></div>
                     <div class='col mx-auto' id='submit-and-cancel-button'>
-                        <button type="button" class="btn btn-success mr-2">Confirm</button>
+                        <button type="button" class="btn btn-success mr-2" @click='createQuizzes'>Confirm</button>
                         <button type="button" class="btn btn-danger ml-2">Cancel</button>
                     </div>
                     <div class='col'></div>
@@ -104,38 +105,117 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { URL, retrieveSpecificSection, createQuiz} from "./callAPI/endpoints.js";
+        var section_id = JSON.parse(localStorage.getItem('sectionSelectedId'));
+
+        // set breadcrumb
+        var course_id = JSON.parse(localStorage.getItem('course_id'));
+        document.getElementById('breadcrumb-2').innerText = course_id
+
+        var class_id = JSON.parse(localStorage.getItem('class_id'));
+        document.getElementById('breadcrumb-3').innerText = "Class " + class_id
+
+        var section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
+        document.getElementById('breadcrumb-4').innerText = section_name
+
         var questionsList = JSON.parse(localStorage.getItem('questions'));
+        // console.log(questionsList)
+
         var app = new Vue({
             el: '#app',
             data: {
-                questions: null
+                questions: null,
             },
             created() {
                 this.questions = questionsList
 
-                for(qn in this.questions){
-                    this.questions[qn].invalidNumber = false
-                    this.questions[qn].marks = 0
-                    this.questions[qn].invalidNumber = false
+                for(let qn in this.questions){
+                    this.questions[qn].marks = 1
+                    this.questions[qn].question_no = Number(qn) + 1
                 }
             },
-            computed: {
-                checkValue: function(){
-                    for(qn in this.questions){
-                        if(this.questions[qn].marks<0){
-                            this.questions[qn].invalidNumber = true
-                            return true
-                        }
-                        else{
-                            this.questions[qn].invalidNumber = false
-                            return false
+            methods: {  
+                checkValue: function(ind){
+                    if(this.questions[ind].marks<=0){
+                        this.questions[ind].invalidNumber = true
+                        document.getElementById(`error${ind}`).innerText = "Please enter a number more than or equal to 1!"
+                    } else {
+                        this.questions[ind].invalidNumber = false
+                        document.getElementById(`error${ind}`).innerText = ""
+                    }                    
+                },
+                createQuizzes: function(){
+                    var errorCheck = false
+                    let qns = []
+                    for(let question of this.questions){
+                        let qnObj = {}
+                        if(question.marks==null || question.question_name==null || question.question_no==null || question.correct_option== null){
+                            document.getElementById('error-quiz-creation').innerText = "Please ensure that all fields have been filled up."
+                            document.getElementById('error-quiz-creation').className = "alert alert-danger mx-auto text-center justify-content-center"
+                            errorCheck = true
+                        } else {
+                            document.getElementById('error-quiz-creation').className = "d-none alert alert-danger mx-auto text-center justify-content-center"
+
+                            // setting questions body
+                            qnObj.isMCQ = false
+                            qnObj.marks = question.marks
+                            qnObj.question_name = question.question_name
+                            qnObj.question_no = question.question_no
+                            qnObj.options = question.options
+                            qnObj.correct_option = question.correct_option
+                            qns.push(question)
                         }
                     }
+
+                    if(errorCheck === false){
+                        let quizDetails = {
+                                        // "quiz_id": 3,
+                                        "section_id": section_id,
+                                        "questions": qns
+                        }
+                        console.log(quizDetails)
+                        createQuiz(URL, quizDetails).then(result => {
+                            console.log(result);
+                            if (result.code == 201){
+                                location.href = "./trainer_section_page.html?courseId=" + course_id + "&classId=" + class_id;
+                            } else {
+                                console.log(results);
+                            }
+                            
+                        })
+                    }
+
                     
-                }
+            },
+            // mounted(){
+                // questionsList = []
+                // for(let question of this.questions){
+                //     let qnObj = {}
+                //     qnObj.isMCQ = false
+                //     qnObj.marks = question.marks
+                //     qnObj.question_name = question.question_name
+                //     qnObj.question_no = question.question_no
+                //     qnObj.options = question.options
+                //     qnObj.correct_option = question.correct_option
+                //     questionsList.push(question)
+                // }
+                // console.log(questionsList)
+                // const quiz = {
+                //     "section_id": section_id,
+                //     "questions": this.questions
+                // };
+                // createQuiz(URL, details).then(result => {
+                //     if(result.code == 200){
+                //         this.sections = result.data
+                //     }
+                //     // else {
+                //     //     console.log(`${result.code} ${result.data}`)
+                //     // }
+                // })  
             }
         })
     </script>
+
 </body>
 </html>

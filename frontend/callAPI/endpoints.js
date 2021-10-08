@@ -15,7 +15,6 @@ export async function retrieveAllCourses(URL) {
             return result;
         }
     } catch(e) {
-        // alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -34,7 +33,6 @@ export async function retrieveSpecificCourse(URL, courseId) {
             return result;
         }
     } catch(e) {
-        alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -53,7 +51,6 @@ export async function retrieveEligibleCourses(URL, staffId) {
             return result;
         }
     } catch(e) {
-        alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -72,7 +69,6 @@ export async function retrieveAllClasses(URL, courseId) {
             return result;
         }
         } catch(e) {
-        alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -91,7 +87,6 @@ export async function retrieveAllSectionsFromClass(URL, courseId, classId) {
             return result;
         }
         } catch(e) {
-        alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -110,7 +105,6 @@ export async function retrieveSpecificSection(URL, sectionId) {
             return result;
         }
         } catch(e) {
-        alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -129,7 +123,6 @@ export async function retrieveQuizById(URL, quizId) {
             return result;
         }
         } catch(e) {
-        alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -148,7 +141,6 @@ export async function retrieveQuizBySection(URL, sectionId) {
             return result;
         }
         } catch(e) {
-        alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -175,7 +167,6 @@ export async function createCourse(URL, body) {
             return result;
         }
     } catch(e) {
-        // alert("Error: No connection!");
         const error = {
             "code": 404,
             "data": e
@@ -200,7 +191,37 @@ export async function createQuiz(URL, body) {
             return result;
         }
     } catch(e) {
-        alert("Error: No connection!");
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+// ====== Update ========
+//Enroll learners
+// const body = {
+//     "staff_id": staff_id,
+//     "course_id": course_id,
+//     "class_id": class_id
+// }
+
+export async function enrollLearners(URL, body) {
+    try {
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        }
+        const response = await fetch(`${URL}/courses`, data)
+        if (response) {
+            const result = await response.json()
+            return result;
+        }
+    } catch(e) {
         const error = {
             "code": 404,
             "data": e

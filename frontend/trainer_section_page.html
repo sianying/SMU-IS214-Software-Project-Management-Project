@@ -66,7 +66,7 @@
 
     <div id ='app'>
         <div v-for='(section, index) in sections' class='section-card mx-auto'>
-            <div class="card mt-4">
+            <div class="card my-4">
                 <div class="card-header h3">
                     {{section.section_name}}
                 </div>
@@ -76,7 +76,7 @@
                         <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
                             View Materials
                         </a>
-                        <a :href="'./add_quiz.html?course_id=IC112&class_id=1&section_id=' + section.section_id + '&section_name=' + section.section_name"  class="btn btn-warning ml-2">Add Quiz</a>
+                        <a :href="'./add_quiz.html?course_id=' + course_id + '&class_id=' + class_id" @click='viewSection(index)' class="btn btn-warning ml-2">Add Quiz</a>
                     </p>
                     <div class="collapse" :id="'collapseExample' + index">
                         <div class="card card-body">
@@ -96,18 +96,22 @@
         var app = new Vue({
             el: '#app',
             data: {
-                sections: []
+                sections: null,
+                course_id: null,
+                class_id: null
             },
 
             created: function() {
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
 
-                const course_id = urlParams.get('courseId')
-                document.getElementById('breadcrumb-2').innerText = course_id
+                const course_id = urlParams.get('courseId');
+                document.getElementById('breadcrumb-2').innerText = course_id;
+                this.course_id = course_id;
 
-                const class_id = urlParams.get('classId')
-                document.getElementById('breadcrumb-3').innerText = "Class " + class_id
+                const class_id = urlParams.get('classId');
+                document.getElementById('breadcrumb-3').innerText = "Class " + class_id;
+                this.class_id = class_id;
 
                 retrieveAllSectionsFromClass(URL, course_id, class_id).then(result => {
                     if(result.code == 200){
@@ -117,6 +121,14 @@
                     //     console.log(`${result.code} ${result.data}`)
                     // }
                 })                
+            },
+            methods: {
+                viewSection: function(e){
+                    // console.log(e)
+                    // selectedSection = sections[e].section_id
+                    localStorage.setItem('sectionSelectedId', JSON.stringify(this.sections[e].section_id));
+                    localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[e].section_name));
+                }
             }
         })
     </script>
