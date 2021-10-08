@@ -66,7 +66,7 @@
 
     <div id ='app'>
         <div v-for='(section, index) in sections' class='section-card mx-auto'>
-            <div class="card mt-4">
+            <div class="card my-4">
                 <div class="card-header h3">
                     {{section.section_name}}
                 </div>
@@ -76,7 +76,7 @@
                         <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
                             View Materials
                         </a>
-                        <a :href="'./attempt_quiz.html?quiz_id=' + section.quiz" class="btn btn-warning ml-2">Attempt Quiz</a>
+                        <a :href="'./attempt_quiz.html?quiz_id=' + section.quiz" v-if='section.quiz' class="btn btn-warning ml-2">Attempt Quiz</a>
                     </p>
                     <div class="collapse" :id="'collapseExample' + index">
                         <div class="card card-body">
@@ -96,7 +96,9 @@
         var app = new Vue({
             el: '#app',
             data: {
-                sections: []
+                sections: null,
+                course_id: null,
+                class_id: null
             },
 
             created: function() {
@@ -117,7 +119,7 @@
                     // else {
                     //     console.log(`${result.code} ${result.data}`)
                     // }
-                })                
+                })            
             }
         })
     </script>
