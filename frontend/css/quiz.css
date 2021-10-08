@@ -29,7 +29,7 @@
     color: #3C64B1;
 }
 
-#form-div, #duplicate-qn-alert {
+#form-div, #duplicate-qn-alert{
     width: 90%;
 }
 
@@ -46,4 +46,8 @@
 
 #submit-btn {
     margin-top: 50px;
+}
+
+#error-quiz-creation {
+    width: 45%;
 }
