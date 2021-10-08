@@ -13,6 +13,7 @@ class Section:
             section_name: String,
             course_id: String,
             class_id: Integer,
+            section_number: Integer,
             materials = []: List
             quiz = None: String
         )
@@ -25,6 +26,7 @@ class Section:
             self.__section_name = args[1]
             self.__course_id = args[2]
             self.__class_id = int(args[3])
+            self.__section_number = int(args[4])
             try:
                 self.__materials = [Material(mat_dict) for mat_dict in kwargs["materials"]]
             except:
@@ -38,6 +40,7 @@ class Section:
             self.__section_name = args[0]["section_name"]
             self.__course_id = args[0]["course_id"]
             self.__class_id = int(args[0]["class_id"])
+            self.__section_number = int(args[0]['section_number'])
             try:
                 self.__materials = [Material(mat_dict) for mat_dict in args[0]["materials"]]
             except:
@@ -66,6 +69,9 @@ class Section:
     def get_quiz(self):
         return self.__quiz
     
+    def get_section_number(self):
+        return self.__section_number
+
     #Setters
     def add_quiz(self, quiz):
         self.__quiz = quiz
@@ -85,6 +91,7 @@ class Section:
             "section_name": self.get_section_name(),
             "course_id": self.get_course_id(),
             "class_id": self.get_class_id(),
+            "section_number": self.get_section_number(),
             "materials": [mat.json() for mat in self.get_materials()],
             "quiz": self.get_quiz()
         }
@@ -127,13 +134,18 @@ class Material:
 
 class SectionDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name='us-east-1').Table('Section')
+        self.table = boto3.resource('dynamodb', region_name='ap-southeast-1').Table('Section')
     
     #Create
-    def insert_section(self, section_name, course_id, class_id, section_id = None, materials = [], quiz = None): 
+    def insert_section(self, section_name, course_id, class_id, section_number = None, section_id = None, materials = [], quiz = None): 
         try: 
             if section_id == None:
                 section_id = str(uuid4())
+
+            if section_number == None:
+                # retrieve all from class and get the next index
+                section_list = self.retrieve_all_from_class(course_id, class_id)
+                section_number = len(section_list)+1
 
             response = self.table.put_item(
                 Item = {
@@ -141,13 +153,14 @@ class SectionDAO:
                     "section_name": section_name,
                     "course_id": course_id,
                     "class_id": class_id,
+                    "section_number": section_number,
                     "materials": materials,
                     "quiz": quiz
                 },
                 ConditionExpression=Attr("section_id").not_exists(),
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return Section(section_id, section_name, course_id, class_id, materials=materials, quiz=quiz)
+                return Section(section_id, section_name, course_id, class_id, section_number, materials=materials, quiz=quiz)
             raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             raise ValueError("Section already exists")
@@ -165,6 +178,10 @@ class SectionDAO:
             if 'quiz' not in section_dict:
                 section_dict['quiz'] = None
 
+            if 'section_number' not in section_dict:
+                # retrieve all from class and get the next index
+                section_list = self.retrieve_all_from_class(section_dict['course_id'], section_dict['class_id'])
+                section_dict['section_number'] = len(section_list)+1
 
             response = self.table.put_item(
                 Item = {
@@ -172,6 +189,7 @@ class SectionDAO:
                     "section_name": section_dict['section_name'],
                     "course_id": section_dict['course_id'],
                     "class_id": section_dict['class_id'],
+                    'section_number': section_dict['section_number'],
                     "materials": section_dict['materials'],
                     "quiz": section_dict['quiz']
                 },
@@ -190,8 +208,10 @@ class SectionDAO:
         # retrieve all items and add them to a list of Course objects
         response = self.table.query(IndexName="CourseIndex", KeyConditionExpression=Key('course_id').eq(course_id) & Key('class_id').eq(class_id))
 
-        return [Section(section) for section in response['Items']]
-    
+        section_list = sorted(response['Items'], key= lambda x: int(x['section_number']))
+
+        return [Section(section) for section in section_list]
+
     def retrieve_one(self, section_id):
         response = self.table.query(KeyConditionExpression=Key('section_id').eq(section_id))
         
@@ -237,3 +257,23 @@ class SectionDAO:
             raise ValueError('Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except Exception as e:
             raise Exception("Delete Failure with Exception: "+str(e))
+
+
+if __name__ == "__main__":
+    dao = SectionDAO()
+    
+    # section1 = dao.retrieve_one("4b22008c-5d47-426b-aa78-726b528da512")
+    # section2 = dao.retrieve_one("367e514e-41a5-4afb-a010-2a1b740069ad")
+    # section3 = dao.retrieve_one("33cd4a6e-0a51-4f2c-8014-d8eee1acf6f5")
+
+    # mat1 = Material("Printer Fundamentals Document", "docx", "https://s3.ap-southeast-1.amazonaws.com/spmprojectbucket/PrinterFundamentals.docx")
+    # mat2 = Material("Printer Fundamentals Powerpoint", "pptx", "https://s3.ap-southeast-1.amazonaws.com/spmprojectbucket/PrinterFundamentals.pptx")
+    # mat3 = Material("Printer Fundamentals PDF", "PDF", "https://s3.ap-southeast-1.amazonaws.com/spmprojectbucket/PrinterFundamentals.pdf")
+    
+    # section1.add_material(mat1)
+    # section2.add_material(mat2)
+    # section3.add_material(mat3)
+
+    # dao.update_section(section1)
+    # dao.update_section(section2)
+    # dao.update_section(section3)

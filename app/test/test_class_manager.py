@@ -123,7 +123,7 @@ class TestClass(unittest.TestCase):
         with self.assertRaises(ValueError, msg="duplicate learners failed to raise exception") as context:
             self.test_class.enrol_learner(duplicate_staff_id)
 
-        self.assertTrue(duplicate_staff_id + " already enrolled" == str(context.exception))
+        self.assertTrue("Staff "+ duplicate_staff_id + " already enrolled" == str(context.exception))
 
         with self.assertRaises(Exception, msg="full class failed to raise exception") as context2:
             for i in range(self.test_class.get_class_size()):
@@ -147,7 +147,7 @@ class TestClassDAO(unittest.TestCase):
     def setUp(self):
         from modules import create_tables
         from modules.class_manager import ClassDAO 
-        self.dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
+        self.dynamodb = boto3.resource('dynamodb', region_name="ap-southeast-1")
         results = create_tables.create_class_table(self.dynamodb)
         # print(results)
         self.table = self.dynamodb.Table('Class')

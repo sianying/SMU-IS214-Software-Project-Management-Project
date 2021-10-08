@@ -49,7 +49,12 @@ class TestCourse(unittest.TestCase):
     def test_add_prerequisite_course(self):
         self.test_course.add_prerequisite_course("IS112")
         self.assertEqual(ITEM1["prerequisite_course"] + ["IS112"], self.test_course.get_prerequisite_course(), "Prerequisite does not match after adding prerequisite course")
-        
+    
+    def test_check_eligible(self):
+        self.assertTrue(self.test_course.check_eligible(["IS110","IS113","IS114"]), "Course not eligible when courses_completed matches")
+        self.assertTrue(self.test_course.check_eligible(["IS110","IS113","IS114","IS213","IS215"]), "Course not eligible when courses_completed includes all prerequisites")
+        self.assertFalse(self.test_course.check_eligible(["IS110"]), "Course eligible when courses_completed does not include all prerequisites")
+        self.assertFalse(self.test_course.check_eligible([]), "Course eligible when courses_completed is empty")
 
 @mock_dynamodb2
 class TestCourseDAO(unittest.TestCase):
@@ -57,7 +62,7 @@ class TestCourseDAO(unittest.TestCase):
     def setUp(self):
         from modules import create_tables
         from modules.course_manager import CourseDAO 
-        self.dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
+        self.dynamodb = boto3.resource('dynamodb', region_name="ap-southeast-1")
         results = create_tables.create_course_table(self.dynamodb)
         # print(results)
         self.table = self.dynamodb.Table('Course')
@@ -129,6 +134,38 @@ class TestCourseDAO(unittest.TestCase):
             self.dao.retrieve_all_in_list([])
 
         self.assertTrue('List entered is empty' == str(context.exception))
+
+    def test_retrieve_all_not_in_list(self):
+        course_list = self.dao.retrieve_all_not_in_list(["IS111"])
+        self.assertEqual([ITEM2], [course.json() for course in course_list], "Retrieved list does not match")
+
+        course_list2 = self.dao.retrieve_all_not_in_list(["IS110","IS111"])
+        self.assertEqual([], [course.json() for course in course_list2], "Retrieved list does not match")
+
+        with self.assertRaises(ValueError, msg="Failed to raise exception when passing in empty list") as context:
+            self.dao.retrieve_all_not_in_list([])
+
+        self.assertTrue('List entered is empty' == str(context.exception))
+
+    def test_retrieve_eligible_course(self):
+        course_list = self.dao.retrieve_eligible_course(["IS110","IS113","IS114"],[])
+        self.assertEqual([ITEM1], [course.json() for course in course_list], "eligible courses does not match when completed courses matches ITEM1 completely")
+
+        course_list2 = self.dao.retrieve_eligible_course(["IS110","IS113","IS114","IS115","IS116"],[])
+        self.assertEqual([ITEM1], [course.json() for course in course_list2], "eligible courses does not match when completed courses have all prerequisites")
+
+        course_list3 = self.dao.retrieve_eligible_course(["IS115"],[])
+        self.assertEqual([ITEM2], [course.json() for course in course_list3], "eligible courses does not match when not all prerequisites are present")
+
+        course_list4 = self.dao.retrieve_eligible_course([],[])
+        self.assertEqual([ITEM2], [course.json() for course in course_list4], "eligible courses does not match when no courses are completed")
+
+        course_list5 = self.dao.retrieve_eligible_course(["IS110"],[])
+        self.assertEqual([], [course.json() for course in course_list5], "eligible courses does not match when not all prerequisites are present")
+
+        course_list6 = self.dao.retrieve_eligible_course([],["IS110"])
+        self.assertEqual([], [course.json() for course in course_list6], "eligible courses does not match when not all IS110 is enrolled")
+
 
 
 if __name__ == "__main__":

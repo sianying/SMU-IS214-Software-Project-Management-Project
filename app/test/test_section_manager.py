@@ -23,6 +23,7 @@ SECTION1 = {
     "section_name": "Paper Feeder",
     "course_id": "IS111",
     "class_id": 1,
+    "section_number":1,
     "materials": [MATERIAL1],
     "quiz": "e565b935-2adc-43b2-9d1c-c8fc29eee91a"
 }
@@ -32,6 +33,7 @@ SECTION2 = {
     "section_name": "Ink",
     "course_id": "IS111",
     "class_id": 1,
+    "section_number":2,
     "materials": [],
     "quiz": None
 }
@@ -41,6 +43,7 @@ SECTION3 = {
     "section_name": "Ink2",
     "course_id": "IS110",
     "class_id": 1,
+    "section_number":1,
     "materials": [],
     "quiz": None
 }
@@ -99,7 +102,7 @@ class TestSectionDAO(unittest.TestCase):
     def setUp(self):
         from modules import create_tables
         from modules.section_manager import SectionDAO
-        self.dynamodb = boto3.resource('dynamodb', region_name = 'us-east-1')
+        self.dynamodb = boto3.resource('dynamodb', region_name = 'ap-southeast-1')
         results = create_tables.create_section_table(self.dynamodb)
         self.table=self.dynamodb.Table('Section')
         self.table.put_item(Item = SECTION1)
@@ -116,13 +119,14 @@ class TestSectionDAO(unittest.TestCase):
         from modules.section_manager import Section
         insertDefault = self.dao.insert_section("abcd","efgh",1)
         self.assertTrue(isinstance(insertDefault, Section))
+        self.assertEqual(1, insertDefault.get_section_number(), "Inserted section number wrong")
 
-        insertTest = self.dao.insert_section(SECTION3['section_name'], SECTION3['course_id'], SECTION3['class_id'], SECTION3['section_id'], SECTION3['materials'], SECTION3['quiz'])
+        insertTest = self.dao.insert_section(SECTION3['section_name'], SECTION3['course_id'], SECTION3['class_id'], SECTION3['section_number'], SECTION3['section_id'], SECTION3['materials'], SECTION3['quiz'])
 
         self.assertEqual(SECTION3, insertTest.json(), "SectionDAO inserted values do not match")
 
         with self.assertRaises(ValueError, msg ="Failed to prevent duplicate insert") as context:
-            self.dao.insert_section(SECTION1['section_name'], SECTION1['course_id'], SECTION1['class_id'], SECTION1['section_id'], SECTION1['materials'], SECTION1['quiz'])
+            self.dao.insert_section(SECTION1['section_name'], SECTION1['course_id'], SECTION1['class_id'], SECTION3['section_number'], SECTION1['section_id'], SECTION1['materials'], SECTION1['quiz'])
         
         self.assertTrue("Section already exists" == str(context.exception))
     
@@ -130,7 +134,7 @@ class TestSectionDAO(unittest.TestCase):
         from modules.section_manager import Section
         insertDefault = self.dao.insert_section_w_dict({"section_name": 'abdce', 'course_id':'abcde', 'class_id':1})
         self.assertTrue(isinstance(insertDefault, Section))
-
+        self.assertEqual(1, insertDefault.get_section_number(), "Inserted section w dictionary number wrong")
 
         insertTest = self.dao.insert_section_w_dict(SECTION3)
 
