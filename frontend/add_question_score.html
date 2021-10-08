@@ -67,15 +67,15 @@
         <div id='scoreDiv' class='mx-auto'>
             <div class='ml-4 mb-4' v-for='(question, index) in questions'>
                 <div class ='h5 mb-3'>
-                    {{question.questionTitle}}
+                    {{question.question_name}}
                 </div>
                 <div class='ml-4'>
                     <span class="form-check form-check-inline py-2 my-2">
-                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="true" v-model=questions[index].correctAnswer>
+                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="true" v-model=questions[index].correct_option>
                         <label class="form-check-label" for="inlineRadio1">True</label>
                     </span>
                     <span class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="false" v-model=questions[index].correctAnswer>
+                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="false" v-model=questions[index].correct_option>
                         <label class="form-check-label" for="inlineRadio2">False</label>
                     </span>
                     <span id='score' class='pt-3'>
@@ -83,7 +83,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Score</span>
                             </div>
-                            <input type="number" aria-label="score" min='1' max='99' class="form-control text-center" v-model= questions[index].score v-on:change='checkValue(questions[index].score, index)'>
+                            <input type="number" aria-label="score" min='1' max='99' class="form-control text-center" v-model='questions[index].marks' @change='checkValue'>
                         </div>
                         <div v-if='questions[index].invalidNumber' class='text-danger'> Please enter a number more than 1!</div>
                     </span>
@@ -105,32 +105,34 @@
     </div>
 
     <script>
+        var questionsList = JSON.parse(localStorage.getItem('questions'));
         var app = new Vue({
             el: '#app',
             data: {
-                questions: [
-                    {'questionTitle': '1. How much is a printer?',
-                    'correctAnswer': "true",
-                    'invalidNumber': false,
-                    'score': 0},
-                    {'questionTitle': '2. How to fix a printer?',
-                    'correctAnswer': "true",
-                    'invalidNumber': false,
-                    'score': 0},
-                    {'questionTitle': '2. How to fix a printer?',
-                    'correctAnswer': "true",
-                    'invalidNumber': false,
-                    'score': 0}
-                ]
+                questions: null
             },
-            methods: {
-                checkValue: function(value, index){
-                    if(value<0){
-                        this.questions[index].invalidNumber = true
+            created() {
+                this.questions = questionsList
+
+                for(qn in this.questions){
+                    this.questions[qn].invalidNumber = false
+                    this.questions[qn].marks = 0
+                    this.questions[qn].invalidNumber = false
+                }
+            },
+            computed: {
+                checkValue: function(){
+                    for(qn in this.questions){
+                        if(this.questions[qn].marks<0){
+                            this.questions[qn].invalidNumber = true
+                            return true
+                        }
+                        else{
+                            this.questions[qn].invalidNumber = false
+                            return false
+                        }
                     }
-                    else{
-                        this.questions[index].invalidNumber = false
-                    }
+                    
                 }
             }
         })
