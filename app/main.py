@@ -74,7 +74,9 @@ def retrieve_eligible_courses(staff_id):
             "data": "No courses found"
         }
     ), 404
+  
 
+=======
 @app.route("/course/<string:course_id>")
 def retrieve_specific_course(course_id):
     dao = CourseDAO()
@@ -94,6 +96,7 @@ def retrieve_specific_course(course_id):
             "data": "No course found with id "+course_id
         }
     ), 404
+
 
 @app.route("/courses/qualified/<string:course_id>")
 def retrieve_trainers_can_teach_course(course_id):

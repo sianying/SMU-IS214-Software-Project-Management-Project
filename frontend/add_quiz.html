@@ -53,9 +53,11 @@
     <div id='breadcrumb-div' class='mx-auto mt-4'>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item"><a href="#">Courses</a></li>
-                <li class="breadcrumb-item"><a href="#">IC111</a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
+                <li class="breadcrumb-item"><a id ='breadcrumb-5' href="#"></a></li>
                 <li class="breadcrumb-item active" aria-current="page">Add Quiz</li>
             </ol>
         </nav>
@@ -78,8 +80,8 @@
             <div class='row'>
                 <div class="col"></div>
                 <div class='col mx-auto' id='submit-and-cancel-button'>
-                    <button type="button" class="btn btn-success mr-2">Confirm</button>
-                    <button type="button" class="btn btn-danger ml-2">Cancel</button>
+                    <button type="button" class="btn btn-success mr-2"><a id='confirmBtn' href="#" onclick="store()" style='color:white'>Confirm</a></button>
+                    <button type="button" class="btn btn-danger ml-2"><a href='#' style='color:white'>Cancel</a></button>
                 </div>
                 <div class='col'></div>
             </div>
@@ -87,7 +89,18 @@
     </div>
 
     <script>
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const course_id = urlParams.get('course_id')
+        document.getElementById('breadcrumb-2').innerText = course_id
+        const class_id = urlParams.get('class_id')
+        document.getElementById('breadcrumb-3').innerText = "Class " + class_id
+
+        var sectionDetails = JSON.parse(localStorage.getItem('section_details'));
+
         var questionList = [];
+        var questionNames = [];
+        var questionIndex = 1
 
         document.getElementById("true-false-button").addEventListener("click", function() {
             document.getElementById("alert-and-button").innerHTML = "";
@@ -104,18 +117,23 @@
         function createQuestion(){            
             const questionInput = document.getElementById('question').value;
             const questionDiv = document.getElementById('question-div');
-            if(questionList.includes(questionInput.toLowerCase())) [
+            if(questionNames.includes(questionInput.toLowerCase())) [
                 document.getElementById('question').value = "",
                 document.getElementById('duplicate-qn').innerHTML = `<div id='duplicate-qn-alert' class="alert alert-danger mx-auto text-center justify-content-center" role="alert">
                                             Duplicate question alert! Enter another question.
                                         </div>`
             ]
-            else if((!questionList.includes(questionInput.toLowerCase())) && (questionInput !== "")){
+            else if((!questionNames.includes(questionInput.toLowerCase())) && (questionInput !== "")){
+                let question = {} 
+
                 document.getElementById('duplicate-qn').innerHTML = '';
-                questionList.push(questionInput.toLowerCase())
+                questionNames.push(questionInput)
+
+                question['question_name'] = questionInput.toLowerCase()
+                question['isMCQ'] = true
+                question['options'] = ['True', 'False']
+
                 const questionDiv = document.getElementById('question-div');
-                
-                let questionIndex = questionList.indexOf(questionInput) + 1;
                 const questionInputNode = document.createElement('p');
                 questionInputNode.innerText = `${questionIndex}. ${questionInput}`;
                 questionInputNode.className ='h5 ml-4 mt-4';
@@ -133,9 +151,24 @@
                                             </div>
                                         </div>`;
                 document.getElementById('question').value = "";
-
+                
+                questionList.push(question)
+                questionIndex ++
             }
 
+        }
+
+        function store(){
+            if(questionList.length == 0){
+                document.getElementById('duplicate-qn').innerHTML = `<div id='duplicate-qn-alert' class="alert alert-danger mx-auto text-center justify-content-center" role="alert">
+                                            The quiz cannot be empty! Enter a question.
+                                        </div>`;
+                
+            } else {
+                confirmBtn = document.getElementById('confirmBtn')
+                confirmBtn.href = './add_question_score.html'
+                localStorage.setItem('questions', JSON.stringify(questionList));
+            }  
         }
 
         $(document).ready(function() {
