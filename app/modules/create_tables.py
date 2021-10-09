@@ -11,18 +11,10 @@ def create_course_table(dynamodb):
                     'AttributeName': 'course_id',
                     'KeyType': 'HASH' # Partition Key
                 },
-                {
-                    'AttributeName': 'course_name',
-                    'KeyType': 'RANGE' # Sort key
-                }
             ],
             AttributeDefinitions=[
                 {
                     'AttributeName': 'course_id',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'course_name',
                     'AttributeType': 'S'
                 }
             ],
@@ -185,40 +177,6 @@ def create_quiz_table(dynamodb):
         return e
     return "Table Created"
 
-# def create_material_table(dynamodb):
-#     try:
-#         # Data in with same partition key are stored together sorted by sort key value
-#         table = dynamodb.create_table(
-#             TableName='Material',
-#             KeySchema=[
-#                 {
-#                     'AttributeName': 'section_id', 
-#                     'KeyType': 'HASH' # Partition Key
-#                 },
-#                 {
-#                     'AttributeName': 'material_id',
-#                     'KeyType': 'RANGE' # Sort key
-#                 }
-#             ],
-#             AttributeDefinitions=[
-#                 {
-#                     'AttributeName': 'section_id',
-#                     'AttributeType': 'S'
-#                 },
-#                 {
-#                     'AttributeName': 'material_id',
-#                     'AttributeType': 'S'
-#                 }
-#             ],
-#             ProvisionedThroughput={
-#                 'ReadCapacityUnits':5,
-#                 'WriteCapacityUnits':5
-#             }
-            
-#         )
-#     except Exception as e:
-#         return e
-#     return "Table Created"
 
 def create_attempt_table(dynamodb):
     try:
@@ -227,7 +185,7 @@ def create_attempt_table(dynamodb):
             TableName='Attempt',
             KeySchema=[
                 {
-                    'AttributeName': 'quiz_id', 
+                    'AttributeName': 'quiz_id',
                     'KeyType': 'HASH' # Partition Key
                 },
                 {
@@ -263,7 +221,7 @@ def create_staff_table(dynamodb):
             TableName='Staff',
             KeySchema=[
                 {
-                    'AttributeName': 'staff_id', 
+                    'AttributeName': 'staff_id',
                     'KeyType': 'HASH' # Partition Key
                 },
                 {

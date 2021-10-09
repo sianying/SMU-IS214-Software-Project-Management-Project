@@ -251,4 +251,3 @@ class CourseDAO:
 
 if __name__ == "__main__":
     dao = CourseDAO()
-    
