@@ -11,7 +11,7 @@ from modules.quiz_manager import QuizDAO
 
 
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
-os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
+os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
 
 class JSONEncoder_Improved(json.JSONEncoder):
     def default(self,obj):
@@ -386,10 +386,48 @@ def enroll_learners():
             }
         ), 500
 
+@app.route("/class/trainer", methods = ['PUT'])
+def assign_trainer():
+    data = request.get_json()
 
+    if "course_id" not in data or "class_id" not in data or "staff_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "course_id, class_id or staff_id not in Request Body"
+            }
+        ), 400
 
+    class_dao = ClassDAO()
+    class_to_assign = class_dao.retrieve_one(data['course_id'], data['class_id'])
+    staff_dao = StaffDAO()
+    staff = staff_dao.retrieve_one(data['staff_id'])
 
+    if class_to_assign == None or staff == None:
+        return jsonify(
+            {
+                "code": 404,
+                "data": "Class or Staff to assign not found"
+            }
+        ), 404
 
+    class_to_assign.set_trainer(data['staff_id'])
+    try:
+        class_dao.update_class(class_to_assign)
+
+        return jsonify(
+            {
+                "code": 200,
+                "data": "Staff assigned"
+            }
+        )
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when assigning staff"
+            }
+        ), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port = 5000, debug= True)
