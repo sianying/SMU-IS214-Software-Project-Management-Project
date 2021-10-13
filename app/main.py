@@ -3,6 +3,7 @@ from flask_cors import CORS
 import boto3
 import os
 from decimal import Decimal
+from app.modules.attempt_manager import Attempt, AttemptDAO
 from modules.course_manager import CourseDAO
 from modules.class_manager import ClassDAO
 from modules.staff_manager import StaffDAO
@@ -245,6 +246,47 @@ def retrieve_quiz_by_section(section_id):
         }
     )
 
+@app.route("/attempts/<string:quiz_id>")
+def retrieve_quiz_attempts(quiz_id):
+    dao = AttemptDAO()
+    attempts_list = dao.retrieve_by_quiz(quiz_id)
+
+    if len(attempts_list):
+        return jsonify(
+            {
+                "code": 200,
+                "data": [attemptObj.json() for attemptObj in attempts_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No attempts were found for Quiz {}".format(quiz_id)
+        }
+    ), 404
+
+@app.route("/attempts/<string:quiz_id>/<string:staff_id>")
+def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
+    dao = AttemptDAO()
+    attempts_list = dao.retrieve_by_learner(quiz_id, staff_id)
+
+    if len(attempts_list):
+        return jsonify(
+            {
+                "code": 200,
+                "data": [attemptObj.json() for attemptObj in attempts_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No attempts were found for Quiz {}".format(quiz_id)
+        }
+    ), 404
+
+
 
 # ============= Create ==================
 @app.route("/courses", methods =['POST'])
@@ -284,21 +326,11 @@ def create_course():
 @app.route("/quiz/create", methods=['POST'])
 def insert_quiz():
     data=request.get_json()
-
     dao = QuizDAO()
+
     try:
         results = dao.insert_quiz_w_dict(data)
-        section_dao = SectionDAO()
-        sectionObj = section_dao.retrieve_one(results.get_section_id())
-        sectionObj.add_quiz(results.get_quiz_id())
-        section_dao.update_section(sectionObj)
 
-        return jsonify(
-            {
-                "code": 201,
-                "data": results.json()
-            }
-        ), 201
     except ValueError as e:
         if str(e) == "Quiz already exists":
             return jsonify(
@@ -313,6 +345,7 @@ def insert_quiz():
                 "data": "An error occurred when creating the quiz."
             }
         ), 500
+
     except Exception as e:
         return jsonify(
             {
@@ -320,6 +353,104 @@ def insert_quiz():
                 "data": "An error occurred when creating the quiz."
             }
         ), 500
+        
+
+    #UPDATE SECTION OBJECT TOO
+    section_dao = SectionDAO()
+    try:
+        sectionObj = section_dao.retrieve_one(results.get_section_id())
+        sectionObj.add_quiz(results.get_quiz_id())
+        section_dao.update_section(sectionObj)
+
+        #return the results from successfully inserting the quiz previously
+        return jsonify(
+            {
+                "code": 201,
+                "data": results.json()
+            }
+        ), 201
+
+    #Technically need to delete the quiz from DB
+    except ValueError as e:
+        if "Update Failure with code:" in str(e):
+            return jsonify(
+                {
+                    "code": 403,
+                    "data": str(e)
+                }
+            ), 403
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating the section."
+            }
+        ), 500
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating the section."
+            }
+        ), 500
+
+
+@app.route("/attempts/<string:quiz_id>", methods=['POST'])
+def insert_attempt(quiz_id):
+    quiz_dao = QuizDAO()
+    quiz_obj = quiz_dao.retrieve_one(quiz_id)
+
+    if quiz_obj == None:
+        return jsonify(
+            {
+                "code": 404,
+                "data": "No quiz was found with id " + quiz_id
+            }
+        )
+
+    quiz_questions = quiz_obj.get_questions()
+
+    correct_answers=[]
+    marks=[]
+    for question in quiz_questions:
+        # need to create question class and get these attributes as methods?
+        correct_answers.append(question['correct_option'])
+        marks.append(question['marks'])
+
+    data = request.get_json()
+    dao = CourseDAO()
+
+    try:
+        results = dao.insert_attempt(data, correct_answers, marks)
+        return jsonify(
+            {
+                "code": 201,
+                "data": results.json()
+            }
+        ), 201
+    except ValueError as e:
+        if str(e) == "Attempt already exists":
+            return jsonify(
+                {
+                    "code": 403,
+                    "data": str(e)
+                }
+            ), 403
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the attempt."
+            }
+        ), 500
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the attempt."
+            }
+        ), 500
+
+
+
 
 # ============= Update ==================
 @app.route("/class/enroll", methods=['PUT'])
