@@ -132,7 +132,7 @@ def create_quiz_table(dynamodb):
             KeySchema=[
                 {
                     'AttributeName': 'quiz_id',
-                    'KeyType': 'HASH' # Sort key
+                    'KeyType': 'HASH' # Partition key
                 },
                 {
                     'AttributeName': 'section_id',
