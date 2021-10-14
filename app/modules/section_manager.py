@@ -143,7 +143,7 @@ class SectionDAO:
                 section_id = str(uuid4())
 
             if section_number == None:
-                # retrieve all from class and get the next index
+                # retrieve all from class and get the next value
                 section_list = self.retrieve_all_from_class(course_id, class_id)
                 section_number = len(section_list)+1
 
