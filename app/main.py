@@ -3,7 +3,7 @@ from flask_cors import CORS
 import boto3
 import os
 from decimal import Decimal
-from app.modules.attempt_manager import Attempt, AttemptDAO
+from modules.attempt_manager import AttemptDAO
 from modules.course_manager import CourseDAO
 from modules.class_manager import ClassDAO
 from modules.staff_manager import StaffDAO
@@ -330,7 +330,6 @@ def insert_quiz():
 
     try:
         results = dao.insert_quiz_w_dict(data)
-
     except ValueError as e:
         if str(e) == "Quiz already exists":
             return jsonify(
@@ -450,6 +449,66 @@ def insert_attempt(quiz_id):
         ), 500
 
 
+@app.route("/class", methods =['POST'])
+def insert_class():
+    data = request.get_json()
+
+    if "course_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "course_id not in Request Body"
+            }
+        ), 400
+    
+    course_dao = CourseDAO()
+
+    course = course_dao.retrieve_one(data["course_id"])
+
+    if course == None:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "Course to insert class in does not exist"
+            }
+        ), 400
+
+    if "class_id" not in data:
+        data["class_id"] = len(course.get_class_list())+1
+
+    class_dao = ClassDAO()
+    
+    try:
+        results = class_dao.insert_class_w_dict(data)
+        course.add_class(results.get_class_id())
+        course_dao.update_course(course)
+        return jsonify(
+            {
+                "code": 201,
+                "data": results.json()
+            }
+        ), 201
+    except ValueError as e:
+        if str(e) == "Class already exists":
+            return jsonify(
+                {
+                    "code": 403,
+                    "data": str(e)
+                }
+            ), 403
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the class." 
+            }
+        ), 500
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the class."
+            }
+        ), 500
 
 
 # ============= Update ==================

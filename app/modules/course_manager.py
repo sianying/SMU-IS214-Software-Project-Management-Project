@@ -218,7 +218,6 @@ class CourseDAO:
             response = self.table.update_item(
                 Key = {
                     'course_id': CourseObj.get_course_id(),
-                    'course_name': CourseObj.get_course_name()
                 },
                 UpdateExpression= "set prerequisite_course = :p, class_list = :c",
                 ExpressionAttributeValues ={
