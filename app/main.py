@@ -1,3 +1,4 @@
+from re import A
 from flask import Flask, request, json, jsonify
 from flask_cors import CORS
 import boto3
@@ -509,6 +510,63 @@ def insert_class():
                 "data": "An error occurred when creating the class."
             }
         ), 500
+
+
+@app.route("/section", methods=['POST'])
+def insert_section():
+    data = request.get_json()
+
+    if "course_id" not in data or "class_id" not in data:
+        return jsonify(
+            {
+                "code":400,
+                "data": "course_id or class_id not in Request Body"
+            }
+        ), 400
+    
+    class_dao = ClassDAO()
+    class_obj = class_dao.retrieve_one(data['course_id'], data['class_id'])
+    if class_obj == None:
+        return jsonify(
+            {
+                "code":400,
+                "data": "Class does not exist"
+            }
+        ), 400
+    
+    section_dao = SectionDAO()
+    try:
+        results = section_dao.insert_section_w_dict(data)
+        class_obj.add_section(results.get_section_id())
+        class_dao.update_class(class_obj)
+        return jsonify(
+            {
+                "code": 201,
+                "data": results.json()
+            }
+        ), 201
+    except ValueError as e:
+        if str(e) == "Section already exists":
+            return jsonify(
+                {
+                    "code": 403,
+                    "data": str(e)
+                }
+            ), 403
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the section."
+            }
+        ), 500
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when creating the section."
+            }
+        ), 500
+
 
 
 # ============= Update ==================
