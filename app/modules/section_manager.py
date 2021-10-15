@@ -241,7 +241,7 @@ class SectionDAO:
             raise ValueError('Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
             
         except Exception as e:
-            raise ValueError("Update Failure with Exception: "+str(e))
+            raise Exception("Update Failure with Exception: "+str(e))
 
     #Delete
     def delete_section(self, sectionObj):

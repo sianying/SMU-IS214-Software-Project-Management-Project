@@ -2,5 +2,5 @@ boto3
 uuid
 flask
 simplejson
-wheel
 moto
+re
