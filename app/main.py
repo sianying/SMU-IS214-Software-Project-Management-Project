@@ -149,7 +149,6 @@ def retrieve_eligible_staff(course_id):
         }
     ), 404    
 
-
 @app.route("/class/<string:course_id>")
 def retrieve_all_classes(course_id):
     dao = ClassDAO()
@@ -393,7 +392,6 @@ def insert_quiz():
             }
         ), 500
 
-
 @app.route("/attempts/<string:quiz_id>", methods=['POST'])
 def insert_attempt(quiz_id):
     quiz_dao = QuizDAO()
@@ -566,7 +564,7 @@ def insert_section():
         ), 500
 
 @app.route("/materials/file",methods =['POST'])
-def insert_material():
+def insert_files():
     try:
         file = request.files.get('file')
         section_id = request.form.get('section_id')
@@ -581,9 +579,9 @@ def insert_material():
     
     if section == None:
         return jsonify({
-            "code": 400,
+            "code": 404,
             "data": "Section {} does not exist".format(section_id)
-        }), 400
+        }), 404
 
     filename, extension = os.path.splitext(file.filename)
     transformed_name = transform_file_name(filename, extension)
@@ -616,6 +614,54 @@ def insert_material():
             }
         ), 500
 
+@app.route("/materials/link", methods = ['POST'])
+def insert_links():
+    data = request.get_json()
+
+    if "section_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "section_id not in Request Body"
+            }
+        ), 400
+    
+    section_dao = SectionDAO()
+    section = section_dao.retrieve_one(data['section_id'])
+    
+    if section == None:
+        return jsonify({
+            "code": 404,
+            "data": "Section {} does not exist".format(data['section_id'])
+        }), 404
+
+    try:
+        mat = Material(data['mat_name'], data['mat_type'], data['url'])
+    except:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "In proper request body."
+            }
+        ), 400
+    
+    section.add_material(mat)
+    
+    try:
+        section_dao.update_section(section)
+        return jsonify(
+            {
+                "code": 201,
+                "data": mat.json()
+            }
+        )
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating section object."
+            }
+        ), 500
 
 # ============= Update ==================
 @app.route("/class/enroll", methods=['PUT'])
