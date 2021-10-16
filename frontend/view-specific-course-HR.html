@@ -17,22 +17,27 @@
     <!-- NavBar -->
     <div id="nav-bar-component">
         <nav-bar
-        home-link="./home.html"
-        all-courses-link="./view-list-of-courses-HR.html"
-        my-courses-link="#">
+        role="accountDetails.role">
         </nav-bar>
     </div>
 </head>
 
 <body>
-    <div id="app" class="wrapper container mx-auto">
+    <div v-cloak id="app" class="wrapper container mx-auto">
         <div id="breadcrumb">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-light">
-                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ courseId }} {{ courseName }}</li>
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ courseId }}</li>
                 </ol>
             </nav>
+        </div>
+
+        <div v-if="courseCreationSuccess" class="alert alert-success alert-dismissible fade show text-center mx-2" role="alert">
+            <strong>{{ courseId }}</strong> successfully created.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="courseCreationSuccess=false">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
 
         <div class="card text-center m-2">
@@ -47,12 +52,15 @@
         </div>
 
         <!-- "Add New Class" Button for HR -->
-        <div class="container d-flex justify-content-end p-0">
-            <a href = "./add-new-course-HR.html" class="btn btn-outline-info mt-2 mr-2">
+        <div v-if="accountDetails.role ==='HR'" class="container d-flex justify-content-end p-0">
+            <a href = "#" class="btn btn-outline-info mt-2 mr-2">
                 Add New Class <span class="iconify" data-icon="akar-icons:circle-plus"></span>
             </a>
         </div>
 
+        <div v-if="classList.length === 0" class="alert alert-warning m-2 mt-3 text-center" role="alert">
+            There are currently no classes available.
+        </div>
         <div class="row">
             <div v-for = "selectedClass in classList" class="col-6 p-0 d-flex justify-content-center">
                 <div class="card m-3" style="width: 540px;">
@@ -72,9 +80,6 @@
                 </div>
             </div>
         </div>
-        <div v-if="classList.length === 0" class="alert alert-danger m-2 mt-3 text-center" role="alert">
-            There are no classes available!
-        </div>
 
     </div>
     
@@ -89,20 +94,16 @@ new Vue({
 var app = new Vue({
     el: '#app',
     data: {
-        accountDetails: {
-            "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
-            "staff_name": "George",
-            "courses_completed": ["IC110", "IC113"],
-            "courses_enrolled": ["IC111"],
-            "role": "Engineer"
-        },
+        accountDetails: {},
+        courseCreationSuccess: false,
         courseName: "",
         courseId: "",
         courseDescription: "",
         prerequisiteCourses: [],
         classList: [],
         selected: 'not selected',
-        courses:[]
+        courses:[],
+        error: false
     },
     methods: {
         datetimeToDate(startDatetime, endDatetime) {
@@ -118,35 +119,35 @@ var app = new Vue({
             return (learnersEnrolled.length).toString() + "/" + (classSize).toString();
         }
     },
-    mounted: function() {
+    created: function() {
+        const lastLinkVisited = document.referrer.split("/").at(-1);
+        if (lastLinkVisited == "add-new-course-HR.html"){
+            this.courseCreationSuccess = true;
+        }
+
+        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        this.accountDetails = accountDetails;
         //Retrieve course id from URL
         const urlSearchParams = new URLSearchParams(window.location.search);
         const params = Object.fromEntries(urlSearchParams.entries());
-        console.log(params.id)
         //Call retrieveSpecificCourse API
-        retrieveSpecificCourse(URL, params.id).then(result => {
+        retrieveSpecificCourse(URL, params.courseId).then(result => {
+            // console.log(result);
             if (result.code == 200){
                 const course = result.data;
-                this.courseName = course.course_title;
+                this.courseName = course.course_name;
                 this.courseId = course.course_id;
                 this.courseDescription = course.course_description;
                 this.prerequisiteCourses = course.prerequisite_course
             }
         });
         //Call retrieveAllClasses API
-        retrieveAllClasses(URL, params.id).then(result => {
+        retrieveAllClasses(URL, params.courseId).then(result => {
             if (result.code == 200){
-                console.log(result);
                 const classes = result.data;
                 this.classList = classes;
             }
         });
-
-        const selectedCourse = this.courses.filter(course => course.course_id === params.id)[0];
-        this.courseName = selectedCourse.course_name;
-        this.courseId = selectedCourse.course_id;
-        this.courseDescription = selectedCourse.course_description;
-        this.classList = selectedCourse.class_list;
 
     }
 })
