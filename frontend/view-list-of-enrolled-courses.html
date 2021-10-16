@@ -17,7 +17,7 @@
     <!-- NavBar -->
     <div id="nav-bar-component">
         <nav-bar
-        v-bind:accountDetails="accountDetails">
+        role="accountDetails.role">
         </nav-bar>
     </div>
 
@@ -35,16 +35,12 @@
             </ol>
         </nav>
     </div>
-    
+    <!-- "Add New Course" Button for HR -->
+    <div v-if="accountDetails.role ==='HR'" class="container d-flex justify-content-end">
+        <a href = "./add-new-course-HR.html" class="btn btn-outline-info">Add New Course <span class="iconify" data-icon="akar-icons:circle-plus"></span></a>
+    </div>
+    <!-- Dynamically render courses using Vue Instance -->
     <div v-cloak id="app">
-        <!-- "Add New Course" Button for HR -->
-        <div v-if="accountDetails.role === 'HR'" class="container d-flex justify-content-end">
-            <a href = "./add-new-course-HR.html" class="btn btn-outline-info">
-                Add New Course 
-                <span class="iconify" data-icon="akar-icons:circle-plus"></span>
-            </a>
-        </div>
-        <!-- Dynamically render courses using Vue Instance -->
         <div v-if="error" class="alert alert-danger text-center mt-3 mx-3">
             No courses available. Please try again later.
         </div>
@@ -79,14 +75,7 @@ import { URL, retrieveAllCourses, retrieveEligibleCourses } from "./callAPI/endp
 import navBar from "./components/navBar.js"
 
 new Vue({
-    el: '#nav-bar-component',
-    data: {
-        accountDetails: {}
-    },
-    mounted: function(){
-        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
-        this.accountDetails = accountDetails;
-    }
+    el: '#nav-bar-component' 
 });
 
 var app = new Vue({
@@ -122,6 +111,7 @@ var app = new Vue({
         } else {
             retrieveEligibleCourses(URL, this.accountDetails.staff_id).then(result => {
                 if (result.code == 200) {
+                    console.log(result)
                     this.error = false;
                     const courses = result.data.filter(course => {
                         return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
