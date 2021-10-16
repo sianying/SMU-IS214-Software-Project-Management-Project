@@ -2,9 +2,11 @@ import boto3
 import os
 from boto3.dynamodb.conditions import Key, Attr
 import copy
-
-os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
-os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+except:
+    pass
 
 class Course:
 
@@ -250,3 +252,4 @@ class CourseDAO:
 
 if __name__ == "__main__":
     dao = CourseDAO()
+    print([course.json() for course in dao.retrieve_all()])
