@@ -13,8 +13,12 @@ from modules.section_manager import SectionDAO, Material
 from modules.quiz_manager import QuizDAO
 
 
-os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
-os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
+    session = boto3.Session()
+except:
+    session = boto3.Session(profile_name="EC2")
+
 
 class JSONEncoder_Improved(json.JSONEncoder):
     def default(self,obj):
@@ -776,7 +780,7 @@ def assign_trainer():
 
 def check_exist(key):
     try:
-        boto3.client('s3', region_name = "ap-southeast-1").head_object(Bucket="spmprojectbucket",Key=key)
+        session.client('s3', region_name = "ap-southeast-1").head_object(Bucket="spmprojectbucket",Key=key)
         return True
     except ClientError as e:
         return False
@@ -797,7 +801,7 @@ def upload_file(file_binary, filename):
     Function to upload a file to an S3 bucket
     """
 
-    s3_client = boto3.client('s3', region_name = "ap-southeast-1")
+    s3_client = session.client('s3', region_name = "ap-southeast-1")
     try:
         s3_client.upload_fileobj(file_binary, "spmprojectbucket", filename, ExtraArgs={'ACL': 'public-read'})
         
