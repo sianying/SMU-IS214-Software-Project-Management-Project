@@ -3,3 +3,4 @@ uuid
 flask
 simplejson
 moto
+gunicorn
