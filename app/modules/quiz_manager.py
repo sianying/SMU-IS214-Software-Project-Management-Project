@@ -3,8 +3,11 @@ import os
 from boto3.dynamodb.conditions import Key, Attr
 from uuid import uuid4
 
-os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
-os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+except:
+    pass
 
 class Quiz:
     def __init__(self, *args, **kwargs):

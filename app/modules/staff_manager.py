@@ -4,7 +4,11 @@ from boto3.dynamodb.conditions import Key, Attr
 from uuid import uuid4
 import copy
 
-os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+except:
+    pass
 
 class Staff:
     def __init__(self, *args, **kwargs):
