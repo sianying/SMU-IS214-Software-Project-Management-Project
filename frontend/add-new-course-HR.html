@@ -25,11 +25,11 @@
 </head>
 
 <body>
-    <div id="app" class="wrapper container mx-auto">
+    <div v-cloak id="app" class="wrapper container mx-auto">
         <div id="breadcrumb">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-light">
-                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Home</a></li>
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Add New Course</li>
                 </ol>
             </nav>
@@ -50,14 +50,27 @@
                     <label for="exampleFormControlTextarea1">Course Description</label><span class="form-error ml-2">{{ error.description }}</span>
                     <textarea class="form-control" id="exampleFormControlTextarea1" rows="5" v-model="description"  @input="validateCourseDescription" placeholder="e.g. This course teaches the fundamentals of ink replacement procedures..."></textarea>
                 </div>
+                
                 <div class="form-group">
-                    <label for="exampleFormControlInput1">Pre-requisites</label><span v-if = "selected.length === 0" class="ml-2 form-notice">* Currently no pre-requisite courses are selected</span>
-                    <select multiple v-model="selected" class="form-control" style="height: 150px">
-                        <option value="no prereqs">This course has no pre-requisites</option>
+                    <!-- <label for="exampleFormControlInput1">Pre-requisites</label><span v-if = "selected.length === 0" class="ml-2 form-notice">* Currently no pre-requisite courses are selected</span> -->
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="true" v-model="prereqs" @click="selected=[courses[0].course_id]">
+                        <label class="form-check-label" for="inlineRadio1">Prerequisite Courses</label>
+                    </div>
+                    <div class="form-check form-check-inline mb-2">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="false" v-model="prereqs" @click="selected=[]">
+                        <label class="form-check-label" for="inlineRadio2">No Prerequisite Courses</label>
+                    </div>
+                    <select v-if="prereqs =='true'" multiple v-model="selected" class="form-control" style="height: 150px">
                         <option v-for="course in courses" :value="course.course_id">{{course.course_id}} {{ course.course_name }}</option>
                     </select>
                 </div>
+                <div v-if="apiError" class="alert alert-danger mt-4 text-center" role="alert">
+                    {{ apiError }}
+                </div>
                 <div class="d-flex justify-content-center">
+                    <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
+                    <!-- <a v-else class="btn btn-success mt-4" @click="onSubmit">Confirm</a> -->
                     <a class="btn btn-success mt-4" @click="onSubmit">Confirm</a>
                 </div>
             </form>
@@ -66,7 +79,7 @@
     </div>
     
 <script type="module">
-import { URL, retrieveAllCourses } from "./callAPI/endpoints.js";
+import { URL, retrieveAllCourses, createCourse } from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -76,16 +89,19 @@ new Vue({
 var app = new Vue({
     el: '#app',
     data: {
+        accountDetails: {},
         name: "",
         id: "",
         description: "",
-        selected: ["no prereqs"],
+        selected: [],
+        prereqs: "true",
         error: {
             name: "",
             id: "",
             description: ""
         },
         errorMessages: ["* Course name should be specified", "* Course id should be specified", "* Course description should be specified"],
+        apiError: false,
         course: {},
         courses: [],
     },
@@ -98,16 +114,26 @@ var app = new Vue({
             } else {
             // 2. Initialzie new course object and call create course API
                 const course = {
-                    "name": this.name,
-                    "id": this.id,
-                    "description": this.description,
-                    "prereq": this.selected
+                    "course_name": this.name,
+                    "course_id": this.id,
+                    "course_description": this.description,
+                    "prerequisite_course": this.selected,
+                    "class_list": [],
                 };
-            // 3. Return 200, pass returned course id to next page
-                let para = new URLSearchParams();
-                para.append("id", course.id);
-                location.href = "./create-class-page-HR.html?" + para.toString();
-                event.preventDefault();
+                createCourse(URL, course).then(result => {
+                    this.apiError = false;
+                    // console.log(result);
+                    if (result.code == 201){
+                        const course = result.data;
+            // 3. Return 201, pass returned course id to next page
+                        let para = new URLSearchParams();
+                        para.append("courseId", course.course_id);
+                        location.href = "./view-specific-course-HR.html?" + para.toString();
+                    } else {
+                        this.apiError = result.data + ".";
+                    }
+                });
+            
             }
         },
         validateForm() {
@@ -143,12 +169,21 @@ var app = new Vue({
             }
         },
     },
-    mounted: function() {
+    created: function() {
+        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        this.accountDetails = accountDetails;
         //call API to get all courses
         retrieveAllCourses(URL).then(result => {
-            const courses = result.data;
-            //sort courses according to course id in ascending order
-            this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+            if (result.code == 200){
+                this.apiError = false;
+                const courses = result.data;
+                //sort courses according to course id in ascending order
+                this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+                this.selected = [courses[0].course_id]
+            } else {
+                this.apiError = result.data + ".";
+            }
+            
         });
     }
 
