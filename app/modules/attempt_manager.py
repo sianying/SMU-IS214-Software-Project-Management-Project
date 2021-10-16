@@ -2,8 +2,11 @@ import boto3
 import os
 from boto3.dynamodb.conditions import Key, Attr
 
-os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
-os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+except:
+    pass
 
 class Attempt:
     def __init__(self, *args, **kwargs):
