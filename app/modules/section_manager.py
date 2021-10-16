@@ -1,14 +1,14 @@
 import boto3
 import os
 from boto3.dynamodb.conditions import Key, Attr
-import copy
 from uuid import uuid4
 
 try:
     os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
-    os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+    session = boto3.Session()
 except:
-    pass
+    session = boto3.Session(profile_name="EC2")
+
 
 class Section:
     def __init__(self, *args, **kwargs):
@@ -138,7 +138,7 @@ class Material:
 
 class SectionDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name='ap-southeast-1').Table('Section')
+        self.table = session.resource('dynamodb', region_name='ap-southeast-1').Table('Section')
     
     #Create
     def insert_section(self, section_name, course_id, class_id, section_number = None, section_id = None, materials = [], quiz = None): 
