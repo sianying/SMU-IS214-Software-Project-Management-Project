@@ -4,9 +4,9 @@ from boto3.dynamodb.conditions import Key, Attr
 import copy
 try:
     os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
-    os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+    session = boto3.Session()
 except:
-    pass
+    session = boto3.Session(profile_name="EC2")
 
 class Course:
 
@@ -80,7 +80,7 @@ class Course:
 
 class CourseDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Course')
+        self.table = session.resource('dynamodb', region_name='ap-southeast-1').Table('Course')
     
     #Create
     def insert_course(self, course_id, course_name, course_description, class_list=[], prerequisite_course=[]):

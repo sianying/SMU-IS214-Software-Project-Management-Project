@@ -5,9 +5,9 @@ from uuid import uuid4
 
 try:
     os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
-    os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+    session = boto3.Session()
 except:
-    pass
+    session = boto3.Session(profile_name="EC2")
 
 class Quiz:
     def __init__(self, *args, **kwargs):
@@ -61,7 +61,7 @@ class Quiz:
 
 class QuizDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Quiz')
+        self.table = session.resource('dynamodb',region_name='ap-southeast-1').Table('Quiz')
 
     #Create
     def insert_quiz(self, section_id, quiz_id = None, questions= []):
