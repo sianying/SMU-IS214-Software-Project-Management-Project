@@ -1,0 +1,12 @@
+# file to be included in /etc/systemd/system directory
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+WorkingDirectory=/project_deployment/deploy/app
+ExecStart=/project_deployment/deploy/env/bin/gunicorn -w 4 main:app
+
+[Install]
+WantedBy=multi-user.target
