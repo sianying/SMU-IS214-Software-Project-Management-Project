@@ -240,7 +240,6 @@ class StaffDAO:
                 },
                 UpdateExpression= "set courses_completed = :c, courses_enrolled = :e, courses_can_teach = :t",
                 ExpressionAttributeValues ={
-                    ":r": StaffObj.get_role(),
                     ":c": StaffObj.get_courses_completed(),
                     ':e': StaffObj.get_courses_enrolled(),
                     ':t': StaffObj.get_courses_can_teach()
