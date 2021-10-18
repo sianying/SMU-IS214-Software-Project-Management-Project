@@ -4,7 +4,12 @@ from boto3.dynamodb.conditions import Key, Attr
 from uuid import uuid4
 import copy
 
-os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    session = boto3.Session()
+except:
+    session = boto3.Session(profile_name="EC2")
+
 
 class Staff:
     def __init__(self, *args, **kwargs):
@@ -111,7 +116,7 @@ class Staff:
 
 class StaffDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Staff')
+        self.table = session.resource('dynamodb', region_name='ap-southeast-1').Table('Staff')
 
     #Create
     def insert_staff(self, staff_name, role, isTrainer, staff_id = None, courses_completed= [], courses_enrolled = []):

@@ -1,20 +1,25 @@
-from re import A
 from flask import Flask, request, json, jsonify
 from flask_cors import CORS
 import boto3
 import os
+import re
+from botocore.errorfactory import ClientError
 from decimal import Decimal
 from modules.attempt_manager import AttemptDAO
 from modules.course_manager import CourseDAO
 from modules.class_manager import ClassDAO
 from modules.staff_manager import StaffDAO
-from modules.section_manager import SectionDAO
+from modules.section_manager import SectionDAO, Material
 from modules.quiz_manager import QuizDAO
 from modules.trainer_manager import TrainerDAO
 
 
-os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
-os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
+    session = boto3.Session()
+except:
+    session = boto3.Session(profile_name="EC2")
+
 
 class JSONEncoder_Improved(json.JSONEncoder):
     def default(self,obj):
@@ -191,7 +196,6 @@ def retrieve_eligible_staff(course_id):
         }
     ), 404    
 
-
 @app.route("/class/<string:course_id>")
 def retrieve_all_classes(course_id):
     dao = ClassDAO()
@@ -337,7 +341,6 @@ def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
     ), 404
 
 
-
 # ============= Create ==================
 @app.route("/courses", methods =['POST'])
 def create_course():
@@ -443,7 +446,6 @@ def insert_quiz():
             }
         ), 500
 
-
 @app.route("/attempts/<string:quiz_id>", methods=['POST'])
 def insert_attempt(quiz_id):
     quiz_dao = QuizDAO()
@@ -498,7 +500,6 @@ def insert_attempt(quiz_id):
                 "data": "An error occurred when creating the attempt."
             }
         ), 500
-
 
 @app.route("/class", methods =['POST'])
 def insert_class():
@@ -561,7 +562,6 @@ def insert_class():
             }
         ), 500
 
-
 @app.route("/section", methods=['POST'])
 def insert_section():
     data = request.get_json()
@@ -617,7 +617,105 @@ def insert_section():
             }
         ), 500
 
+@app.route("/materials/file",methods =['POST'])
+def insert_files():
+    try:
+        file = request.files.get('file')
+        section_id = request.form.get('section_id')
+    except Exception as e:
+        return jsonify({
+            "code": 400,
+            "data": "Error in uploading file " + str(e)
+        })
+    
+    section_dao = SectionDAO()
+    section = section_dao.retrieve_one(section_id)
+    
+    if section == None:
+        return jsonify({
+            "code": 404,
+            "data": "Section {} does not exist".format(section_id)
+        }), 404
 
+    filename, extension = os.path.splitext(file.filename)
+    transformed_name = transform_file_name(filename, extension)
+    try:
+        url = upload_file(file, transformed_name)
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": str(e)
+            }
+        ), 500
+
+    mat = Material(transformed_name, extension, url)
+    section.add_material(mat)
+    
+    try:
+        section_dao.update_section(section)
+        return jsonify(
+            {
+                "code": 201,
+                "data": mat.json()
+            }
+        )
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating section object."
+            }
+        ), 500
+
+@app.route("/materials/link", methods = ['POST'])
+def insert_links():
+    data = request.get_json()
+
+    if "section_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "section_id not in Request Body"
+            }
+        ), 400
+    
+    section_dao = SectionDAO()
+    section = section_dao.retrieve_one(data['section_id'])
+    
+    if section == None:
+        return jsonify({
+            "code": 404,
+            "data": "Section {} does not exist".format(data['section_id'])
+        }), 404
+
+    try:
+        mat = Material(data['mat_name'], data['mat_type'], data['url'])
+    except:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "In proper request body."
+            }
+        ), 400
+    
+    section.add_material(mat)
+    
+    try:
+        section_dao.update_section(section)
+        return jsonify(
+            {
+                "code": 201,
+                "data": mat.json()
+            }
+        )
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating section object."
+            }
+        ), 500
 
 # ============= Update ==================
 @app.route("/class/enroll", methods=['PUT'])
@@ -727,6 +825,45 @@ def assign_trainer():
                 "data": "An error occurred when assigning staff"
             }
         ), 500
+
+
+
+=======
+# ============= Utility ==================
+
+def check_exist(key):
+    try:
+        session.client('s3', region_name = "ap-southeast-1").head_object(Bucket="spmprojectbucket",Key=key)
+        return True
+    except ClientError as e:
+        return False
+
+def transform_file_name(orig_filename, extension):
+    transformed_name = re.sub("[^A-Za-z0-9-_]+",'-', orig_filename)
+    version = 1
+
+    while check_exist(transformed_name+"_"+str(version)+extension):
+        version += 1
+
+    transformed_name += "_"+str(version)+extension
+
+    return transformed_name
+
+def upload_file(file_binary, filename):
+    """
+    Function to upload a file to an S3 bucket
+    """
+
+    s3_client = session.client('s3', region_name = "ap-southeast-1")
+    try:
+        s3_client.upload_fileobj(file_binary, "spmprojectbucket", filename, ExtraArgs={'ACL': 'public-read'})
+        
+        if check_exist(filename):
+            return "https://s3.ap-southeast-1.amazonaws.com/spmprojectbucket/"+filename
+        
+        raise Exception("Error occured when uploading.")
+    except Exception as e:
+        raise Exception("Error occured when uploading.\nError Message: "+str(e))
 
 
 if __name__ == "__main__":

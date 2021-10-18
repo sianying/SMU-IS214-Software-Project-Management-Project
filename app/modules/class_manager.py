@@ -4,7 +4,12 @@ from boto3.dynamodb.conditions import Key, Attr
 from datetime import datetime
 import copy
 
-os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    session = boto3.Session()
+except:
+    session = boto3.Session(profile_name="EC2")
+
 
 class Class:
     def __init__(self, *args, **kwargs):
@@ -145,7 +150,7 @@ class Class:
 
 class ClassDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Class')
+        self.table = session.resource('dynamodb', region_name='ap-southeast-1').Table('Class')
 
     #Create
     def insert_class(self, course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = None, learners_enrolled= [], section_list=[]):

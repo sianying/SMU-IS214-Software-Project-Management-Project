@@ -2,8 +2,12 @@ import boto3
 import os
 from boto3.dynamodb.conditions import Key, Attr
 
-os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
-os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-1'
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    session = boto3.Session()
+except:
+    session = boto3.Session(profile_name="EC2")
+
 
 class Attempt:
     def __init__(self, *args, **kwargs):
@@ -78,7 +82,7 @@ class Attempt:
 
 class AttemptDAO:
     def __init__(self):
-        self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Attempt')
+        self.table = session.resource('dynamodb', region_name = "ap-southeast-1").Table('Attempt')
 
     #Create
     def insert_attempt(self, attempt_dict, correct_options, marks):

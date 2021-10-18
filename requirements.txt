@@ -1,6 +1,7 @@
 boto3
 uuid
 flask
+flask_cors
 simplejson
-wheel
 moto
+gunicorn

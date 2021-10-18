@@ -1,6 +1,11 @@
 import boto3
 import os
-os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    session = boto3.Session()
+except:
+    session = boto3.Session(profile_name="EC2")
+
 
 def create_course_table(dynamodb):
     try:
@@ -251,7 +256,7 @@ def create_staff_table(dynamodb):
 
 
 if __name__ == "__main__":
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = session.resource('dynamodb', region_name='ap-southeast-1')
     course_table = create_course_table(dynamodb)
     class_table = create_class_table(dynamodb)
     section_table = create_section_table(dynamodb)

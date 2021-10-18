@@ -128,7 +128,7 @@ class TestQuizDAO(unittest.TestCase):
     def setUp(self):
         from modules import create_tables
         from modules.quiz_manager import QuizDAO 
-        self.dynamodb = boto3.resource('dynamodb')
+        self.dynamodb = boto3.resource('dynamodb', region_name= 'ap-southeast-1')
         results = create_tables.create_quiz_table(self.dynamodb)
         #print(results)
         self.table = self.dynamodb.Table('Quiz')
