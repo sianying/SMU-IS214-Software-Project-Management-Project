@@ -69,6 +69,59 @@ ITEM3 = {
     ]
 }
 
+question_to_add= {
+    "question_no": 6,
+    "isMCQ": True,
+    "question_name": "Should you arrive on time to work?",
+    "options":["True", "False"],
+    "correct_option": 0, #Index 0-> True
+    "marks": 1
+}
+
+question_to_remove={
+    "question_no": 3,
+    "isMCQ": False,
+    "question_name": "Are you motivated?",
+    "options":["True", "False"],
+    "correct_option": 0, #True
+    "marks": 1
+}
+
+class testQuiz(unittest.TestCase):
+    def setUp(self):
+        from modules.quiz_manager import Quiz
+        self.test_quiz = Quiz(ITEM1)
+        self.test_quiz2 = Quiz(ITEM2)
+
+    def tearDown(self):
+        del self.test_quiz 
+        del self.test_quiz2 
+
+    def test_json(self):
+        self.assertTrue(isinstance(self.test_quiz.json(),dict), "Quiz JSON is not a dictionary object")
+        self.assertEqual(ITEM1, self.test_quiz.json(), "Quiz does not match")
+        self.assertNotEqual(ITEM2, self.test_quiz.json(), "Quiz matched when it should not")
+    
+    def test_add_question(self):
+        self.test_quiz.add_question(question_to_add)
+        questions=self.test_quiz.get_questions()
+
+        ITEM1['questions'].append(question_to_add)
+        check_against=ITEM1['questions']
+
+        self.assertTrue(question_to_add in questions, "Question was not successfully added.")
+        self.assertEqual(check_against, questions, "Questions do not match, before and after addition")
+
+    def test_remove_question(self):
+        check_against=[ITEM2['questions'][1]]
+
+        self.test_quiz2.remove_question(question_to_remove)
+        questions=self.test_quiz2.get_questions()
+
+        self.assertFalse(question_to_remove in questions, "Question was not successfully removed.")
+        self.assertEqual(check_against, questions, "Questions do not match, before and after removal.")
+
+
 @mock_dynamodb2
 class TestQuizDAO(unittest.TestCase):
 
@@ -123,15 +176,7 @@ class TestQuizDAO(unittest.TestCase):
 
     def test_update_quiz(self):
         quizObj = Quiz(ITEM1)
-        question= {
-            "question_no": 6,
-            "isMCQ": True,
-            "question_name": "Should you arrive on time to work?",
-            "options":["True", "False"],
-            "correct_option": 0, #Index 0-> True
-            "marks": 1
-        }
-        quizObj.add_question(question)
+        quizObj.add_question(question_to_add)
         self.dao.update_quiz(quizObj)
         toCheck = self.table.get_item(Key={'quiz_id':quizObj.get_quiz_id(), 'section_id':quizObj.get_section_id()})['Item']
         self.assertEqual(quizObj.json(), toCheck, "QuizDAO update test failure")
