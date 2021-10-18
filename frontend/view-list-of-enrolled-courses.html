@@ -16,9 +16,7 @@
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
     <!-- NavBar -->
     <div id="nav-bar-component">
-        <nav-bar
-        role="accountDetails.role">
-        </nav-bar>
+        <nav-bar></nav-bar>
     </div>
 
 </head>
@@ -35,14 +33,11 @@
             </ol>
         </nav>
     </div>
-    <!-- "Add New Course" Button for HR -->
-    <div v-if="accountDetails.role ==='HR'" class="container d-flex justify-content-end">
-        <a href = "./add-new-course-HR.html" class="btn btn-outline-info">Add New Course <span class="iconify" data-icon="akar-icons:circle-plus"></span></a>
-    </div>
+
     <!-- Dynamically render courses using Vue Instance -->
     <div v-cloak id="app">
-        <div v-if="error" class="alert alert-danger text-center mt-3 mx-3">
-            No courses available. Please try again later.
+        <div v-if="errorAPI || noCoursesEnrolled" :class="[alertColor, 'alert', 'text-center', 'mt-3', 'mx-3']">
+            {{ alertMessage }}
         </div>
         <div v-else class="container">
             <div class="row">
@@ -75,7 +70,7 @@ import { URL, retrieveAllCourses, retrieveEligibleCourses } from "./callAPI/endp
 import navBar from "./components/navBar.js"
 
 new Vue({
-    el: '#nav-bar-component' 
+    el: '#nav-bar-component'
 });
 
 var app = new Vue({
@@ -85,44 +80,63 @@ var app = new Vue({
         courses: [],
         // e.g. accountDetails taken from session e.g. session.accountDetails
         accountDetails: {},
-        error: false
+        errorAPI: false,
+        noCoursesEnrolled: false,
+        alertMessage: "",
+        alertColor: ""
     },
     methods: {
-
+        activateErrorAPI() {
+            this.errorAPI = true;
+            this.alertColor = "alert-danger";
+            this.alertMessage = "No courses available. Please try again later.";
+        },
+        deactivateErrorAPI() {
+            this.errorAPI = false;
+        },
+        activateErrorNoCoursesEnrolled() {
+            this.noCoursesEnrolled = true;
+            this.alertColor = "alert-warning";
+            this.alertMessage = "No courses enrolled.";
+        },
+        deactivateErrorNoCoursesEnrolled() {
+            this.noCoursesEnrolled = false;
+        }
+        
     },
-    mounted: function () {
+    created: function () {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
+        // this.coursesEnrolled = accountDetails.courses_enrolled;
 
-        //call API to get all courses if role is HR
-        if (this.accountDetails.role == "HR"){
+        // if courses enrolled is zero, display no courses enrolled
+        if (this.accountDetails.courses_enrolled.length !== 0){
+            this.deactivateErrorNoCoursesEnrolled();
             retrieveAllCourses(URL).then(result => {
                 if (result.code == 200) {
-                    this.error = false;
+                    this.errorAPI = false;
                     const courses = result.data.filter(course => {
-                        return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
+                        // return course if its an enrolled course
+                        return this.accountDetails.courses_enrolled.includes(course.course_id) && course;
                     });
-                    //sort courses according to course id in ascending order
-                    this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+                    //sort courses according to course id in ascending order if there are more than 1 enrolled course
+                    if (courses.length > 1){
+                        this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+                    } else {
+                        this.courses = courses;
+                    }
+                    
                 } else {
-                    this.error = true;
+                    this.activateErrorAPI();
                 }
             });
         } else {
-            retrieveEligibleCourses(URL, this.accountDetails.staff_id).then(result => {
-                if (result.code == 200) {
-                    console.log(result)
-                    this.error = false;
-                    const courses = result.data.filter(course => {
-                        return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
-                    });
-                    //sort courses according to course id in ascending order
-                    this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
-                } else {
-                    this.error = true;
-                }
-            });
+            this.deactivateErrorAPI();
+            activateErrorNoCoursesEnrolled();
+            // this.alertMessage = "No courses enrolled."
         }
+        console.log(this.coursesEnrolled)
+        console.log(this.courses)
         
     }
     

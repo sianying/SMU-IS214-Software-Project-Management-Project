@@ -16,9 +16,7 @@
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
     <!-- NavBar -->
     <div id="nav-bar-component">
-        <nav-bar
-        role="accountDetails.role">
-        </nav-bar>
+        <nav-bar"></nav-bar>
     </div>
 </head>
 
@@ -71,10 +69,11 @@
                         <p class="card-text">
                             <b>Duration: </b> {{ datetimeToDate(selectedClass.start_datetime, selectedClass.end_datetime) }}
                             <br>
-                            <b>Availability: </b> {{ getAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
+                            <b>Availability: </b> {{ getSectionAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
                         </p>
-                        <a v-if="selectedClass.learners_enrolled.length !== selectedClass.class_size" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">View Sections</a>
-                        <!-- <button v-else href="#" class="btn btn-light mt-auto" disabled>Enroll</button> -->
+                        <a v-if="accountDetails.role === 'HR'" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">View Section</a>
+                        <a v-ifelse="isSectionFull(selectedClass.learners_enrolled, selectedClass)" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">Enroll</a>
+                        <button v-else class="btn btn-light mt-auto" disabled>Enroll</button>
                         
                     </div>
                 </div>
@@ -107,6 +106,7 @@ var app = new Vue({
     },
     methods: {
         datetimeToDate(startDatetime, endDatetime) {
+            //format date to DD/MM/YYYY
             const startDatetimeStr = new Date(startDatetime);
             const startDate = startDatetimeStr.toLocaleDateString();
 
@@ -115,11 +115,18 @@ var app = new Vue({
 
             return startDate + " to " + endDate;
         },
-        getAvailability(learnersEnrolled, classSize){
+        getSectionAvailability(learnersEnrolled, classSize){
+            // returns availability of section
             return (learnersEnrolled.length).toString() + "/" + (classSize).toString();
+        },
+        isSectionFull(learnersEnrolled, classSize) {
+            // returns if class is full
+            return learnersEnrolled.length === classSize.length ? false : true;
         }
+        
     },
     created: function() {
+        // get the url of last visited page; if its from add new course, display success alert for course creation
         const lastLinkVisited = document.referrer.split("/").at(-1);
         if (lastLinkVisited == "add-new-course-HR.html"){
             this.courseCreationSuccess = true;
@@ -132,7 +139,7 @@ var app = new Vue({
         const params = Object.fromEntries(urlSearchParams.entries());
         //Call retrieveSpecificCourse API
         retrieveSpecificCourse(URL, params.courseId).then(result => {
-            // console.log(result);
+            // Initialize course object
             if (result.code == 200){
                 const course = result.data;
                 this.courseName = course.course_name;

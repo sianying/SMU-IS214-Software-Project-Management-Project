@@ -16,9 +16,7 @@
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
     <!-- NavBar -->
     <div id="nav-bar-component">
-        <nav-bar
-        v-bind:accountDetails="accountDetails">
-        </nav-bar>
+        <nav-bar></nav-bar>
     </div>
 
 </head>
@@ -79,14 +77,7 @@ import { URL, retrieveAllCourses, retrieveEligibleCourses } from "./callAPI/endp
 import navBar from "./components/navBar.js"
 
 new Vue({
-    el: '#nav-bar-component',
-    data: {
-        accountDetails: {}
-    },
-    mounted: function(){
-        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
-        this.accountDetails = accountDetails;
-    }
+    el: '#nav-bar-component'
 });
 
 var app = new Vue({
@@ -101,7 +92,7 @@ var app = new Vue({
     methods: {
 
     },
-    mounted: function () {
+    created: function () {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
 
