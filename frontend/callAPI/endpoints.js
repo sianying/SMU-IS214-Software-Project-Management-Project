@@ -2,7 +2,7 @@
 // Naming conventions e.g. retrieveAllCourses(), createCourse(), updateCourse(), deleteCourse()
 // e.g. API call using async/await
 
-export const URL = "http://127.0.0.1:5000";
+export const URL = "http://13.250.140.89:5000";
 
 // =========== Retrieve APIs ===========
 
