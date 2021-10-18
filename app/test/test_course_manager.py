@@ -85,7 +85,6 @@ class TestCourseDAO(unittest.TestCase):
             self.dao.insert_course(ITEM2['course_id'], ITEM2['course_name'], ITEM2['course_description'], ITEM2['class_list'], ITEM2['prerequisite_course'])
 
         self.assertTrue("Course already exists" == str(context.exception))
-        self.assertTrue(False)
 
     def test_insert_course_w_dict(self):
         insertTest = self.dao.insert_course_w_dict(ITEM3)
