@@ -16,7 +16,7 @@
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
     <!-- NavBar -->
     <div id="nav-bar-component">
-        <nav-bar"></nav-bar>
+        <nav-bar></nav-bar>
     </div>
 </head>
 
@@ -72,7 +72,7 @@
                             <b>Availability: </b> {{ getSectionAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
                         </p>
                         <a v-if="accountDetails.role === 'HR'" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">View Section</a>
-                        <a v-ifelse="isSectionFull(selectedClass.learners_enrolled, selectedClass)" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">Enroll</a>
+                        <a v-else-if="isSectionFull(selectedClass.learners_enrolled, selectedClass)" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">Enroll</a>
                         <button v-else class="btn btn-light mt-auto" disabled>Enroll</button>
                         
                     </div>
