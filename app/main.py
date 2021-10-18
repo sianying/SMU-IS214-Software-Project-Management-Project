@@ -827,8 +827,6 @@ def assign_trainer():
         ), 500
 
 
-
-=======
 # ============= Utility ==================
 
 def check_exist(key):
