@@ -210,13 +210,13 @@ export async function createQuiz(URL, body) {
 export async function enrollLearners(URL, body) {
     try {
         const data = {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(body)
         }
-        const response = await fetch(`${URL}/courses`, data)
+        const response = await fetch(`${URL}/class/enroll`, data)
         if (response) {
             const result = await response.json()
             return result;
