@@ -9,28 +9,28 @@ from unittest.mock import patch
 ITEM1 = {
     "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
     "staff_name": "George",
+    "role": "Engineer",
+    "isTrainer": 0,
     "courses_completed": ["IS110", "IS113"],
     "courses_enrolled": ['IS112'],
-    "courses_can_teach": ['IS115'],
-    "role": "Engineer",
 }
 
 ITEM2 = {
     "staff_id": "851252d7-b21c-4d75-95b6-321471baasde",
     "staff_name": "Tom",
+    "role": "HR",
+    "isTrainer": 0,
     "courses_completed": [],
     "courses_enrolled": [],
-    "courses_can_teach": ['IS120'],
-    "role": "HR"
 }
 
 ITEM3 = {
-    "staff_id": "851252d7-b21c-4d75-95b6-321471baefg",
+    "staff_id": "123456d7-b12c-3d45-67b8-654321baasde",
     "staff_name": "Tom",
+    "role": "Engineer",
+    "isTrainer": 1,
     "courses_completed": [],
     "courses_enrolled": [],
-    "courses_can_teach": [],
-    "role": "HR"
 }
 
 IS111 = {
@@ -61,6 +61,17 @@ class TestStaff(unittest.TestCase):
         self.assertTrue(isinstance(self.test_staff.json(), dict), "Staff JSON is not a dictionary object")
         self.assertEqual(ITEM1, self.test_staff.json(), "Staff does not match")
         self.assertNotEqual(ITEM2, self.test_staff.json(), "Staff matched when it should not")
+
+    def test_convert_trainer(self):
+        self.test_staff.convert_trainer()
+        trainer_status = self.test_staff.get_isTrainer()
+        self.assertEqual(1, trainer_status, "Staff was not successfully converted into trainer.")
+
+        #2nd time, staff is already trainer.
+        with self.assertRaises(ValueError, msg="Failed to raise exception when staff is already trainer") as context:
+            self.test_staff.convert_trainer()
+        
+        self.assertTrue("Staff is already a Trainer" == str(context.exception))
     
     def test_add_completed(self):
         self.test_staff.add_completed("IS114")
@@ -87,27 +98,12 @@ class TestStaff(unittest.TestCase):
         with self.assertRaises(ValueError, msg="Able to remove a course that doesn't exist"):
             self.test_staff.remove_enrolled("IS21321")
 
-    def test_add_can_teach(self):
-        self.test_staff.add_can_teach("IS116")
-        self.assertEqual(["IS115","IS116"], self.test_staff.get_courses_can_teach(), "Failed to add a teachable course.")
-        
-        with self.assertRaises(ValueError, msg="Failed to raise exception when adding duplicate") as context:
-            self.test_staff.add_can_teach("IS115")
-        
-        self.assertTrue("IS115 has already been recorded as a teachable course." == str(context.exception))
-
-    def test_remove_can_teach(self):
-        self.test_staff.remove_can_teach("IS115")
-        self.assertEqual([], self.test_staff.get_courses_can_teach(), "Failed to remove enrolled course")
-
-        with self.assertRaises(ValueError, msg="Able to remove a course that doesn't exist"):
-            self.test_staff.remove_can_teach("IS21321")
-
     def test_can_enrol(self):
         self.assertTrue(self.test_staff.can_enrol("IS300", ["IS110"]), "Failed check for enrolment")
         self.assertTrue(self.test_staff.can_enrol("IS300", []), "Failed check for enrolment with no prereq")
         self.assertFalse(self.test_staff.can_enrol("IS300", ["IS700"]), "Failed check not eligible for enrolment")
         self.assertFalse(self.test_staff.can_enrol("IS300", ["IS112"]), "Failed check not eligible for enrolment for enrolled course")
+
 
 @mock_dynamodb2
 class TestStaffDAO(unittest.TestCase):
@@ -129,15 +125,15 @@ class TestStaffDAO(unittest.TestCase):
 
     def test_insert_staff(self):
         from modules.staff_manager import Staff
-        insertDefault = self.dao.insert_staff("abcde", "HR")
+        insertDefault = self.dao.insert_staff("abcde", "HR", 0)
         self.assertTrue(isinstance(insertDefault, Staff))
 
-        insertTest = self.dao.insert_staff(ITEM3['staff_name'], ITEM3['role'], ITEM3['staff_id'], ITEM3['courses_completed'], ITEM3['courses_enrolled'])
+        insertTest = self.dao.insert_staff(ITEM3['staff_name'], ITEM3['role'], ITEM3['isTrainer'], ITEM3['staff_id'], ITEM3['courses_completed'], ITEM3['courses_enrolled'])
 
         self.assertEqual(ITEM3, insertTest.json(), "StaffDAO insert test failure")
 
         with self.assertRaises(ValueError, msg = "Failed to raise exception for duplicates") as context:
-            self.dao.insert_staff(ITEM2['staff_name'], ITEM2['role'], ITEM2['staff_id'], ITEM2['courses_completed'], ITEM2['courses_enrolled'])
+            self.dao.insert_staff(ITEM2['staff_name'], ITEM2['role'], ITEM2['isTrainer'], ITEM2['staff_id'], ITEM2['courses_completed'], ITEM2['courses_enrolled'])
 
         self.assertTrue("Staff already exists" == str(context.exception))
 
@@ -162,13 +158,6 @@ class TestStaffDAO(unittest.TestCase):
     def test_retrieve_one(self):
         self.assertEqual(ITEM1, self.dao.retrieve_one(ITEM1['staff_id']).json(), "StaffDAO retrieve existing one test failure")
         self.assertEqual(None, self.dao.retrieve_one("abcdea"), "StaffDAO retrieve not existing one test failure")
-
-    def test_retrieve_all_trainers_can_teach(self):
-        staff_can_teach = self.dao.retrieve_all_trainers_can_teach("IS120")
-        self.assertEqual([ITEM2], [staffObj.json() for staffObj in staff_can_teach], "StaffDAO did not retrieve correct trainer who can teach IS120.")
-
-        none_can_teach = self.dao.retrieve_all_trainers_can_teach("IS13437346743")
-        self.assertEqual([], [staffObj2.json() for staffObj2 in none_can_teach], "Should have returned empty list.")
 
     def test_update_staff(self):
         from modules.staff_manager import Staff

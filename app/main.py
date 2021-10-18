@@ -10,6 +10,7 @@ from modules.class_manager import ClassDAO
 from modules.staff_manager import StaffDAO
 from modules.section_manager import SectionDAO
 from modules.quiz_manager import QuizDAO
+from modules.trainer_manager import TrainerDAO
 
 
 os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
@@ -46,6 +47,7 @@ def retrieve_all_courses():
         }
     ), 404
 
+
 @app.route("/courses/eligible/<string:staff_id>")
 def retrieve_eligible_courses(staff_id):
     staff_dao = StaffDAO()
@@ -77,6 +79,7 @@ def retrieve_eligible_courses(staff_id):
         }
     ), 404
 
+
 @app.route("/course/<string:course_id>")
 def retrieve_specific_course(course_id):
     dao = CourseDAO()
@@ -97,25 +100,65 @@ def retrieve_specific_course(course_id):
         }
     ), 404
 
-
+# retrieve those that can teach a course, not those that are currently teaching the course.
+# for HR
 @app.route("/courses/qualified/<string:course_id>")
-def retrieve_trainers_can_teach_course(course_id):
-    dao = StaffDAO()
-    staff_list = dao.retrieve_all_trainers_can_teach(course_id)
-    if len(staff_list):
+def retrieve_qualified_trainers(course_id):
+    dao = TrainerDAO()
+    trainer_list = dao.retrieve_qualified_trainers(course_id)
+    if len(trainer_list):
         return jsonify(
             {
                 "code":200,
-                'data': [staffObj.json() for staffObj in staff_list]
+                'data': [trainerObj.json() for trainerObj in trainer_list]
             }
         )
     
     return jsonify(
         {
             "code": 404,
-            "data": "No staff found"
+            "data": "No trainer found"
         }
     ), 404
+
+# retrieve all the courses that a trainer is actually teaching.
+# class_list is filtered to only include classes that the trainer is teaching.
+# for Trainer
+@app.route("/courses/assigned/<string:staff_id>")
+def retrieve_courses_trainer_teaches(staff_id):
+    dao=TrainerDAO()
+    course_ids = dao.retrieve_courses_teaching(staff_id)
+
+    if course_ids==[]:
+        return jsonify(
+        {
+            "code": 404,
+            "data": "No courses were found for the trainer."
+        }
+    ), 404
+    
+    course_dao = CourseDAO()
+    course_list=[]
+    for course_id in course_ids:
+        try:
+            courseObj=course_dao.retrieve_one(course_id)
+        except:
+            return jsonify(
+                {
+                    "code": 404,
+                    'data': "Course with course_id " + course_id + " could not be found."
+                }
+            )
+        course_list.append(courseObj)
+
+    return jsonify(
+        {
+            "code":200,
+            'data': [courseObj.json() for courseObj in course_list]
+        }
+    )
+    
+
 
 @app.route("/staff/eligible/<string:course_id>")
 def retrieve_eligible_staff(course_id):
@@ -168,6 +211,7 @@ def retrieve_all_classes(course_id):
         }
     ), 404
 
+
 @app.route("/section/<string:course_id>/<int:class_id>")
 def retrieve_all_section_from_class(course_id, class_id):
     dao = SectionDAO()
@@ -186,6 +230,7 @@ def retrieve_all_section_from_class(course_id, class_id):
             "data": "No section found for Course {}, Class {}".format(course_id, class_id)
         }
     ), 404
+
 
 @app.route("/section/<string:section_id>")
 def retrieve_specific_section(section_id):
@@ -207,6 +252,7 @@ def retrieve_specific_section(section_id):
         }
     ), 404
 
+
 @app.route("/quiz/<string:quiz_id>")
 def retrieve_quiz_by_ID(quiz_id):
     dao = QuizDAO()
@@ -226,6 +272,7 @@ def retrieve_quiz_by_ID(quiz_id):
             "data": "No quiz was found with id " + quiz_id
         }
     )
+
 
 @app.route("/quiz/section/<string:section_id>")
 def retrieve_quiz_by_section(section_id):
@@ -247,6 +294,7 @@ def retrieve_quiz_by_section(section_id):
         }
     )
 
+
 @app.route("/attempts/<string:quiz_id>")
 def retrieve_quiz_attempts(quiz_id):
     dao = AttemptDAO()
@@ -266,6 +314,7 @@ def retrieve_quiz_attempts(quiz_id):
             "data": "No attempts were found for Quiz {}".format(quiz_id)
         }
     ), 404
+
 
 @app.route("/attempts/<string:quiz_id>/<string:staff_id>")
 def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
@@ -323,6 +372,7 @@ def create_course():
                 "data": "An error occurred when creating the course."
             }
         ), 500
+
 
 @app.route("/quiz/create", methods=['POST'])
 def insert_quiz():
@@ -634,6 +684,7 @@ def enroll_learners():
             }
         ), 500
 
+
 @app.route("/class/trainer", methods = ['PUT'])
 def assign_trainer():
     data = request.get_json()
@@ -676,6 +727,7 @@ def assign_trainer():
                 "data": "An error occurred when assigning staff"
             }
         ), 500
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port = 5000, debug= True)

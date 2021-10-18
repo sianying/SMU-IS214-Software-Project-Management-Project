@@ -1,6 +1,7 @@
 import boto3
 import os
 from boto3.dynamodb.conditions import Key, Attr
+import copy
 from uuid import uuid4
 
 os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
@@ -23,7 +24,7 @@ class Quiz:
             self.__quiz_id = args[1]
 
             try:
-                self.__questions = kwargs['questions']
+                self.__questions = copy.deepcopy(kwargs['questions'])
             except:
                 self.__questions = []
             
