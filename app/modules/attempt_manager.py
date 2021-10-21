@@ -119,14 +119,13 @@ class AttemptDAO:
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return Attempt(attempt_dict)
-            return 'Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
+            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
-            return "Attempt already exists"
+            raise ValueError("Attempt already exists")
         except Exception as e:
-            return "Insert Failure with Exception: "+str(e)
+            raise Exception("Insert Failure with Exception: "+str(e))
     
     #Read
-
     #for the trainer to see his entire section's scores
     def retrieve_by_quiz(self, quiz_id):
         
@@ -156,40 +155,3 @@ class AttemptDAO:
 
         return attempts_list
 
-
-    #Update
-    def update_quiz(self, AttemptObj):
-        # not too sure why we need to update the attempts... but maybe score/correct answer for a question changed.
-        # assumes quiz_id, staff_id and attempt_id cannot be updated
-        try:
-            #if necessary, insert code that recomputes score and individual_scores using marks and correct_options
-
-
-            
-            response = self.table.update_item(
-                Key = {
-                    'quiz_id': AttemptObj.get_quiz_id(),
-                    'staff_id': AttemptObj.get_staff_id(),
-                    'attempt_id': AttemptObj.get_attempt_id()
-                },
-                UpdateExpression= "set overall_score = :s, options_selected = :o, individual_scores = :i",
-                ExpressionAttributeValues ={
-                    ":s": AttemptObj.get_overall_score(),
-                    ":o": AttemptObj.get_options_selected(),
-                    ":i": AttemptObj.get_individual_scores()
-                }
-            )
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return 'Quiz Updated'
-            return 'Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
-            
-        except Exception as e:
-            return "Update Failure with Exception: "+str(e)
-
-
-
-    #Delete
-
-    #idt should have a delete method, for insertion attempt_id is obtained thru the len(attempts_list) + 1.
-    #if delete might result in duplicate attempt_ids
-    #doesnt seem to have a need for it too
