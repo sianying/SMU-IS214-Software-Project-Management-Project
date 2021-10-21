@@ -199,6 +199,34 @@ export async function createQuiz(URL, body) {
     }
 }
 
+//Create Attempt
+export async function createAttempt(URL, body){
+    try{
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify(body)
+        }
+
+        const response = await fetch(`${URL}/attempts/${body.quiz_id}`, data)
+        if(response){
+            const result = await response.json()
+            return result;
+        }
+    }catch(e){
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+
+
+
 // ====== Update ========
 //Enroll learners
 // const body = {
