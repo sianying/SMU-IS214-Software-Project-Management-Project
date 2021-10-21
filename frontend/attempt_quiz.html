@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <!-- Quiz CSS -->
+    <link rel='stylesheet' href='css/attempt_quiz.css'>
+
+    <!-- Vue link -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+    <!-- Axios link -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <title>Attempt Quiz Page</title>
+</head>
+
+<body>
+    <!-- <div id="nav-bar-component">
+        <nav-bar></nav-bar>
+    </div> -->
+    <div id='app'>
+        <div class="container-fluid mt-4 p-2 pl-3 quizheader">
+            <div class="row">
+                <div class="col">
+                    {{quizname}}
+                </div>
+                <div class="col pr-4 text-right">
+                    Timer Go here
+                </div>
+            </div>
+        </div>
+
+        <div v-for='question in questions'class="container-fluid mt-4 width">
+            <div class="row">
+                <p>{{question.question_no}}. {{question.question_name}}</p>
+            </div>
+            <div>
+                <div v-for="(option, index) in question.options" class="form-check">
+                    <input class="form-check-input" type="radio" :name="'question'+question.question_no" :id="'q'+question.question_no+'option'+index" :value="index">
+                    <label class="form-check-label" :for="'q'+question.question_no+'option'+index">
+                        {{option}}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="container-fluid mt-4 width">
+            <div class="row">
+                <p>1. This is Question Box</p>
+            </div>
+            <div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="question1" id="q1option0" value ="0">
+                    <label class="form-check-label" for="q1option0">
+                        True
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="question1" id="q1option1" value="1">
+                    <label class="form-check-label" for="q1option1">
+                        False
+                    </label>
+                </div>
+            </div>
+        </div> -->
+
+
+
+        <div class="container-fluid mt-4 width">
+            <button class="btn btn-primary" @click="submitQuiz">Submit Quiz</button>
+        </div>
+
+    </div>
+
+
+    <script type="module">
+        import {URL, retrieveQuizById, createAttempt} from "./callAPI/endpoints.js";
+        import navBar from "./components/navBar.js"
+
+        new Vue({
+            el: '#nav-bar-component'
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                quiz_id:  "e284e40f-0db2-41ce-9913-ee3846a3aed2",
+                quizname: "Test Name Here",
+                questions: null,
+                answers: [],
+                accountDetails: {
+                    "staff_id": "6724873a-b951-4ee7-a835-cb0f9f784c45",
+                    "staff_name": "Tom",
+                    "courses_completed": ["IC111"],
+                    "courses_enrolled": ["IC112"],
+                    "role": "Engineer"
+                }
+            },
+
+            created: function() {
+                // this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
+                // To pass section name and quiz_id from prev page
+                retrieveQuizById(URL, this.quiz_id).then(result =>{
+                    if(result.code == 200){
+                        this.questions = result.data.questions;
+                    }
+                })
+            },
+            methods: {
+                submitQuiz: function(){
+                    // populate answer list
+                    this.questions.forEach(question => {
+                        let questionEl = document.querySelector(`input[name='question${question.question_no}']:checked`);
+
+                        if(questionEl == null){
+                            this.answers.push(null);
+                        }else{
+                            this.answers.push(questionEl.getAttribute('value'));
+                        }
+                    });
+                    
+                    // upload answer
+                    var requestBody = {
+                        "quiz_id": this.quiz_id,
+                        "staff_id": this.accountDetails.staff_id,
+                        "options_selected": this.answers
+                    };
+
+                    createAttempt(URL, requestBody).then(result => {
+                        console.log(result);
+                        // if(result.code == 201){
+                        //     // to redirect to view quiz page
+                            
+                        // } 
+                    })
+                },
+                viewSection: function(e){
+                    // console.log(e)
+                    // selectedSection = sections[e].section_id
+                    localStorage.setItem('sectionSelectedId', JSON.stringify(this.sections[e].section_id));
+                    localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[e].section_name));
+                }
+            }
+        })
+    </script>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous">
+    </script>
+
+</body>
+
+</html>
