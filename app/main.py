@@ -718,7 +718,7 @@ def insert_links():
         ), 500
 
 # ============= Update ==================
-@app.route("/class/enroll", methods=['POST'])
+@app.route("/class/enroll", methods=['PUT'])
 def enroll_learners():
     data = request.get_json()
 
@@ -783,7 +783,7 @@ def enroll_learners():
         ), 500
 
 
-@app.route("/class/trainer", methods = ['POST'])
+@app.route("/class/trainer", methods = ['PUT'])
 def assign_trainer():
     data = request.get_json()
 
