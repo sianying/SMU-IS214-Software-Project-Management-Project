@@ -465,8 +465,8 @@ def insert_attempt(quiz_id):
     marks=[]
     for question in quiz_questions:
         # need to create question class and get these attributes as methods?
-        correct_answers.append(question['correct_option'])
-        marks.append(question['marks'])
+        correct_answers.append(question.get_correct_option())
+        marks.append(question.get_marks())
 
     data = request.get_json()
     dao = AttemptDAO()
@@ -497,7 +497,7 @@ def insert_attempt(quiz_id):
         return jsonify(
             {
                 "code": 500,
-                "data": "An error occurred when creating the attempt."
+                "data": "An error occurred when creating the attempt." + str(e)
             }
         ), 500
 
