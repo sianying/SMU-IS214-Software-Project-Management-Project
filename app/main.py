@@ -469,7 +469,7 @@ def insert_attempt(quiz_id):
         marks.append(question['marks'])
 
     data = request.get_json()
-    dao = CourseDAO()
+    dao = AttemptDAO()
 
     try:
         results = dao.insert_attempt(data, correct_answers, marks)
