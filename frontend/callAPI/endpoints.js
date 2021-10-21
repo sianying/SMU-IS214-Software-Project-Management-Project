@@ -210,7 +210,7 @@ export async function createQuiz(URL, body) {
 export async function enrollLearners(URL, body) {
     try {
         const data = {
-            method: 'PUT',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
