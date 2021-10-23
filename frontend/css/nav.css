@@ -1,9 +1,8 @@
-/* @import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
 body {
-    /* font-family: 'Oswald', sans-serif; */
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Roboto', 'Open Sans', 'Oswald', sans-serif;
 }
 
 #navlogo{
@@ -26,5 +25,9 @@ body {
 }
 
 #profilelogo{
-    width: 30px; height: 30px;left: 95%; bottom: 25%; list-style: none;position: absolute;
+    width: 30px; height: 30px;left: 91%; bottom: 25%; list-style: none;position: absolute;
+}
+
+.profileName {
+    position: absolute; left: 94%; bottom: 28%
 }

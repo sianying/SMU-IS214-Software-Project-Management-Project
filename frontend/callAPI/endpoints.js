@@ -2,7 +2,7 @@
 // Naming conventions e.g. retrieveAllCourses(), createCourse(), updateCourse(), deleteCourse()
 // e.g. API call using async/await
 
-export const URL = "http://127.0.0.1:5000";
+export const URL = "http://13.250.140.89:5000";
 
 // =========== Retrieve APIs ===========
 
@@ -199,6 +199,34 @@ export async function createQuiz(URL, body) {
     }
 }
 
+//Create Attempt
+export async function createAttempt(URL, body){
+    try{
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify(body)
+        }
+
+        const response = await fetch(`${URL}/attempts/${body.quiz_id}`, data)
+        if(response){
+            const result = await response.json()
+            return result;
+        }
+    }catch(e){
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+
+
+
 // ====== Update ========
 //Enroll learners
 // const body = {
@@ -216,7 +244,7 @@ export async function enrollLearners(URL, body) {
             },
             body: JSON.stringify(body)
         }
-        const response = await fetch(`${URL}/courses`, data)
+        const response = await fetch(`${URL}/class/enroll`, data)
         if (response) {
             const result = await response.json()
             return result;

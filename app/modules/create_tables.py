@@ -1,6 +1,11 @@
 import boto3
 import os
-os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+try:
+    os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
+    session = boto3.Session()
+except:
+    session = boto3.Session(profile_name="EC2")
+
 
 def create_course_table(dynamodb):
     try:
@@ -132,7 +137,7 @@ def create_quiz_table(dynamodb):
             KeySchema=[
                 {
                     'AttributeName': 'quiz_id',
-                    'KeyType': 'HASH' # Sort key
+                    'KeyType': 'HASH' # Partition key
                 },
                 {
                     'AttributeName': 'section_id',
@@ -189,7 +194,7 @@ def create_attempt_table(dynamodb):
                     'KeyType': 'HASH' # Partition Key
                 },
                 {
-                    'AttributeName': 'staff_id',
+                    'AttributeName': 'attempt_uuid',
                     'KeyType': 'RANGE' # Sort key
                 }
             ],
@@ -199,8 +204,34 @@ def create_attempt_table(dynamodb):
                     'AttributeType': 'S'
                 },
                 {
+                    'AttributeName': 'attempt_uuid',
+                    'AttributeType': 'S'
+                },
+                {
                     'AttributeName': 'staff_id',
                     'AttributeType': 'S'
+                }
+            ], 
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": 'StaffIndex',
+                    "KeySchema": [
+                        {
+                            'AttributeName': 'quiz_id',
+                            'KeyType': 'HASH'
+                        },
+                        {
+                            'AttributeName': 'staff_id',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    'Projection':{
+                        'ProjectionType': 'ALL'
+                    },
+                    'ProvisionedThroughput':{
+                        "ReadCapacityUnits":1,
+                        "WriteCapacityUnits":1
+                    }
                 }
             ],
             ProvisionedThroughput={
@@ -251,7 +282,7 @@ def create_staff_table(dynamodb):
 
 
 if __name__ == "__main__":
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = session.resource('dynamodb', region_name='ap-southeast-1')
     course_table = create_course_table(dynamodb)
     class_table = create_class_table(dynamodb)
     section_table = create_section_table(dynamodb)

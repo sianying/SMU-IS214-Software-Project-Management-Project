@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+    triggers{
+        githubPush()
+    }
+    stages {
+        stage('Checkout Test'){
+            steps{
+                checkout(
+                    [
+                        $class: 'GitSCM', 
+                        branches: [[name: '*/main']], 
+                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/project_deployment/test']], 
+                        userRemoteConfigs: [[credentialsId: 'lyihaoo', url: 'git@github.com:sianying/spm-project.git']]
+                    ]
+                )
+            }
+            
+        }
+        stage('Test Build'){
+            steps{
+                sh '''
+                cd /project_deployment/test
+                python3 -m venv env
+                source env/bin/activate
+                pip3 install -r requirements.txt
+                '''
+            }
+        }
+        stage('Unit Test'){
+            steps{
+                sh '''
+                cd /project_deployment/test
+                source env/bin/activate
+                cd app/test
+                python3 -m unittest discover
+                '''
+            }
+        }
+        stage('Checkout Deploy'){
+            steps{
+                checkout(
+                    [
+                        $class: 'GitSCM', 
+                        branches: [[name: '*/main']], 
+                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/project_deployment/deploy']], 
+                        userRemoteConfigs: [[credentialsId: 'lyihaoo', url: 'git@github.com:sianying/spm-project.git']]
+                    ]
+                )
+            }
+        }
+        stage('Deploy Build'){
+            steps{
+                sh '''
+                cd /project_deployment/deploy
+                python3 -m venv env
+                source env/bin/activate
+                pip3 install -r requirements.txt
+                '''
+            }
+        }
+        stage('Deploy Backend'){
+            steps{
+                sh '''
+                sudo systemctl restart gunicorn.socket
+                '''
+            }
+        }
+    }
+}

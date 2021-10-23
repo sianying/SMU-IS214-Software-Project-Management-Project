@@ -3,11 +3,11 @@ import boto3
 import sys
 sys.path.append('../')
 from moto import mock_dynamodb2
-from modules.quiz_manager import Quiz
 
 ITEM1= {
     "section_id": "s1",
     "quiz_id": "q1",
+    "time_limit": 3600,
     "questions": [
         {
             "question_no": 1,
@@ -33,6 +33,7 @@ ITEM1= {
 ITEM2 = {
     "section_id": "s2",
     "quiz_id": "q2",
+    "time_limit": 200,
     "questions": [
         {
             "question_no": 3,
@@ -57,6 +58,7 @@ ITEM2 = {
 ITEM3 = {
     "section_id": "s3",
     "quiz_id": "q3",
+    "time_limit": 400,
     "questions": [
         {
             "question_no": 5,
@@ -69,13 +71,82 @@ ITEM3 = {
     ]
 }
 
+question_to_add= {
+    "question_no": 6,
+    "isMCQ": True,
+    "question_name": "Should you arrive on time to work?",
+    "options":["True", "False"],
+    "correct_option": 0, #Index 0-> True
+    "marks": 1
+}
+
+question_to_remove={
+    "question_no": 3,
+    "isMCQ": False,
+    "question_name": "Are you motivated?",
+    "options":["True", "False"],
+    "correct_option": 0, #True
+    "marks": 1
+}
+
+
+class TestQuestion(unittest.TestCase):
+    def setUp(self):
+        from modules.quiz_manager import Question
+        self.test_question = Question(question_to_add)
+    
+    def tearDown(self):
+        self.test_question = None
+    
+    def test_json(self):
+        self.assertTrue(isinstance(self.test_question.json(), dict), "Question JSON is not a dictionary")
+        self.assertEqual(question_to_add, self.test_question.json(), "Question JSON does not match")
+        self.assertNotEqual(question_to_remove, self.test_question.json(), "Question JSON matched when it should not")
+
+
+class testQuiz(unittest.TestCase):
+    def setUp(self):
+        from modules.quiz_manager import Quiz
+        self.test_quiz = Quiz(ITEM1)
+        self.test_quiz2 = Quiz(ITEM2)
+
+    def tearDown(self):
+        del self.test_quiz 
+        del self.test_quiz2 
+
+    def test_json(self):
+        self.assertTrue(isinstance(self.test_quiz.json(),dict), "Quiz JSON is not a dictionary object")
+        self.assertEqual(ITEM1, self.test_quiz.json(), "Quiz does not match")
+        self.assertNotEqual(ITEM2, self.test_quiz.json(), "Quiz matched when it should not")
+    
+    def test_add_question(self):
+        from modules.quiz_manager import Question
+        self.test_quiz.add_question(Question(question_to_add))
+        questions=self.test_quiz.get_questions()
+
+        ITEM1['questions'].append(question_to_add)
+        check_against=ITEM1['questions']
+
+        self.assertTrue(question_to_add in [question.json() for question in questions], "Question was not successfully added.")
+        self.assertEqual(check_against, [question.json() for question in questions], "Questions do not match, before and after addition")
+
+    def test_remove_question(self):
+        check_against=[ITEM2['questions'][1]]
+
+        self.test_quiz2.remove_question(0)
+        questions=self.test_quiz2.get_questions()
+
+        self.assertFalse(question_to_remove in [question.json() for question in questions], "Question was not successfully removed.")
+        self.assertEqual(check_against, [question.json() for question in questions], "Questions do not match, before and after removal.")
+
+
 @mock_dynamodb2
 class TestQuizDAO(unittest.TestCase):
 
     def setUp(self):
         from modules import create_tables
         from modules.quiz_manager import QuizDAO 
-        self.dynamodb = boto3.resource('dynamodb')
+        self.dynamodb = boto3.resource('dynamodb', region_name= 'ap-southeast-1')
         results = create_tables.create_quiz_table(self.dynamodb)
         #print(results)
         self.table = self.dynamodb.Table('Quiz')
@@ -90,10 +161,11 @@ class TestQuizDAO(unittest.TestCase):
         self.dynamodb = None
 
     def test_insert_Quiz(self):
-        insertTest = self.dao.insert_quiz(ITEM3['section_id'], ITEM3['quiz_id'], ITEM3['questions']).json()
-        duplicateTest = self.dao.insert_quiz(ITEM3['section_id'], ITEM3['quiz_id'], ITEM3['questions'])
+        insertTest = self.dao.insert_quiz(ITEM3['section_id'], ITEM3['time_limit'], ITEM3['quiz_id'], ITEM3['questions']).json()
+        duplicateTest = self.dao.insert_quiz(ITEM3['section_id'], ITEM3['time_limit'], ITEM3['quiz_id'], ITEM3['questions'])
 
         self.assertEqual(ITEM3, insertTest, "QuizDAO insert test failure")
+
         self.assertEqual("Quiz already exists", duplicateTest, "QuizDAO insert duplicate test failure")
 
     def test_insert_Quiz_w_dict(self):
@@ -122,22 +194,17 @@ class TestQuizDAO(unittest.TestCase):
 
 
     def test_update_quiz(self):
+        from modules.quiz_manager import Quiz, Question
         quizObj = Quiz(ITEM1)
-        question= {
-            "question_no": 6,
-            "isMCQ": True,
-            "question_name": "Should you arrive on time to work?",
-            "options":["True", "False"],
-            "correct_option": 0, #Index 0-> True
-            "marks": 1
-        }
-        quizObj.add_question(question)
+        quizObj.add_question(Question(question_to_add))
         self.dao.update_quiz(quizObj)
-        toCheck = self.table.get_item(Key={'quiz_id':quizObj.get_quiz_id(), 'section_id':quizObj.get_section_id()})['Item']
-        self.assertEqual(quizObj.json(), toCheck, "QuizDAO update test failure")
+        toCheck = Quiz(self.table.get_item(Key={'quiz_id':quizObj.get_quiz_id(), 'section_id':quizObj.get_section_id()})['Item'])
+
+        self.assertEqual(quizObj.json(), toCheck.json(), "QuizDAO update test failure")
 
 
     def test_delete_quiz(self):
+        from modules.quiz_manager import Quiz
         quizObj = Quiz(ITEM2)
         self.dao.delete_quiz(quizObj)
         key = {'quiz_id':quizObj.get_quiz_id(), 'section_id': quizObj.get_section_id()}
