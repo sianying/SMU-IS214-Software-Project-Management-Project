@@ -324,6 +324,36 @@ export async function createSection(URL, body){
 }
 
 
+// const body = {
+//     "file": file,
+//     "section_id": section_id
+// }
+//Upload Material
+export async function uploadMaterial(URL, body){
+    try{
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify(body)
+        }
+
+        const response = await fetch(`${URL}/materials/file`, data)
+        if(response){
+            const result = await response.json()
+            return result;
+        }
+    }catch(e){
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+
 // ====== Update ========
 
 // const body = {
@@ -335,7 +365,7 @@ export async function createSection(URL, body){
 export async function enrollLearners(URL, body) {
     try {
         const data = {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
