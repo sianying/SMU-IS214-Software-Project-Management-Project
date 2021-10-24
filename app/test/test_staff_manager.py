@@ -4,7 +4,6 @@ import sys
 sys.path.append('../')
 from uuid import uuid4
 from moto import mock_dynamodb2
-from unittest.mock import patch
 
 ITEM1 = {
     "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
