@@ -132,7 +132,15 @@ def retrieve_qualified_trainers(course_id):
 @app.route("/courses/assigned/<string:staff_id>")
 def retrieve_courses_trainer_teaches(staff_id):
     dao=TrainerDAO()
-    course_ids = dao.retrieve_courses_teaching(staff_id)
+    try:
+        course_ids = dao.retrieve_courses_teaching(staff_id)
+    except:
+        return jsonify(
+        {
+            "code": 404,
+            "data": "No trainer found for the given staff_id."
+        }
+    ), 404
 
     if course_ids==[]:
         return jsonify(
@@ -445,6 +453,7 @@ def insert_quiz():
                 "data": "An error occurred when updating the section."
             }
         ), 500
+
 
 @app.route("/attempts/<string:quiz_id>", methods=['POST'])
 def insert_attempt(quiz_id):
