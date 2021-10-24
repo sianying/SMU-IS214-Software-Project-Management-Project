@@ -84,6 +84,7 @@ if __name__ == '__main__':
 {
     "quiz_id": "e565b935-2adc-43b2-9d1c-c8fc29eee91a", # uuid to help with indexing
     "section_id": "0a08ff5c-d72a-4207-b1de-9bbe99efa7fd", #section id of which this quiz belongs to
+    "time_limit": 2000, # time limit in seconds
     "questions":[ # contains a list of question objects
         {
             "question_no": 1,

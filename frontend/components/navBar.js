@@ -12,6 +12,9 @@ export default Vue.component("nav-bar", {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.role = accountDetails.role;
         this.staffName = accountDetails.staff_name;
+        // this.role = "Engineer";
+        // this.staffName = "Tom";
+
 
         // get the url of current page; if its from add new course, display success alert for course creation
         this.currentPageLink = window.location.href.split("/").at(-1);
