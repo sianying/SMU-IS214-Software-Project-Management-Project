@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    <!-- Check for authentication -->
+    <script>
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
         <nav-bar></nav-bar>
@@ -51,7 +55,7 @@
 
         <!-- "Add New Class" Button for HR -->
         <div v-if="accountDetails.role ==='HR'" class="container d-flex justify-content-end p-0">
-            <a href = "#" class="btn btn-outline-info mt-2 mr-2">
+            <a href = "add-new-class-HR.html" class="btn btn-outline-info mt-2 mr-2">
                 Add New Class <span class="iconify" data-icon="akar-icons:circle-plus"></span>
             </a>
         </div>
