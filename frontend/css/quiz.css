@@ -12,10 +12,23 @@
     width: 35%;
 }
 
-#add-qn-button, #submit-and-cancel-button{
+/* #add-qn-button, #submit-and-cancel-button{
     display: flex;
     justify-content: center;
     align-items: center;
+} */
+#submit-and-cancel-button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#alert-and-button {
+    text-align: center;
+}
+
+#add-mcq-qn-button,  #add-qn-button{
+    display: inline-block;
 }
 
 .question-div{
@@ -29,7 +42,7 @@
     color: #3C64B1;
 }
 
-#form-div, #duplicate-qn-alert{
+#form-div, .duplicate-alert, #answer-div{
     width: 90%;
 }
 
@@ -38,7 +51,7 @@
 }
 
 #scoreDiv {
-    width: 70%;
+    width: 80%;
     margin-left: 40px;
     margin-top: 25px;
     margin-bottom: 25px;
@@ -49,5 +62,9 @@
 }
 
 #error-quiz-creation {
-    width: 45%;
+    width: 40%;
+}
+
+#timeLimitDiv {
+    width: 30%;
 }
