@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    <!-- Check for authentication -->
+    <script>
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
         <nav-bar></nav-bar>

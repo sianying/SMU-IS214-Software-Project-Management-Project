@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    <!-- Check for authentication -->
+    <script>
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
         <nav-bar></nav-bar>
@@ -92,8 +96,11 @@ var app = new Vue({
     methods: {
 
     },
-    created: function () {
+    mounted: function () {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        if (!accountDetails) {
+            window.location.replace("./home.html");
+        }
         this.accountDetails = accountDetails;
 
         //call API to get all courses if role is HR
@@ -113,6 +120,7 @@ var app = new Vue({
         } else {
             retrieveEligibleCourses(URL, this.accountDetails.staff_id).then(result => {
                 if (result.code == 200) {
+                    console.log(result.data);
                     this.error = false;
                     const courses = result.data.filter(course => {
                         return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
@@ -126,7 +134,6 @@ var app = new Vue({
         }
         
     }
-    
 })
 
 </script>

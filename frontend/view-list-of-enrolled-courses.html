@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    <!-- Check for authentication -->
+    <script>
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
         <nav-bar></nav-bar>
@@ -86,20 +90,20 @@ var app = new Vue({
         alertColor: ""
     },
     methods: {
-        activateErrorAPI() {
+        showErrorAPI() {
             this.errorAPI = true;
             this.alertColor = "alert-danger";
             this.alertMessage = "No courses available. Please try again later.";
         },
-        deactivateErrorAPI() {
+        hideErrorAPI() {
             this.errorAPI = false;
         },
-        activateErrorNoCoursesEnrolled() {
+        showErrorNoCoursesEnrolled() {
             this.noCoursesEnrolled = true;
             this.alertColor = "alert-warning";
             this.alertMessage = "No courses enrolled.";
         },
-        deactivateErrorNoCoursesEnrolled() {
+        hideErrorNoCoursesEnrolled() {
             this.noCoursesEnrolled = false;
         }
         
@@ -111,7 +115,7 @@ var app = new Vue({
 
         // if courses enrolled is zero, display no courses enrolled
         if (this.accountDetails.courses_enrolled.length !== 0){
-            this.deactivateErrorNoCoursesEnrolled();
+            this.hideErrorNoCoursesEnrolled();
             retrieveAllCourses(URL).then(result => {
                 if (result.code == 200) {
                     this.errorAPI = false;
@@ -127,17 +131,15 @@ var app = new Vue({
                     }
                     
                 } else {
-                    this.activateErrorAPI();
+                    this.showErrorAPI();
                 }
             });
         } else {
-            this.deactivateErrorAPI();
-            activateErrorNoCoursesEnrolled();
+            this.hideErrorAPI();
+            showErrorNoCoursesEnrolled();
             // this.alertMessage = "No courses enrolled."
         }
-        console.log(this.coursesEnrolled)
-        console.log(this.courses)
-        
+
     }
     
 })
