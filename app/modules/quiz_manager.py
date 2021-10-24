@@ -10,72 +10,12 @@ try:
 except:
     session = boto3.Session(profile_name="EC2")
 
-class Question:
-    def __init__(self, *args):
-        '''
-            __init__(
-                question_no: integer,
-                isMCQ: boolean,
-                question_name: String,
-                options: List
-                correct_option: Integer
-                marks: Integer
-            )
-
-            __init__(question_dict)
-        '''
-
-        if len(args)> 1:
-            self.__question_no = int(args[0])
-            self.__isMCQ = args[1]
-            self.__question_name = args[2]
-            self.__options = args[3]
-            self.__correct_option = int(args[4])
-            self.__marks = int(args[5])
-        elif isinstance(args[0], dict):
-            self.__question_no = int(args[0]['question_no'])
-            self.__isMCQ = args[0]['isMCQ']
-            self.__question_name = args[0]['question_name']
-            self.__options = args[0]['options']
-            self.__correct_option = int(args[0]['correct_option'])
-            self.__marks = int(args[0]['marks'])
-
-    def get_question_no(self):
-        return self.__question_no
-
-    def isMCQ(self):
-        return self.__isMCQ
-
-    def get_question_name(self):
-        return self.__question_name
-
-    def get_options(self):
-        return self.__options
-    
-    def get_correct_option(self):
-        return self.__correct_option
-    
-    def get_marks(self):
-        return self.__marks
-
-    def json(self):
-        return {
-            "question_no": self.get_question_no(),
-            "isMCQ": self.isMCQ(),
-            "question_name": self.get_question_name(),
-            "options": self.get_options(),
-            "correct_option": self.get_correct_option(),
-            "marks": self.get_marks()
-        }
-
-
 class Quiz:
     def __init__(self, *args, **kwargs):
         '''
             __init__(
                 quiz_id: string,
                 section_id: string,
-                time_limit: int,
                 questions = []: List
             )
 
@@ -85,10 +25,9 @@ class Quiz:
         if len(args) > 1:
             self.__section_id=args[0]
             self.__quiz_id = args[1]
-            self.__time_limit = int(args[2])
 
             try:
-                self.__questions = [Question(ques_dict) for ques_dict in kwargs['questions']]
+                self.__questions = copy.deepcopy(kwargs['questions'])
             except:
                 self.__questions = []
             
@@ -96,8 +35,7 @@ class Quiz:
         elif isinstance(args[0], dict):
             self.__section_id= args[0]['section_id']
             self.__quiz_id = args[0]['quiz_id']
-            self.__time_limit = int(args[0]['time_limit'])
-            self.__questions = [Question(ques_dict) for ques_dict in args[0]['questions']]
+            self.__questions = args[0]['questions']
         
     def get_quiz_id(self):
         return self.__quiz_id
@@ -109,30 +47,25 @@ class Quiz:
         return self.__questions
     
     def add_question(self, question):
-        if not isinstance(question, Question):
-            raise ValueError('Object added is not a Question Object')
         self.__questions.append(question)
     
-    def remove_question(self, question_index):
-        self.__questions.pop(question_index)
-
-    def get_time_limit(self):
-        return self.__time_limit
+    def remove_question(self, question):
+        self.__questions.remove(question)
 
     def json(self):
         return {
             "section_id": self.get_section_id(),
             "quiz_id": self.get_quiz_id(),
-            "time_limit": self.get_time_limit(),
-            "questions": [question.json() for question in self.get_questions()]
+            "questions": self.get_questions()
         }
+
 
 class QuizDAO:
     def __init__(self):
         self.table = session.resource('dynamodb',region_name='ap-southeast-1').Table('Quiz')
 
     #Create
-    def insert_quiz(self, section_id, time_limit, quiz_id = None, questions= []):
+    def insert_quiz(self, section_id, quiz_id = None, questions= []):
         try:
             if quiz_id == None:
                 quiz_id = str(uuid4())
@@ -140,13 +73,12 @@ class QuizDAO:
                 Item = {
                     "section_id": section_id,
                     "quiz_id": quiz_id,
-                    "time_limit": time_limit,
                     "questions": questions
                 },
                 ConditionExpression=Attr("quiz_id").not_exists()
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return Quiz(section_id, quiz_id, time_limit, questions=questions)
+                return Quiz(section_id, quiz_id, questions=questions)
             return 'Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode'])
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             return "Quiz already exists"
@@ -165,7 +97,6 @@ class QuizDAO:
                 Item = {
                     "quiz_id": quiz_dict['quiz_id'],
                     "section_id": quiz_dict['section_id'],
-                    "time_limit": quiz_dict['time_limit'],
                     "questions": quiz_dict['questions']
                 },
                 ConditionExpression=Attr("section_id").not_exists(),
@@ -229,7 +160,7 @@ class QuizDAO:
                 },
                 UpdateExpression= "set questions = :q",
                 ExpressionAttributeValues ={
-                    ":q": [question.json() for question in QuizObj.get_questions()],
+                    ":q": QuizObj.get_questions(),
                 }
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:

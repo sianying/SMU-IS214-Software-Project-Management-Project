@@ -194,7 +194,7 @@ def create_attempt_table(dynamodb):
                     'KeyType': 'HASH' # Partition Key
                 },
                 {
-                    'AttributeName': 'attempt_uuid',
+                    'AttributeName': 'staff_id',
                     'KeyType': 'RANGE' # Sort key
                 }
             ],
@@ -204,34 +204,8 @@ def create_attempt_table(dynamodb):
                     'AttributeType': 'S'
                 },
                 {
-                    'AttributeName': 'attempt_uuid',
-                    'AttributeType': 'S'
-                },
-                {
                     'AttributeName': 'staff_id',
                     'AttributeType': 'S'
-                }
-            ], 
-            GlobalSecondaryIndexes=[
-                {
-                    "IndexName": 'StaffIndex',
-                    "KeySchema": [
-                        {
-                            'AttributeName': 'quiz_id',
-                            'KeyType': 'HASH'
-                        },
-                        {
-                            'AttributeName': 'staff_id',
-                            'KeyType': 'RANGE'
-                        }
-                    ],
-                    'Projection':{
-                        'ProjectionType': 'ALL'
-                    },
-                    'ProvisionedThroughput':{
-                        "ReadCapacityUnits":1,
-                        "WriteCapacityUnits":1
-                    }
                 }
             ],
             ProvisionedThroughput={

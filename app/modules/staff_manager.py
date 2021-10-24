@@ -224,6 +224,8 @@ class StaffDAO:
                 Key = {
                     'staff_id': StaffObj.get_staff_id(),
                     'staff_name': StaffObj.get_staff_name(),
+                    'role': StaffObj.get_role(),
+                    'isTrainer': StaffObj.get_isTrainer()
                 },
                 UpdateExpression= "set courses_completed = :c, courses_enrolled = :e",
                 ExpressionAttributeValues ={
