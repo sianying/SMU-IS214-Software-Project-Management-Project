@@ -261,6 +261,7 @@ export async function createAttempt(URL, body){
     }
 }
 
+
 // const body = {
 //     "course_id": course_id,
 //     "start_datetime": start_datetime,
@@ -334,7 +335,7 @@ export async function createSection(URL, body){
 export async function enrollLearners(URL, body) {
     try {
         const data = {
-            method: 'PUT',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },

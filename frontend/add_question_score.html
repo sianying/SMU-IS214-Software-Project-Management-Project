@@ -46,7 +46,7 @@
                     </li>
                 </ul>  
             </div>
-            <a class="nav-link" href="#"><img src="../images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
+            <a class="nav-link" href="#"><img src="./images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
         </nav>
     </div>
 
@@ -63,31 +63,42 @@
     </div>
 
     <div id='app'>
-        <div class='text-center h3 mt-4 mb-5'>Enter a score and select the correct answer for a question</div>
-        <div id='error-quiz-creation' class="d-none alert alert-danger mx-auto text-center justify-content-center" role="alert"></div>
+        <div>
+            <div class='mt-4 mb-4'>
+                <div class="text-center h3">Enter a score and select the correct answer for a question</div>
+                <div id='error-quiz-creation' class="d-none alert alert-danger mx-auto text-center justify-content-center mt-4" role="alert"></div>
+                <div v-if= "error" class="d-none alert alert-danger mx-auto text-center justify-content-center" role="alert">An error has occurred when creating quiz. Please try again later.</div>
+                <div>
+                    <div id='timeLimitDiv' class="input-group mx-auto mt-4">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Quiz Time limit (in minutes)</span>
+                        </div>
+                        <input id='timeLimit' type="number" aria-label="score" min='1' class="form-control text-center" v-model='time_limit'>
+                        <div id="timeLimitError" class='text-danger'></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id='scoreDiv' class='mx-auto'>
             <div class='ml-4 mb-4' v-for='(question, index) in questions'>
-                <div class ='h5 mb-3'>
-                    {{question.question_name}}
-                </div>
-                <div class='ml-4'>
-                    <span class="form-check form-check-inline py-2 my-2">
-                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="True" v-model=questions[index].correct_option>
-                        <label class="form-check-label" for="inlineRadio1">True</label>
-                    </span>
-                    <span class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" value="False" v-model=questions[index].correct_option>
-                        <label class="form-check-label" for="inlineRadio2">False</label>
-                    </span>
-                    <span id='score' class='pt-3'>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Score</span>
-                            </div>
-                            <input type="number" aria-label="score" min='1' max='99' class="form-control text-center" v-model='questions[index].marks' @change='checkValue(index)'>
+                <span class ='h5 mb-3'>
+                    {{index+1}}. {{question.question_name}}
+                </span>
+                <span id='score'>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Score</span>
                         </div>
-                        <div :id="'error' + index" class='text-danger'></div>
-                    </span>
+                        <input type="number" aria-label="score" min='1' max='99' class="form-control text-center" v-model='questions[index].marks' @change='checkValue(index)'>
+                    </div>
+                    <div :id="'error' + index" class='text-danger'></div>
+                </span>
+                <div class='ml-4'>
+                    <div v-for="(option, ind) in question.options" class="form-check py-2 my-2">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" v-bind:name="index" v-bind:id="index" :value="ind" v-model=questions[index].correct_option>{{option}}
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -126,10 +137,11 @@
             el: '#app',
             data: {
                 questions: null,
+                error: false,
+                time_limit: 1
             },
             created() {
                 this.questions = questionsList
-
                 for(let qn in this.questions){
                     this.questions[qn].marks = 1
                     this.questions[qn].question_no = Number(qn) + 1
@@ -150,21 +162,24 @@
                     let qns = []
                     for(let question of this.questions){
                         let qnObj = {}
-                        if(question.marks==null || question.question_name==null || question.question_no==null || question.correct_option== null){
-                            document.getElementById('error-quiz-creation').innerText = "Please ensure that all fields have been filled up."
-                            document.getElementById('error-quiz-creation').className = "alert alert-danger mx-auto text-center justify-content-center"
+                        if(question.marks==null || question.question_name==null || question.question_no==null || question.correct_option== null || this.time_limit == ""){
+                            document.getElementById('error-quiz-creation').innerText = "Please ensure that all fields have been filled up.";
+                            document.getElementById('error-quiz-creation').classList.remove("d-none");
+                            errorCheck = true;
+                        } else if (this.time_limit <= 0){
+                            document.getElementById('timeLimitError').innerText = "The time limit for the quiz should be at least 1 minute!";
                             errorCheck = true
                         } else {
-                            document.getElementById('error-quiz-creation').className = "d-none alert alert-danger mx-auto text-center justify-content-center"
-
+                            document.getElementById('timeLimitError').innerText = "";
+                            document.getElementById('error-quiz-creation').classList.add('d-none');
                             // setting questions body
-                            qnObj.isMCQ = false
-                            qnObj.marks = question.marks
-                            qnObj.question_name = question.question_name
-                            qnObj.question_no = question.question_no
-                            qnObj.options = question.options
-                            qnObj.correct_option = question.correct_option
-                            qns.push(question)
+                            qnObj.isMCQ = false;
+                            qnObj.marks = question.marks;
+                            qnObj.question_name = question.question_name;
+                            qnObj.question_no = question.question_no;
+                            qnObj.options = question.options;
+                            qnObj.correct_option = question.correct_option;
+                            qns.push(qnObj);
                         }
                     }
 
@@ -172,47 +187,20 @@
                         let quizDetails = {
                                         // "quiz_id": 3,
                                         "section_id": section_id,
-                                        "questions": qns
+                                        "questions": qns,
+                                        "time_limit": this.time_limit * 60
                         }
-                        console.log(quizDetails)
                         createQuiz(URL, quizDetails).then(result => {
-                            console.log(result);
-                            if (result.code == 201){
-                                location.href = "./trainer_section_page.html?courseId=" + course_id + "&classId=" + class_id;
+                            // console.log(result);
+                            if (result.code !== 201){
+                                this.error = true;
                             } else {
-                                console.log(results);
+                                // location.href = "./trainer_section_page.html?courseId=" + course_id + "&classId=" + class_id;
                             }
                             
                         })
-                    }
-
-                    
-            },
-            // mounted(){
-                // questionsList = []
-                // for(let question of this.questions){
-                //     let qnObj = {}
-                //     qnObj.isMCQ = false
-                //     qnObj.marks = question.marks
-                //     qnObj.question_name = question.question_name
-                //     qnObj.question_no = question.question_no
-                //     qnObj.options = question.options
-                //     qnObj.correct_option = question.correct_option
-                //     questionsList.push(question)
-                // }
-                // console.log(questionsList)
-                // const quiz = {
-                //     "section_id": section_id,
-                //     "questions": this.questions
-                // };
-                // createQuiz(URL, details).then(result => {
-                //     if(result.code == 200){
-                //         this.sections = result.data
-                //     }
-                //     // else {
-                //     //     console.log(`${result.code} ${result.data}`)
-                //     // }
-                // })  
+                    }      
+                }
             }
         })
     </script>
