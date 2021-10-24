@@ -15,6 +15,7 @@ export default Vue.component("nav-bar", {
         // this.role = "Engineer";
         // this.staffName = "Tom";
 
+
         // get the url of current page; if its from add new course, display success alert for course creation
         this.currentPageLink = window.location.href.split("/").at(-1);
         if (this.currentPageLink === "view-list-of-courses-HR.html") {
