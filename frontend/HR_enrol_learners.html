@@ -39,12 +39,12 @@
                     <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Home</a></li>
                     <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ courseId }} {{ courseName }}</li>
-                    <li class="breadcrumb-item active" aria-current="page">{{Class}}</li>
+                    <li class="breadcrumb-item active" aria-current="page">{{currentClass}}</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <p class='text-center h3 mt-3 mb-4'>Enrol Learner</p>
+            <p class='text-center h3 mt-3 mb-4 '>Enrol Learner</p>
         </div>
         <div id='confirmation' v-if='this.selectedName != ""'>
             <div class="alert alert-success w-50 mx-auto text-center" role="alert">
@@ -57,14 +57,14 @@
             </div>
         </div>
         <div class='mx-auto' id='learners-div'>
-            <div v-for='learner in learners'>
+            <div v-for='learner in learners' >
                 <span class='h3 ml-1'><b>{{learner.staff_name}}</b></span>
                 <span class='h6 ml-2'>{{learner.role}}</span>
                 <div class='mt-2'>
                     <span class="badge badge-pill badge-success py-2 my-2">Completed pre-requisites</span>
                     <span class="badge badge-pill badge-warning py-2 my-2">Not Previously enrolled</span>
                     <span>
-                        <button id='enrol-btn' type='button' v-on:click='selfEnroll(learner.staff_id, courseId, currentClass, learner.staff_name)' class="btn btn-primary">Enrol</button>
+                        <button id='enrol-btn' type='button'  onclick = "this.disabled = true;" v-on:click='selfEnroll(learner.staff_id, courseId, currentClass, learner.staff_name,learner)' class="btn btn-primary">Enrol</button>
                     </span>
                 </div>
                 <hr>
@@ -75,8 +75,10 @@
     </div>
 
     <script type="module">
+        
         import { URL, retrieveSpecificCourse, retrieveAllClasses, enrollLearners, retrieveEligibleCourses} from "./callAPI/endpoints.js";
         import navBar from "./components/navBar.js"
+        var flag = false;
         new Vue({
             el: '#nav-bar-component' 
         });
@@ -92,31 +94,29 @@
             },
             methods: {
                 
-                selfEnroll(staffid,courseid,classid,staffname){
-                    console.log(staffname);
+            
+
+                selfEnroll(staffid,courseid,classid,staffname,learner){
                     this.selectedName = staffname;
                     const body = {
                         "staff_id": staffid,
                         "course_id" : courseid,
                         "class_id" : classid,
-                        
                     }
-                    
+                    for(let i = 0; i < learner.courses_enrolled.length; i++){
+                        if(courseid == learner.courses_enrolled[i]){
+                            flag = true;
+                        }
+                    }
                     fetch('http://13.250.140.89:5000/class/enroll',{
                         method: 'PUT',
                         headers:{
                         'Content-Type':'application/json'
                         },
                         body: JSON.stringify(body)
-                    }).then(response=>{
-                            
-                            
-                            //console.log(response.ok);
-                            this.learners.splice(this.learners.indexOf(staffname),1);
-                            console.log(this.selectedName)
-                        
-                            
-                        })
+                    })
+                    
+                       
         }
 
             },
