@@ -14,9 +14,11 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
-    <!-- Check for authentication -->
     <script>
+        //Check for authentication
         if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+        //Check for courseDetails
+        if (!localStorage.getItem("courseDetails")) { window.location.replace("./view-list-of-courses-HR.html"); }
     </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
@@ -139,10 +141,13 @@ var app = new Vue({
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
         //Retrieve course id from URL
-        const urlSearchParams = new URLSearchParams(window.location.search);
-        const params = Object.fromEntries(urlSearchParams.entries());
+        const course = JSON.parse(localStorage.getItem("courseDetails"));
+
+        // const urlSearchParams = new URLSearchParams(window.location.search);
+        // const params = Object.fromEntries(urlSearchParams.entries());
+        
         //Call retrieveSpecificCourse API
-        retrieveSpecificCourse(URL, params.courseId).then(result => {
+        retrieveSpecificCourse(URL, course.course_id).then(result => {
             // Initialize course object
             if (result.code == 200){
                 const course = result.data;
@@ -153,7 +158,7 @@ var app = new Vue({
             }
         });
         //Call retrieveAllClasses API
-        retrieveAllClasses(URL, params.courseId).then(result => {
+        retrieveAllClasses(URL, course.course_id).then(result => {
             if (result.code == 200){
                 const classes = result.data;
                 this.classList = classes;

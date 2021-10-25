@@ -14,9 +14,11 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
-    <!-- Check for authentication -->
     <script>
+        // Check for authentication
         if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+        // Clear out courseDetails
+        localStorage.removeItem("courseDetails");
     </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
@@ -57,10 +59,10 @@
                     <div class="card m-3">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">
-                                <a :href="'./view-specific-course-HR.html?courseId=' + course.course_id">{{ course.course_id }} {{ course.course_name }}</a>
+                                <a href="./view-specific-course-HR.html" @click="setCourseDetails(course)">{{ course.course_id }} {{ course.course_name }}</a>
                             </h5>
                             <p class="card-text">{{ course.course_description }}</p>
-                            <a :href="'./view-specific-course-HR.html?courseId=' + course.course_id" class="btn btn-outline-info mt-auto">View Details</a>
+                            <a href="./view-specific-course-HR.html" @click="setCourseDetails(course)" class="btn btn-outline-info mt-auto" >View Details</a>
                             <div class="ml-auto">
                                 <!-- <span v-if = "validateEligibility(course, accountDetails.courses_completed)" class="badge badge-success">Eligible</span>
                                 <span v-else class="badge badge-danger">Not Eligible</span> -->
@@ -94,13 +96,12 @@ var app = new Vue({
         error: false
     },
     methods: {
-
+        setCourseDetails(courseDetails) {
+            localStorage.setItem("courseDetails", JSON.stringify(courseDetails))
+        }
     },
     mounted: function () {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
-        if (!accountDetails) {
-            window.location.replace("./home.html");
-        }
         this.accountDetails = accountDetails;
 
         //call API to get all courses if role is HR
