@@ -331,11 +331,7 @@ export async function createSection(URL, body){
 //Upload Material
 export async function uploadMaterial(URL, body){
     try{
-        const data = {
-            method: 'POST',
-            body: body
-        }
-        const response = await fetch(`${URL}/materials/file`, data)
+        const response = await fetch(`${URL}/materials/file`, body)
         if(response){
             const result = await response.json()
             return result;
@@ -359,7 +355,7 @@ export async function uploadLink(URL, body){
             },
             body: JSON.stringify(body)
         }
-
+        console.log(data)
         const response = await fetch(`${URL}/materials/link`, data)
         if(response){
             const result = await response.json()
