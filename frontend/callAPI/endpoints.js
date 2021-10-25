@@ -353,6 +353,31 @@ export async function uploadMaterial(URL, body){
     }
 }
 
+//Upload Material
+export async function uploadLink(URL, body){
+    try{
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify(body)
+        }
+
+        const response = await fetch(`${URL}/materials/link`, data)
+        if(response){
+            const result = await response.json()
+            return result;
+        }
+    }catch(e){
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
 
 // ====== Update ========
 
