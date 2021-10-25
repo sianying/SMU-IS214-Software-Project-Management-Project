@@ -333,12 +333,8 @@ export async function uploadMaterial(URL, body){
     try{
         const data = {
             method: 'POST',
-            headers: {
-                'Content-Type': "application/json"
-            },
-            body: JSON.stringify(body)
+            body: body
         }
-
         const response = await fetch(`${URL}/materials/file`, data)
         if(response){
             const result = await response.json()
