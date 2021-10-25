@@ -50,7 +50,8 @@ var app = new Vue({
             "staff_name": "George",
             "courses_completed": ["IC110", "IC113"],
             "courses_enrolled": ["IC110"],
-            "role": "HR"
+            "role": "HR",
+            "isTrainer": 0
             }
             localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
         },
@@ -61,18 +62,20 @@ var app = new Vue({
             "staff_name": "Tom",
             "courses_completed": ["IC111"],
             "courses_enrolled": ["IC112"],
-            "role": "Engineer"
+            "role": "Engineer",
+            "isTrainer": 0
             }
             localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
         },
 
         authenticateTrainer(){
             const accountDetails = {
-            "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
-            "staff_name": "George",
+            "staff_id": "aae3e316-af31-40ae-9540-0e3a401b20f6",
+            "staff_name": "Tim",
             "courses_completed": ["IC110", "IC113"],
             "courses_enrolled": ["IC110"],
-            "role": "Trainer"
+            "role": "Engineer",
+            "isTrainer": 1
             }
             localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
         }

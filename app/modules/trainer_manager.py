@@ -15,7 +15,7 @@ class Trainer(Staff):
                 staff_id: int,
                 staff_name: String,
                 role: String,
-                isTrainer: Boolean (always 1)
+                isTrainer: Boolean (always True)
                 courses_completed = []: List,
                 courses_enrolled = []: List
 
@@ -92,7 +92,7 @@ class TrainerDAO:
         self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Staff')
 
     #Create
-    def insert_trainer(self, staff_name, role, isTrainer=1, staff_id = None, courses_completed= [], courses_enrolled = [], courses_can_teach=[], courses_teaching=[]):
+    def insert_trainer(self, staff_name, role, isTrainer=True, staff_id = None, courses_completed= [], courses_enrolled = [], courses_can_teach=[], courses_teaching=[]):
         try:
             if staff_id == None:
                 staff_id = str(uuid4())
@@ -123,7 +123,7 @@ class TrainerDAO:
                 trainer_dict['staff_id'] = str(uuid4())
 
             if 'isTrainer' not in trainer_dict:
-                trainer_dict['isTrainer']=1
+                trainer_dict['isTrainer']=True
             
             if 'courses_completed' not in trainer_dict:
                 trainer_dict['courses_completed'] = []
@@ -163,12 +163,11 @@ class TrainerDAO:
     #Read
     def retrieve_all(self):
         # retrieve all items and add them to a list of trainer objects
-        response = self.table.scan(FilterExpression= Key('isTrainer').eq(1))
+        response = self.table.scan(FilterExpression= Key('isTrainer').eq(True))
         data = response['Items']
-        # response = self.table.query(KeyConditionExpression = Key('isTrainer').eq(1))
 
         while 'LastEvaluatedKey' in response:
-            response = self.table.scan(ExclusiveStartKey=response['LastEvaluatedKey'], FilterExpression= Key('isTrainer').eq(1))
+            response = self.table.scan(ExclusiveStartKey=response['LastEvaluatedKey'], FilterExpression= Key('isTrainer').eq(True))
             data.extend(response['Items'])
 
         trainer_list = []
@@ -181,8 +180,7 @@ class TrainerDAO:
     
 
     def retrieve_one(self, staff_id):
-        response = self.table.scan(FilterExpression = Key('staff_id').eq(staff_id) & Key('isTrainer').eq(1))
-        # response = self.table.query(KeyConditionExpression=Key('staff_id').eq(staff_id) & Key('isTrainer').eq("1"))
+        response = self.table.scan(FilterExpression = Key('staff_id').eq(staff_id) & Key('isTrainer').eq(True))
         
         if response['Items'] == []:
             return 
@@ -207,6 +205,7 @@ class TrainerDAO:
 
     def retrieve_courses_teaching(self, staff_id):
         trainer = self.retrieve_one(staff_id)
+        
         if trainer==None:
             raise ValueError('No trainer found for the given staff id.')
         return trainer.get_courses_teaching()

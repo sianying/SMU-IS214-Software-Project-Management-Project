@@ -42,6 +42,42 @@ export async function retrieveSpecificCourse(URL, courseId) {
     
 }
 
+// Retrieve qualified trainers for a specific course
+export async function retrieveQualifiedTrainers(URL, courseId) {
+    try {
+        const response = await fetch(`${URL}/courses/qualified/${courseId}`);
+        if (response) {
+            const result = await response.json();
+            return result;
+        }
+    } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+    
+}
+
+// Retrieve all courses a trainer is assigned
+export async function retrieveAssignedCoursesTrainer(URL, staffId) {
+    try {
+        const response = await fetch(`${URL}/courses/assigned/${staffId}`);
+        if (response) {
+            const result = await response.json();
+            return result;
+        }
+    } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+    
+}
+
 // Retrieve Eligible Course
 export async function retrieveEligibleCourses(URL, staffId) {
     try {
@@ -199,6 +235,7 @@ export async function createQuiz(URL, body) {
     }
 }
 
+
 //Create Attempt
 export async function createAttempt(URL, body){
     try{
@@ -225,26 +262,162 @@ export async function createAttempt(URL, body){
 }
 
 
+// const body = {
+//     "course_id": course_id,
+//     "start_datetime": start_datetime,
+//     "end_datetime": end_datetime,
+//     "class_size": class_size
+// }
+//Create Class
+export async function createClass(URL, body){
+    try{
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify(body)
+        }
+
+        const response = await fetch(`${URL}/class`, data)
+        if(response){
+            const result = await response.json()
+            return result;
+        }
+    }catch(e){
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+// const body = {
+//     "course_id": course_id,
+//     "class_id": class_id,
+//     "section_name": section_name
+// }
+//Create Section
+export async function createSection(URL, body){
+    try{
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify(body)
+        }
+
+        const response = await fetch(`${URL}/section`, data)
+        if(response){
+            const result = await response.json()
+            return result;
+        }
+    }catch(e){
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+
+// const body = {
+//     "file": file,
+//     "section_id": section_id
+// }
+//Upload Material
+export async function uploadMaterial(URL, body){
+    try{
+        const response = await fetch(`${URL}/materials/file`, body)
+        if(response){
+            const result = await response.json()
+            return result;
+        }
+    }catch(e){
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+//Upload Material
+export async function uploadLink(URL, body){
+    try{
+        const data = {
+            method: 'POST',
+            headers: {
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify(body)
+        }
+        console.log(data)
+        const response = await fetch(`${URL}/materials/link`, data)
+        if(response){
+            const result = await response.json()
+            return result;
+        }
+    }catch(e){
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
 
 
 // ====== Update ========
-//Enroll learners
+
 // const body = {
 //     "staff_id": staff_id,
 //     "course_id": course_id,
 //     "class_id": class_id
 // }
-
+//Enroll Learners
 export async function enrollLearners(URL, body) {
     try {
         const data = {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(body)
         }
         const response = await fetch(`${URL}/class/enroll`, data)
+        if (response) {
+            const result = await response.json()
+            return result;
+        }
+    } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+// const body = {
+//     "course_id": course_id,
+//     "class_id": class_id,
+//     "staff_id": staff_id
+// }
+//Assign Trainer
+export async function assignTrainer(URL, body) {
+    try {
+        const data = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        }
+        const response = await fetch(`${URL}/class/trainer`, data)
         if (response) {
             const result = await response.json()
             return result;

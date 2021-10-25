@@ -4,6 +4,7 @@ export default Vue.component("nav-bar", {
             currentPageLink: "",
             role: "",
             staffName: "",
+            isTrainer: 0,
             isActive: []
         }
     },
@@ -12,9 +13,7 @@ export default Vue.component("nav-bar", {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.role = accountDetails.role;
         this.staffName = accountDetails.staff_name;
-        // this.role = "Engineer";
-        // this.staffName = "Tom";
-
+        this.isTrainer = accountDetails.isTrainer;
 
         // get the url of current page; if its from add new course, display success alert for course creation
         this.currentPageLink = window.location.href.split("/").at(-1);
@@ -34,7 +33,7 @@ export default Vue.component("nav-bar", {
                             <a class="nav-link" href="./home.html">Home</a>
                             <a :class="['nav-link', isActive[0]]" href="./view-list-of-courses-HR.html" >Courses</a>
                             <a :class="['nav-link', isActive[1]]" href="./view-list-of-enrolled-courses.html">Enrolled Courses</a>
-                            <a v-if="role === 'Trainer'" :class="['nav-link', isActive[2]]" href="#">Assigned Courses</a>
+                            <a v-if="isTrainer" :class="['nav-link', isActive[2]]" href="view-list-of-assigned-courses.html">Assigned Courses</a>
                         </div>
                     </div>
                     <div class="navbar-nav">
