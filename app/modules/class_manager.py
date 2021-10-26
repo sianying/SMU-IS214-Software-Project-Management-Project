@@ -242,25 +242,10 @@ class ClassDAO:
         
         return
     
-
     def retrieve_all_from_course(self, course_id):
         response = self.table.query(KeyConditionExpression=Key('course_id').eq(course_id))
     
         return [Class(item) for item in response['Items']]
-
-
-    def retrieve_trainer_classes(self, course_id, staff_id):
-        class_list= self.retrieve_all_from_course(course_id)
-
-        if class_list==[]:
-            raise ValueError('No classes found for the given course_id ' + course_id)
-
-        returned_list=[]
-        for each_class in class_list:
-            if each_class.get_trainer_assigned() == staff_id:
-                returned_list.append(each_class)
-
-        return returned_list
         
     #Update
     def update_class(self, ClassObj):

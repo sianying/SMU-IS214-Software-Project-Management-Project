@@ -171,37 +171,6 @@ def retrieve_courses_trainer_teaches(staff_id):
         }
     )
     
-@app.route("/class/assigned/<string:course_id>/<string:staff_id>")
-def retrieve_assigned_classes(course_id, staff_id):
-    dao = ClassDAO()
-    class_list = dao.retrieve_trainer_classes(course_id, staff_id)
-
-    try:
-        class_list = dao.retrieve_trainer_classes(course_id, staff_id)
-        
-        return jsonify(
-            {
-                "code":200,
-                'data': [classObj.json() for classObj in class_list]
-            }
-        )
-    
-    except ValueError as e:
-        if str(e) == "No classes found for the given course_id " + course_id:
-            return jsonify(
-                {
-                    "code": 403,
-                    "data": str(e)
-                }
-            ), 403
-        
-    except:
-        return jsonify(
-            {
-            "code": 404,
-            "data": "An error occured while retrieving classes a trainer is assigned to teach."
-            }
-        )
 
 
 @app.route("/staff/eligible/<string:course_id>")
