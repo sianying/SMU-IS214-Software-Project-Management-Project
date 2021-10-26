@@ -35,7 +35,7 @@ ITEM3 = {
     "start_datetime": "2021-08-21T08:00:00",
     "end_datetime": "2021-10-21T23:59:59",
     "class_size": 20,
-    "trainer_assigned": None,
+    "trainer_assigned": 'dummytrainer',
     "learners_enrolled": [],
     "section_list": []
 }
@@ -201,6 +201,19 @@ class TestClassDAO(unittest.TestCase):
         class_list2 = self.dao.retrieve_all_from_course("IS113")
         self.assertEqual([ITEM1], [classObj.json() for classObj in class_list], "Failed to retrieve all classes from a course")
         self.assertEqual([], [classObj.json() for classObj in class_list2], "Retrieved objects when nothing should be retrieved")
+
+    def test_retrieve_trainer_classes(self):
+        trainer_classes = self.dao.retrieve_trainer_classes("IS110", '851252d7-b21c-4d75-95b6-321471ba3910')
+        trainer_classes2 = self.dao.retrieve_trainer_classes("IS111", 'dummytrainer')
+
+        self.assertEqual([ITEM1], [classObj.json() for classObj in trainer_classes], "Failed to retrieve class that trainer is teaching")
+        self.assertEqual([], [classObj.json() for classObj in trainer_classes2], "Retrieved class objects when nothing should be retrieved")
+
+        with self.assertRaises(ValueError, msg = "ClassDAO returned something even when course_id is invalid") as context:
+            self.dao.retrieve_trainer_classes('IS42000', '851252d7-b21c-4d75-95b6-321471ba3910')
+
+        self.assertTrue("No classes found for the given course_id IS42000" == str(context.exception))
+
 
     def test_update_class(self):
         from modules.class_manager import Class
