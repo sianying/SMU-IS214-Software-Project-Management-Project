@@ -121,7 +121,6 @@ var app = new Vue({
         } else {
             retrieveEligibleCourses(URL, this.accountDetails.staff_id).then(result => {
                 if (result.code == 200) {
-                    console.log(result.data);
                     this.error = false;
                     const courses = result.data.filter(course => {
                         return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
