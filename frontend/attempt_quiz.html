@@ -61,33 +61,27 @@
 
     <script type="module">
         import {URL, retrieveQuizById, createAttempt} from "./callAPI/endpoints.js";
-        import navBar from "./components/navBar.js"
-
-        new Vue({
-            el: '#nav-bar-component'
-        });
 
         var app = new Vue({
             el: '#app',
             data: {
-                quiz_id:  "e284e40f-0db2-41ce-9913-ee3846a3aed2",
-                section_name: "Section Name Here",
+                quiz_id:  "",
+                section_name: "",
                 questions: null,
                 answers: [],
-                accountDetails: {
-                    "staff_id": "6724873a-b951-4ee7-a835-cb0f9f784c45",
-                    "staff_name": "Tom",
-                    "courses_completed": ["IC111"],
-                    "courses_enrolled": ["IC112"],
-                    "role": "Engineer"
-                },
-                timerCount: 3600, // get from db
+                accountDetails: {},
+                timerCount: 0, // get from db
                 secondsCount: 0,
                 minutesCount: 0,  
                 hourCount: 0 
             },
             created: function() {
-                // this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
+                this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
+                this.section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                this.quiz_id = urlParams.get('quiz_id');
+
                 // To pass section name and quiz_id from prev page
                 retrieveQuizById(URL, this.quiz_id).then(result =>{
                     if(result.code == 200){
