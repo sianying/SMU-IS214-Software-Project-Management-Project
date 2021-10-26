@@ -25,101 +25,102 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     
     <title>Section Page</title>
+
+    <script>
+        //Check for authentication
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
+
 </head>
 <body>
-    <div id='nav'>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#"  id="navlogo">ONE STOP LMS</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Disabled</a>
-                    </li>
-                </ul>  
-            </div>
-            <a class="nav-link" href="#"><img src="../images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
-        </nav>
-    </div>
-
-    <div id='breadcrumb-div' class='mx-auto mt-4'>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Sections</li>
-            </ol>
-        </nav>
+    <div id="nav-bar-component">
+        <nav-bar></nav-bar>
     </div>
 
     <div id ='app'>
-        <div v-for='(section, index) in sections' class='section-card mx-auto'>
-            <div class="card my-4">
-                <div class="card-header h3">
-                    {{section.section_name}}
-                </div>
-                <div class="card-body"> 
-                    <p class="card-text">{{section.sectionDescription}}</p>
-                    <p>
-                        <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            View Materials
-                        </a>
-                        <a :href="'./attempt_quiz.html?quiz_id=' + section.quiz" v-if='section.quiz' class="btn btn-warning ml-2">Attempt Quiz</a>
-                    </p>
-                    <div class="collapse" :id="'collapseExample' + index">
-                        <div class="card card-body">
-                            <div v-for ='material in section.materials'>
-                                <a :href="material.url" target='_blank'>{{material.mat_name}}</a>
+        <div id='breadcrumb-div' class='mx-auto mt-4'>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{course_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class G{{class_id}}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sections</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div id='error' class='alert alert-danger w-50 mx-auto text-center d-none'>There are currently no sections for this class.</div>
+        <div id='sections-div' class='d-none'>
+            <div id='sections' v-for='(section, index) in sections' class='section-card mx-auto'>
+                <div class="card my-4">
+                    <div class="card-header h3">
+                        {{section.section_name}}
+                    </div>
+                    <div class="card-body"> 
+                        <p class="card-text">{{section.sectionDescription}}</p>
+                        <p>
+                            <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                View Materials
+                            </a>
+                            <a :href="'./attempt_quiz.html?quiz_id=' + section.quiz" v-if='section.quiz' class="btn btn-warning ml-2">Attempt Quiz</a>
+                        </p>
+                        <div class="collapse" :id="'collapseExample' + index">
+                            <div class="card card-body">
+                                <div v-for ='material in section.materials'>
+                                    <a v-if="material.mat_type=='link'" :href="material.url" target='_blank'>{{material.mat_name}}</a>
+                                    <a v-else href="view_material.html" @click="addMatName(material.mat_name, index)" target='_blank'>{{material.mat_name}}</a>
+                                </div>
                             </div>
-                        </div>
-                    </div> 
+                        </div> 
+                    </div>
                 </div>
             </div>
-        </div>
+        </div> 
     </div>
     
     <script type="module">
+        import navBar from "./components/navBar.js"
+
+        new Vue({
+            el: '#nav-bar-component'
+        });
+
         import { URL, retrieveAllSectionsFromClass } from "./callAPI/endpoints.js";
 
         var app = new Vue({
             el: '#app',
             data: {
-                sections: null,
+                sections: "",
                 course_id: null,
-                class_id: null
+                class_id: null,
             },
 
             created: function() {
-                const queryString = window.location.search;
-                const urlParams = new URLSearchParams(queryString);
+                const course = JSON.parse(localStorage.getItem("courseDetails"));
 
-                const course_id = urlParams.get('courseId')
+                const course_id = course['course_id'];
+                this.course_id = course_id;
 
-                document.getElementById('breadcrumb-2').innerText = course_id
-
-                const class_id = urlParams.get('classId')
-                document.getElementById('breadcrumb-3').innerText = "Class " + class_id
+                const class_id = course['class_id'];
+                this.class_id = class_id;
                 
                 retrieveAllSectionsFromClass(URL, course_id, class_id).then(result => {
                     if(result.code == 200){
-                        this.sections = result.data
+                        this.sections = result.data;
+                        document.getElementById('sections-div').classList.remove('d-none');
                     }
-                    // else {
-                    //     console.log(`${result.code} ${result.data}`)
-                    // }
+                    else {
+                        this.sections = "";
+                        document.getElementById('error').classList.remove('d-none');
+                    }
                 })            
+            },
+            methods: {
+                addMatName: function(mat_name, ind){
+                    localStorage.setItem('matName', JSON.stringify(mat_name));
+                    localStorage.setItem('sectionSelectedId', JSON.stringify(this.sections[ind].section_id));
+                    localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[ind].section_name));
+                }
             }
         })
     </script>
