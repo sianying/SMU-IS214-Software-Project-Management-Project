@@ -14,9 +14,11 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
-    <!-- Check for authentication -->
     <script>
+        // Check for authentication
         if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+        // Clear out courseDetails
+        localStorage.removeItem("courseDetails");
     </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
@@ -126,8 +128,12 @@ var app = new Vue({
                     if (result.code == 201){
                         const course = result.data;
             // 3. Return 201, pass returned course id to next page
-                        let para = new URLSearchParams();
-                        para.append("courseId", course.course_id);
+                        // let para = new URLSearchParams();
+                        // para.append("courseId", course.course_id);
+                        // location.href = "./view-specific-course-HR.html?" + para.toString();
+
+                        //set course details for next page usage
+                        this.setCourseDetails(course)
                         location.href = "./view-specific-course-HR.html?" + para.toString();
                     } else {
                         this.apiError = result.data + ".";
@@ -135,6 +141,9 @@ var app = new Vue({
                 });
             
             }
+        },
+        setCourseDetails(courseDetails) {
+            localStorage.setItem("courseDetails", JSON.stringify(courseDetails))
         },
         validateForm() {
             if (this.name.length === 0) {
