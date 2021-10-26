@@ -14,11 +14,9 @@
     <link rel="stylesheet" href="./css/courses.css">
     <!-- Iconify -->
     <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    <!-- Check for authentication -->
     <script>
-        // Check for authentication
         if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
-        // Clear out courseDetails
-        localStorage.removeItem("courseDetails");
     </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
@@ -39,18 +37,11 @@
             </ol>
         </nav>
     </div>
-    
+
+    <!-- Dynamically render courses using Vue Instance -->
     <div v-cloak id="app">
-        <!-- "Add New Course" Button for HR -->
-        <div v-if="accountDetails.role === 'HR'" class="container d-flex justify-content-end">
-            <a href = "./add-new-course-HR.html" class="btn btn-outline-info">
-                Add New Course 
-                <span class="iconify" data-icon="akar-icons:circle-plus"></span>
-            </a>
-        </div>
-        <!-- Dynamically render courses using Vue Instance -->
-        <div v-if="error" class="alert alert-danger text-center mt-3 mx-3">
-            No courses available. Please try again later.
+        <div v-if="errorAPI || noCoursesAssigned" :class="[alertColor, 'alert', 'text-center', 'mt-3', 'mx-3']">
+            {{ alertMessage }}
         </div>
         <div v-else class="container">
             <div class="row">
@@ -59,10 +50,10 @@
                     <div class="card m-3">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">
-                                <a href="./view-specific-course-HR.html" @click="setCourseDetails(course)">{{ course.course_id }} {{ course.course_name }}</a>
+                                <a :href="'./view-specific-course-HR.html?courseId=' + course.course_id">{{ course.course_id }} {{ course.course_name }}</a>
                             </h5>
                             <p class="card-text">{{ course.course_description }}</p>
-                            <a href="./view-specific-course-HR.html" @click="setCourseDetails(course)" class="btn btn-outline-info mt-auto" >View Details</a>
+                            <a :href="'./view-specific-course-HR.html?courseId=' + course.course_id" class="btn btn-outline-info mt-auto">View Details</a>
                             <div class="ml-auto">
                                 <!-- <span v-if = "validateEligibility(course, accountDetails.courses_completed)" class="badge badge-success">Eligible</span>
                                 <span v-else class="badge badge-danger">Not Eligible</span> -->
@@ -79,7 +70,7 @@
 </div>
 
 <script type="module">
-import { URL, retrieveAllCourses, retrieveEligibleCourses } from "./callAPI/endpoints.js";
+import { URL, retrieveAssignedCoursesTrainer } from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -93,47 +84,58 @@ var app = new Vue({
         courses: [],
         // e.g. accountDetails taken from session e.g. session.accountDetails
         accountDetails: {},
-        error: false
+        errorAPI: false,
+        noCoursesAssigned: false,
+        alertMessage: "",
+        alertColor: ""
     },
     methods: {
-        setCourseDetails(courseDetails) {
-            localStorage.setItem("courseDetails", JSON.stringify(courseDetails))
+        showErrorAPI() {
+            this.errorAPI = true;
+            this.alertColor = "alert-danger";
+            this.alertMessage = "No courses available. Please try again later.";
+        },
+        hideErrorAPI() {
+            this.errorAPI = false;
+        },
+        showErrorNoCoursesAssigned() {
+            this.noCoursesAssigned = true;
+            this.alertColor = "alert-warning";
+            this.alertMessage = "No courses Assigned.";
+        },
+        hideErrorNoCoursesAssigned() {
+            this.noCoursesAssigned = false;
         }
+        
     },
     mounted: function () {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
 
-        //call API to get all courses if role is HR
-        if (this.accountDetails.role == "HR"){
-            retrieveAllCourses(URL).then(result => {
-                if (result.code == 200) {
-                    this.error = false;
-                    const courses = result.data.filter(course => {
-                        return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
-                    });
-                    //sort courses according to course id in ascending order
+        // if courses enrolled is zero, display no courses enrolled
+        this.hideErrorNoCoursesAssigned();
+        retrieveAssignedCoursesTrainer(URL, this.accountDetails.staff_id).then(result => {
+            if (result.code == 200) {
+                this.errorAPI = false;
+                const courses = result.data;
+                //sort courses according to course id in ascending order if there are more than 1 enrolled course
+                if (courses.length > 1){
                     this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+                } else if (courses.length === 1) {
+                    this.courses = courses;
                 } else {
-                    this.error = true;
+                    // no courses assigned when course.length === 0
+                    this.showErrorNoCoursesAssigned;
                 }
-            });
-        } else {
-            retrieveEligibleCourses(URL, this.accountDetails.staff_id).then(result => {
-                if (result.code == 200) {
-                    this.error = false;
-                    const courses = result.data.filter(course => {
-                        return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
-                    });
-                    //sort courses according to course id in ascending order
-                    this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
-                } else {
-                    this.error = true;
-                }
-            });
-        }
-        
+                
+            } else {
+                this.showErrorAPI();
+            }
+        });
+
+
     }
+    
 })
 
 </script>
