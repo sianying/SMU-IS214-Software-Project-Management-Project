@@ -22,47 +22,32 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
 
     <title>Enter Question Score</title>
+
+    <script>
+        //Check for authentication
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
+    
 </head>
 <body>
-    <div id='nav'>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#"  id="navlogo">ONE STOP LMS</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Disabled</a>
-                    </li>
-                </ul>  
-            </div>
-            <a class="nav-link" href="#"><img src="./images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
-        </nav>
-    </div>
-
-    <div id='breadcrumb-div' class='mx-auto mt-4'>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Enter Question Score</li>
-            </ol>
-        </nav>
+    
+    <div id="nav-bar-component">
+        <nav-bar></nav-bar>
     </div>
 
     <div id='app'>
+        <div id='breadcrumb-div' class='mx-auto mt-4'>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{course_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class G{{class_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Enter Question Score</li>
+                </ol>
+            </nav>
+        </div>
+        
         <div>
             <div class='mt-4 mb-4'>
                 <div class="text-center h3">Enter a score and select the correct answer for a question</div>
@@ -120,27 +105,36 @@
         import { URL, retrieveSpecificSection, createQuiz} from "./callAPI/endpoints.js";
         var section_id = JSON.parse(localStorage.getItem('sectionSelectedId'));
 
-        // set breadcrumb
-        var course_id = JSON.parse(localStorage.getItem('course_id'));
-        document.getElementById('breadcrumb-2').innerText = course_id
-
-        var class_id = JSON.parse(localStorage.getItem('class_id'));
-        document.getElementById('breadcrumb-3').innerText = "Class " + class_id
-
         var section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
         document.getElementById('breadcrumb-4').innerText = section_name
 
         var questionsList = JSON.parse(localStorage.getItem('questions'));
+
+        
         // console.log(questionsList)
+        import navBar from "./components/navBar.js"
+
+        new Vue({
+            el: '#nav-bar-component'
+        });
 
         var app = new Vue({
             el: '#app',
             data: {
                 questions: null,
                 error: false,
-                time_limit: 1
+                time_limit: 1, 
+                course_id: "",
+                class_id: ""
             },
             created() {
+                const course = JSON.parse(localStorage.getItem("courseDetails"));
+
+                const course_id = course['course_id'];
+                this.course_id = course_id;
+                const class_id = course['class_id'];
+                this.class_id = class_id;
+
                 this.questions = questionsList
                 for(let qn in this.questions){
                     this.questions[qn].marks = 1
@@ -195,7 +189,7 @@
                             if (result.code !== 201){
                                 this.error = true;
                             } else {
-                                // location.href = "./trainer_section_page.html?courseId=" + course_id + "&classId=" + class_id;
+                                location.href = "./trainer_section_page.html?courseId=" + this.course_id + "&classId=" + this.class_id;
                             }
                             
                         })
