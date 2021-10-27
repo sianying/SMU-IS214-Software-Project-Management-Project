@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- VueJS -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <!-- Navbar css-->
+    <link rel="stylesheet" href="./css/nav.css">
+    <!-- Main css -->
+    <link rel="stylesheet" href="./css/courses.css">
+    <!-- Iconify -->
+    <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    <!-- Check for authentication -->
+    <script>
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
+    <!-- NavBar -->
+    <div id="nav-bar-component">
+        <nav-bar></nav-bar>
+    </div>
+</head>
+
+<body>
+    <div v-cloak id="app" class="wrapper container mx-auto">
+        <div id="breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
+                    <li class="breadcrumb-item"><a href="./view-specific-course-HR.html">{{ course.course_id }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add New Class</li>
+                </ol>
+            </nav>
+        </div>
+
+        <h4 class="pt-3 pl-2">1. Set Class Details</h4>
+        <div class="form-border rounded">
+            <form>
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Class Name</label><span class="form-error ml-2">{{ error.className }}</span>
+                    <input class="form-control" v-model="className" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Class Start Time</label><span class="form-error ml-2">{{ error.startDatetime }}</span>
+                    <input type="datetime-local" class="form-control" :min="minDatetime" v-model="startDatetime" @input="validateDateTime">
+                </div>
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Class End Time</label><span class="form-error ml-2">{{ error.endDatetime }}</span>
+                    <input type="datetime-local" class="form-control" :min="startDatetime" v-model="endDatetime"  @input="validateDateTime">
+                </div>
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Class Size</label>
+                    <select v-model="selectedClassSize" class="form-control">
+                        <option v-for="num in 30" >{{num}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Assign Trainer</label><span class="form-error ml-2">{{ error.assignedTrainer }}</span>
+                    <select v-if="!apiError" v-model="selectedTrainer" class="form-control">
+                        <option v-for="trainer in trainersList" :value="trainer.staff_id">{{ trainer.staff_name }}</option>
+                    </select>
+                </div>
+                <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
+                    {{ apiError }}
+                </div>
+                <div class="d-flex justify-content-center">
+                    <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
+                    <!-- <a v-else class="btn btn-success mt-4" @click="onSubmit">Confirm</a> -->
+                    <a class="btn btn-success mt-4" @click="onSubmit">Confirm</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+    
+<script type="module">
+import { URL, retrieveAllClasses, createClass, retrieveQualifiedTrainers, assignTrainer } from "./callAPI/endpoints.js";
+import navBar from "./components/navBar.js"
+
+new Vue({
+    el: '#nav-bar-component' 
+});
+
+var app = new Vue({
+    el: '#app',
+    data: {
+        accountDetails: {},
+        course: {
+            course_name: "",
+            course_id: "",
+            course_description: "",
+            prerequisite_course: [],
+            class_list: []
+        },
+        classObj: {
+            course_id: "",
+            start_datetime: "",
+            end_datetime: "",
+            class_size: "",
+        },
+        className: "G1",
+        startDatetime: "",
+        endDatetime: "",
+        selectedClassSize: 1,
+        createdClass: {},
+        selectedTrainer: "",
+        
+        trainersList: [],
+        minDatetime: "",
+        error: {
+            className: "",
+            startDatetime: "",
+            endDatetime: "",
+            assignedTrainer: "",
+        },
+        errorMessages: ["* Class Name not loaded. Please try again later.", "* Start Date and Time should be before End Date and Time", "* End Date and Time should be after Start Date and Time", "* Please try again later."],
+        apiError: false,
+    },
+    methods: {
+        onSubmit() {
+            // 1. Validate form
+            this.validateDateTime();
+            if (this.error.className.length !== 0 || this.error.startDatetime.length !== 0 || this.error.endDatetime.length !== 0 || this.error.assignedTrainer.length !== 0) {
+                event.preventDefault();
+            } else {
+            // 2. Set course object and call create course API
+                this.classObj.course_id = this.course.course_id;
+                this.classObj.start_datetime = this.startDatetime + ":00";
+                this.classObj.end_datetime = this.endDatetime + ":00";
+                this.classObj.class_size = this.selectedClassSize
+
+                //Call createClass endpoint
+                createClass(URL, this.classObj).then(result => {
+                    this.apiError = false;
+                    if (result.code == 201){
+                        const createdClass = result.data;
+                        // this.createdClass = createdClass;
+
+                        const assignTrainerObj = {}
+                        assignTrainerObj.course_id = this.course.course_id;
+                        assignTrainerObj.class_id = createdClass.class_id;
+                        assignTrainerObj.staff_id = this.selectedTrainer;
+
+                        this.setClassId(createdClass.class_id);
+
+                        //If create course if successful,  //Call assign trainer endpoint
+                        assignTrainer(URL, assignTrainerObj).then(result => {
+                            this.apiError = false;
+                            if (result.code == 200){
+                                const assignedTrainer = result.data;
+                                
+                            // Return 201, redirect to next page
+                                location.href = "./view-specific-course-HR.html"
+                            } else {
+                                this.apiError = result.data + ".";
+                            }
+                        });
+
+                    } else {
+                        this.apiError = result.data + ".";
+                    }
+                });
+                
+            }
+        },
+        validateDateTime() {
+            if (this.startDatetime >=  this.endDatetime){
+                this.error.startDatetime = this.errorMessages[1]
+                this.error.endDatetime = this.errorMessages[2]
+            } else {
+                this.error.startDatetime = ""
+                this.error.endDatetime = ""
+            }
+        },
+        getTodayDate() {
+            const now = new Date;
+            //set 1 day after today
+            now.setDate(now.getDate() + 2);
+            // const currentDate = new Date(now.getFullYear(), now.getMonth()+1, now.getDay());
+            const currentDateTime = now.toISOString().split("T")[0] + "T00:00";
+            this.minDatetime = currentDateTime;
+            this.startDatetime = currentDateTime;
+            this.endDatetime = currentDateTime.slice(0, -1) + "1";
+        },
+        setClassId(classId) {
+            this.course.class_id = classId;
+            localStorage.setItem("courseDetails", JSON.stringify(this.course));
+        }
+        
+    },
+    created: function() {
+        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        this.accountDetails = accountDetails;
+
+        const course = JSON.parse(localStorage.getItem("courseDetails"));
+        this.course = course;
+
+        //Set current datetime
+        this.getTodayDate()
+
+        //call API to get all classes
+        retrieveAllClasses(URL, course.course_id).then(result => {
+            if (result.code === 200){
+                const classList = result.data;
+                this.className = `G${classList.length + 1}`;
+            } else {
+                this.error.className = this.errorMessages[0]
+            }
+        });
+
+        //call API to get qualified trainers
+        retrieveQualifiedTrainers(URL, course.course_id).then(result => {
+            if (result.code == 200){
+                this.apiError = false;
+                this.error.assignedTrainer = ""
+                const trainersList = result.data;
+                //sort courses according to course id in ascending order
+                this.trainersList = trainersList.sort((a, b) => (a.staff_name > b.staff_name) ? 1 : -1);
+                this.selectedTrainer = trainersList[0].staff_id
+            } else {
+                this.apiError = result.data + ".";
+                this.error.assignedTrainer = this.errorMessages[3]
+            }
+            
+        });
+    }
+
+})
+
+</script>
+
+
+<!-- Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+</body>
+</html>

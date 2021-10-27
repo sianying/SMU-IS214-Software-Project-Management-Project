@@ -44,6 +44,13 @@
             </button>
         </div>
 
+        <div v-if="classCreationSuccess" class="alert alert-success alert-dismissible fade show text-center mx-2" role="alert">
+            <strong>G{{ classId }}</strong> successfully created.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="classCreationSuccess=false">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
         <div class="card text-center m-2">
             <div class="card-body pt-4 px-5">
                 <h2 class="card-title font-weight-bold">{{ course.course_id }} {{ course.course_name }}</h2>
@@ -101,7 +108,15 @@ var app = new Vue({
     data: {
         accountDetails: {},
         courseCreationSuccess: false,
-        course: {},
+        classCreationSuccess: false,
+        classId: "",
+        course: {
+            course_name: "",
+            course_id: "",
+            course_description: "",
+            prerequisite_course: [],
+            class_list: []
+        },
         classList: [],
         selected: 'not selected',
         courses:[],
@@ -132,17 +147,20 @@ var app = new Vue({
         }
         
     },
-    created: function() {
+    mounted: function() {
         // get the url of last visited page; if its from add new course, display success alert for course creation
         const lastLinkVisited = document.referrer.split("/").at(-1);
         if (lastLinkVisited == "add-new-course-HR.html"){
             this.courseCreationSuccess = true;
+        } else if (lastLinkVisited == "add-new-class-HR.html"){
+            this.classCreationSuccess = true;
         }
 
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
         //Retrieve course id from URL
         const course = JSON.parse(localStorage.getItem("courseDetails"));
+        this.classId = course.class_id;
 
         // const urlSearchParams = new URLSearchParams(window.location.search);
         // const params = Object.fromEntries(urlSearchParams.entries());
