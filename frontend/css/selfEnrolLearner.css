@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+
+
+      #homebar{
+       background-color: #F8f9fb; 
+       margin-top: 10px;
+       width: 95%; 
+       margin: auto;
+       margin-top: 20px;
+       padding-top: 10px; 
+       padding-bottom: 10px;
+       padding-left: 15px;
+       padding-right: 5px; 
+       font-size: 12px;
+      }
+
+      #enrolalert{
+        margin-top:20px;
+         text-align: center;
+      }
+
+      #availbutton{
+        font-size: 15px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+         max-width: 150px;
+      }
+
+
+      .card-title{
+        font-weight: 700;
+      }
+      
