@@ -110,6 +110,7 @@ var app = new Vue({
                 if (result.code == 200) {
                     this.error = false;
                     const courses = result.data.filter(course => {
+                        //filter out enrolled courses
                         return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
                     });
                     //sort courses according to course id in ascending order
@@ -123,6 +124,7 @@ var app = new Vue({
                 if (result.code == 200) {
                     this.error = false;
                     const courses = result.data.filter(course => {
+                        //filter out enrolled courses
                         return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
                     });
                     //sort courses according to course id in ascending order

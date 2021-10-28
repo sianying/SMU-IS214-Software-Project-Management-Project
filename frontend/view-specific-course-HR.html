@@ -78,7 +78,7 @@
         </div>
 
         <div v-if="classList.length === 0" class="alert alert-warning m-2 mt-3 text-center" role="alert">
-            There are currently no classes available.
+            There are currently no classes available/enrolled in.
         </div>
         <div class="row">
             <div v-for = "selectedClass in classList" class="col-6 p-0 d-flex justify-content-center">
@@ -105,7 +105,7 @@
     </div>
     
 <script type="module">
-import { URL, retrieveSpecificCourse, retrieveAllClasses } from "./callAPI/endpoints.js";
+import { URL, retrieveSpecificCourse, retrieveAllClasses, retrieveAssignedClasses } from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -181,27 +181,30 @@ var app = new Vue({
             this.course.class_id = classId;
             localStorage.setItem("courseDetails", JSON.stringify(this.course));
             console.log(localStorage.getItem("courseDetails"));
+        },
+        // get the url of last visited page
+        retrieveLastVisitedLink() {
+            return document.referrer.split("/").at(-1);
         }
         
     },
     mounted: function() {
-        // get the url of last visited page; if its from add new course, display success alert for course creation
-        const lastLinkVisited = document.referrer.split("/").at(-1);
-        if (lastLinkVisited == "add-new-course-HR.html"){
+        const lastVisitedLink = this.retrieveLastVisitedLink()
+
+         //if previous page was add new course, display success alert for course creation
+        if (lastVisitedLink == "add-new-course-HR.html"){
             this.courseCreationSuccess = true;
-        } else if (lastLinkVisited == "add-new-class-HR.html"){
+        } else if (lastVisitedLink == "add-new-class-HR.html"){
             this.classCreationSuccess = true;
         }
 
+        //retrieve acountDetails
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
         //Retrieve course id from URL
         const course = JSON.parse(localStorage.getItem("courseDetails"));
         this.classId = course.class_id;
 
-        // const urlSearchParams = new URLSearchParams(window.location.search);
-        // const params = Object.fromEntries(urlSearchParams.entries());
-        
         //Call retrieveSpecificCourse API
         retrieveSpecificCourse(URL, course.course_id).then(result => {
             // Initialize course object
@@ -210,13 +213,40 @@ var app = new Vue({
                 this.course = course;
             }
         });
-        //Call retrieveAllClasses API
-        retrieveAllClasses(URL, course.course_id).then(result => {
-            if (result.code == 200){
-                const classes = result.data;
-                this.classList = classes;
-            }
-        });
+        
+        //Flow for view specific course page
+        //All Roles: courses -> specific course + all classes("enroll")
+        //All Roles: enrolled courses -> specific course + "enrolled classes" ("view details")
+        //Trainer Role: assigned courses -> specific course + assigned classes ("view details")
+
+        //if isTrainer & view assigned classes
+        if (lastVisitedLink === "view-list-of-assigned-courses.html"){
+             //Call retrieveAssignedClasses API 
+            retrieveAssignedClasses(URL, course.course_id, accountDetails.staff_id).then(result => {
+                if (result.code == 200){
+                    const classes = result.data;
+                    this.classList = classes;
+                }
+            })
+        } else {
+            //Call retrieveAllClasses API
+            retrieveAllClasses(URL, course.course_id).then(result => {
+                if (result.code == 200){
+                    const classes = result.data;
+
+                    // if view enrolled class
+                    if (lastVisitedLink === "view-list-of-enrolled-courses.html") {
+                        const classEnrolledList = classes.filter(classObj => {
+                            //keep only enrolled class
+                            return classObj.learners_enrolled.includes(this.accountDetails.staff_id) && classObj
+                        })
+                        this.classList = classEnrolledList;
+                    } else { // else view all classes
+                        this.classList = classes;
+                    }
+                }
+            });
+        }
 
     }
 })
