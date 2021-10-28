@@ -7,7 +7,7 @@ from botocore.errorfactory import ClientError
 from decimal import Decimal
 from modules.attempt_manager import AttemptDAO
 from modules.course_manager import CourseDAO
-from modules.class_manager import ClassDAO
+from modules.class_manager import ClassDAO, Class
 from modules.staff_manager import StaffDAO
 from modules.section_manager import SectionDAO, Material
 from modules.quiz_manager import QuizDAO
@@ -382,7 +382,7 @@ def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
 
 # ============= Create ==================
 @app.route("/courses", methods =['POST'])
-def create_course():
+def insert_course():
     data = request.get_json()
     dao = CourseDAO()
     try:
@@ -414,7 +414,6 @@ def create_course():
                 "data": "An error occurred when creating the course."
             }
         ), 500
-
 
 @app.route("/quiz/create", methods=['POST'])
 def insert_quiz():
@@ -865,6 +864,53 @@ def assign_trainer():
             }
         ), 500
 
+@app.route("/class/edit", methods = ['PUT'])
+def edit_class():
+    data = request.get_json()
+    if "course_id" not in data or "class_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "course_id or class_id not in Request Body"
+            }
+        )
+    
+    class_dao = ClassDAO()
+
+    class_obj = class_dao.retrieve_one(data['course_id'], data['class_id'])
+
+    if class_obj == None:
+        return jsonify(
+            {
+                "code": 404,
+                "data": "Class does not exist."
+            }
+        )
+
+    if "class_size" in data:
+        class_obj.set_class_size(data['class_size'])
+    
+    if "start_datetime" in data:
+        class_obj.set_start_datetime(data['start_datetime'])
+
+    if 'end_datetime' in data:
+        class_obj.set_end_datetime(data['end_datetime'])
+    
+    try:
+        class_dao.update_class(class_obj)
+        return jsonify(
+            {
+                "code": 200,
+                "data": "Class Updated"
+            }
+        )
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when assigning staff"
+            }
+        ), 500
 
 # ============= Utility ==================
 
