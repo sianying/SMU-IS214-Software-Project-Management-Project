@@ -50,9 +50,14 @@
         <div>
             <p class='text-center h3 mt-3 mb-4 '>Enrol Learner</p>
         </div>
-        <div id='confirmation' v-if='this.selectedName != ""'>
+        <div id='confirmation' v-if='enrollCheck === 1'>
             <div class="alert alert-success w-50 mx-auto text-center" role="alert">
                 {{selectedName}} has been enrolled successfully!
+            </div>
+        </div>
+        <div id='confirmation' v-if='enrollCheck === 2'>
+            <div class="alert alert-danger w-50 mx-auto text-center" role="alert">
+                There has been a problem enrolling {{selectedName}}!
             </div>
         </div>
         <div id='alert-message' v-if="this.learners.length===0">
@@ -94,6 +99,7 @@
                 currentClass: 0,
                 learners: [],
                 selectedName:"",
+                enrollCheck:0
                 
             },
             methods: {
@@ -118,7 +124,16 @@
                         'Content-Type':'application/json'
                         },
                         body: JSON.stringify(body)
-                    })
+                    }).then(response=>{
+                    
+                    //console.log(response.ok);
+                    if(response.ok){
+                        this.enrollCheck = 1
+                    }else{
+                        this.enrollCheck = 2
+                    }
+                    return response
+                })
                     
                        
         }
