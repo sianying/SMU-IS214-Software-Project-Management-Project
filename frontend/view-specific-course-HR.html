@@ -32,25 +32,32 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-light">
                     <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ courseId }}</li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ course.course_id }}</li>
                 </ol>
             </nav>
         </div>
 
         <div v-if="courseCreationSuccess" class="alert alert-success alert-dismissible fade show text-center mx-2" role="alert">
-            <strong>{{ courseId }}</strong> successfully created.
+            <strong>{{ course.course_id }}</strong> successfully created.
             <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="courseCreationSuccess=false">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div v-if="classCreationSuccess" class="alert alert-success alert-dismissible fade show text-center mx-2" role="alert">
+            <strong>G{{ classId }}</strong> successfully created.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="classCreationSuccess=false">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
 
         <div class="card text-center m-2">
             <div class="card-body pt-4 px-5">
-                <h2 class="card-title font-weight-bold">{{ courseId }} {{ courseName }}</h2>
-                <p class="card-text">{{ courseDescription }}</p>
+                <h2 class="card-title font-weight-bold">{{ course.course_id }} {{ course.course_name }}</h2>
+                <p class="card-text">{{ course.course_description }}</p>
                 <div class="mx-auto">
-                    <span v-if = "prerequisiteCourses.length === 0" class="badge badge-info mr-1">No pre-requisites</span>
-                    <span v-else v-for ="prereq in prerequisiteCourses" class="badge badge-info mr-1">{{ prereq }}</span>
+                    <span v-if = "course.prerequisite_course.length === 0" class="badge badge-info mr-1">No pre-requisites</span>
+                    <span v-else v-for ="prereq in course.prerequisite_course" class="badge badge-info mr-1">{{ prereq }}</span>
                 </div>
             </div>
         </div>
@@ -77,8 +84,8 @@
                             <br>
                             <b>Availability: </b> {{ getSectionAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
                         </p>
-                        <a v-if="accountDetails.role === 'HR'" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">View Section</a>
-                        <a v-else-if="isSectionFull(selectedClass.learners_enrolled, selectedClass)" :href="'engineer_section_page.html?courseId=' + courseId + '&classId=' + selectedClass.class_id" class="btn btn-outline-info mt-auto">Enroll</a>
+                        <a v-if="accountDetails.role === 'HR'" href="engineer_section_page.html" @click="setClassId(selectedClass.class_id)" class="btn btn-outline-info mt-auto">View Section</a>
+                        <a v-else-if="isSectionFull(selectedClass.learners_enrolled, selectedClass)" href="engineer_section_page.html" @click="setClassId(selectedClass.class_id)" class="btn btn-outline-info mt-auto">Enroll</a>
                         <button v-else class="btn btn-light mt-auto" disabled>Enroll</button>
                         
                     </div>
@@ -101,10 +108,15 @@ var app = new Vue({
     data: {
         accountDetails: {},
         courseCreationSuccess: false,
-        courseName: "",
-        courseId: "",
-        courseDescription: "",
-        prerequisiteCourses: [],
+        classCreationSuccess: false,
+        classId: "",
+        course: {
+            course_name: "",
+            course_id: "",
+            course_description: "",
+            prerequisite_course: [],
+            class_list: []
+        },
         classList: [],
         selected: 'not selected',
         courses:[],
@@ -123,25 +135,32 @@ var app = new Vue({
         },
         getSectionAvailability(learnersEnrolled, classSize){
             // returns availability of section
-            return (learnersEnrolled.length).toString() + "/" + (classSize).toString();
+            return (classSize - learnersEnrolled.length).toString() + "/" + (classSize).toString();
         },
         isSectionFull(learnersEnrolled, classSize) {
             // returns if class is full
             return learnersEnrolled.length === classSize.length ? false : true;
+        },
+        setClassId(classId) {
+            this.course.class_id = classId;
+            localStorage.setItem("courseDetails", JSON.stringify(this.course));
         }
         
     },
-    created: function() {
+    mounted: function() {
         // get the url of last visited page; if its from add new course, display success alert for course creation
         const lastLinkVisited = document.referrer.split("/").at(-1);
         if (lastLinkVisited == "add-new-course-HR.html"){
             this.courseCreationSuccess = true;
+        } else if (lastLinkVisited == "add-new-class-HR.html"){
+            this.classCreationSuccess = true;
         }
 
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
         //Retrieve course id from URL
         const course = JSON.parse(localStorage.getItem("courseDetails"));
+        this.classId = course.class_id;
 
         // const urlSearchParams = new URLSearchParams(window.location.search);
         // const params = Object.fromEntries(urlSearchParams.entries());
@@ -151,10 +170,7 @@ var app = new Vue({
             // Initialize course object
             if (result.code == 200){
                 const course = result.data;
-                this.courseName = course.course_name;
-                this.courseId = course.course_id;
-                this.courseDescription = course.course_description;
-                this.prerequisiteCourses = course.prerequisite_course
+                this.course = course;
             }
         });
         //Call retrieveAllClasses API
