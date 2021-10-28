@@ -51,6 +51,14 @@
             </button>
         </div>
 
+        <div v-if="enrollCheck===1" id='duplicate-qn-alert' class="alert alert-success mx-auto text-center justify-content-center" role="alert">
+            Your request to enroll in {{ course.course_id }} {{ course.course_name }} has been logged
+        </div>
+        
+        <div v-else-if="enrollCheck===2" id='duplicate-qn-alert' class="alert alert-danger mx-auto text-center justify-content-center"  role="alert">
+            You are already enrolled in {{ course.course_id }} {{ course.course_name }}
+        </div>
+
         <div class="card text-center m-2">
             <div class="card-body pt-4 px-5">
                 <h2 class="card-title font-weight-bold">{{ course.course_id }} {{ course.course_name }}</h2>
@@ -84,8 +92,9 @@
                             <br>
                             <b>Availability: </b> {{ getSectionAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
                         </p>
-                        <a v-if="accountDetails.role === 'HR'" href="engineer_section_page.html" @click="setClassId(selectedClass.class_id)" class="btn btn-outline-info mt-auto">View Section</a>
-                        <a v-else-if="isSectionFull(selectedClass.learners_enrolled, selectedClass)" href="engineer_section_page.html" @click="setClassId(selectedClass.class_id)" class="btn btn-outline-info mt-auto">Enroll</a>
+                         <!-- "Add New Class" Button for HR href="engineer_section_page.html"-->
+                        <a v-if="accountDetails.role === 'HR'"  @click="setClassId(selectedClass.class_id)" href="HR_enrol_learners.html" class="btn btn-outline-info mt-auto">View Class</a>
+                        <a v-else-if="isSectionFull(selectedClass.learners_enrolled, selectedClass)" @click="setClassId(selectedClass.class_id);selfEnroll(accountDetails.staff_id, course.course_id, selectedClass.class_id)" class="btn btn-outline-info mt-auto">Enroll</a>
                         <button v-else class="btn btn-light mt-auto" disabled>Enroll</button>
                         
                     </div>
@@ -120,7 +129,8 @@ var app = new Vue({
         classList: [],
         selected: 'not selected',
         courses:[],
-        error: false
+        error: false,
+        enrollCheck:0,
     },
     methods: {
         datetimeToDate(startDatetime, endDatetime) {
@@ -141,9 +151,36 @@ var app = new Vue({
             // returns if class is full
             return learnersEnrolled.length === classSize.length ? false : true;
         },
+        selfEnroll(staffid,courseid,classid){
+            this.enrollCheck = 2;
+            const body = {
+                "staff_id": staffid,
+                "course_id" : courseid,
+                "class_id" : classid,
+                
+            }
+            fetch('http://13.250.140.89:5000/class/enroll',{
+                method: 'PUT',
+                headers:{
+                'Content-Type':'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(response=>{
+                    //console.log(response.ok);
+                    if(response.status == 200){
+                        this.enrollCheck = 1
+                    }else{
+                        this.enrollCheck = 2
+                    }
+                    return response
+                })
+        },
         setClassId(classId) {
+            console.log("set class Id")
+            console.log(localStorage.getItem("courseDetails"));
             this.course.class_id = classId;
             localStorage.setItem("courseDetails", JSON.stringify(this.course));
+            console.log(localStorage.getItem("courseDetails"));
         }
         
     },
