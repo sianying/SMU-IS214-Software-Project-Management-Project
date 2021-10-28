@@ -114,6 +114,24 @@ export async function retrieveAllClasses(URL, courseId) {
     
 }
 
+// Retrieve assigned class
+export async function retrieveAssignedClasses(URL, courseId, staffId) {
+    try {
+        const response = await fetch(`${URL}/class/assigned/${courseId}/${staffId}`);
+        if (response) {
+            const result = await response.json();
+            return result;
+        }
+        } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+    
+}
+
 // Retrieve all sections from class id
 export async function retrieveAllSectionsFromClass(URL, courseId, classId) {
     try {
