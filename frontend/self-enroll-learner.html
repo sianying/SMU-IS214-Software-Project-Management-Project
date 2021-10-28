@@ -176,15 +176,14 @@ var app = new Vue({
         },
     mounted: function() {
         //Retrieve course id from URL
-        
-        const urlSearchParams = new URLSearchParams(window.location.search);
-        const params = Object.fromEntries(urlSearchParams.entries());
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        const courseDetails = (JSON.parse(localStorage.getItem("courseDetails")));
+        const idcourse = courseDetails.course_id;
         this.accountDetails = accountDetails;
-        
-        // console.log(params.id)
-        //Call retrieveSpecificCourse API
-        retrieveSpecificCourse(URL, params.id).then(result => {
+        this.courseId = idcourse
+         //Call retrieveSpecificCourse API
+        retrieveSpecificCourse(URL, idcourse).then(result => {
+            console.log(idcourse);
             if (result.code == 200){
                 const course = result.data;
                 this.courseName = course.course_name;
@@ -194,7 +193,7 @@ var app = new Vue({
             }
         });
         //Call retrieveAllClasses API
-        retrieveAllClasses(URL, params.id).then(result => {
+        retrieveAllClasses(URL, idcourse).then(result => {
             if (result.code == 200){
                 
                 const classes = result.data;
@@ -202,7 +201,7 @@ var app = new Vue({
             }
         });
 
-        const selectedCourse = this.courses.filter(course => course.course_id === params.id)[0];
+        const selectedCourse = this.courses.filter(course => course.course_id === idcourse)[0];
         this.courseName = selectedCourse.course_name;
         this.courseId = selectedCourse.course_id;
         this.courseDescription = selectedCourse.course_description;
