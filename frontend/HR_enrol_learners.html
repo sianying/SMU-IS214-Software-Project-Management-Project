@@ -123,20 +123,20 @@
            
             mounted: function() {
                 //Retrieve course id from URL
-                
-                const urlSearchParams = new URLSearchParams(window.location.search);
-                const params = Object.fromEntries(urlSearchParams.entries());
-                this.currentClass = params.class;
-                this.currentClass = parseInt(this.currentClass);
                 const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+                const courseDetails = (JSON.parse(localStorage.getItem("courseDetails")));
+                const idclass = courseDetails.class_id
+                this.currentClass = idclass
+                this.currentClass = parseInt(this.currentClass);
+                const idcourse = courseDetails.course_id;
+                this.courseId = idcourse
                 this.accountDetails = accountDetails;
-                // console.log(params.id)
                 //Call retrieveSpecificCourse API
                 //http://13.250.140.89:5000/staff/eligible/IC111
-                retrieveSpecificCourse(URL, params.id).then(result => {
+                retrieveSpecificCourse(URL, idcourse).then(result => {
                     if (result.code == 200){
                         const course = result.data;
-                        this.currentClass = params.class;
+                        this.currentClass = idclass;
                         this.currentClass = parseInt(this.currentClass);
                         this.courseName = course.course_name;
                         this.courseId = course.course_id;
