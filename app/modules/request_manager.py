@@ -131,6 +131,7 @@ class RequestDAO:
             raise Exception("Update Failure with Exception: "+ str(e))
 
 if __name__ == "__main__":
+    pass
     # item = {
     #     "staff_id": "95874dea-a6d1-4f30-9062-61ac85bcfe6a",
     #     "course_id": "IC116",
