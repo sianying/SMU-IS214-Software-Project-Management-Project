@@ -12,7 +12,7 @@ from modules.staff_manager import StaffDAO
 from modules.section_manager import SectionDAO, Material
 from modules.quiz_manager import QuizDAO
 from modules.trainer_manager import TrainerDAO
-
+from modules.request_manager import RequestDAO
 
 try:
     os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
@@ -379,6 +379,47 @@ def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
         }
     ), 404
 
+@app.route("/request")
+def retrieve_all_pending():
+    dao = RequestDAO()
+    request_list = dao.retrieve_all_pending()
+
+    if len(request_list):
+        return jsonify(
+            {
+                "code": 200,
+                "data": [requestObj.json() for requestObj in request_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No pending requests found"
+        }
+    ), 404
+
+@app.route("/request/<string:staff_id>")
+def retrieve_all_request_by_staff(staff_id):
+    dao = RequestDAO()
+    request_list = dao.retrieve_all_from_staff(staff_id)
+
+    if len(request_list):
+        return jsonify(
+            {
+                "code": 200,
+                "data": [requestObj.json() for requestObj in request_list]
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No requests found"
+        }
+    ), 404
+
+
 
 # ============= Create ==================
 @app.route("/courses", methods =['POST'])
@@ -697,7 +738,7 @@ def insert_files():
                 "code": 201,
                 "data": mat.json()
             }
-        )
+        ),201
     except Exception as e:
         return jsonify(
             {
@@ -746,7 +787,7 @@ def insert_links():
                 "code": 201,
                 "data": mat.json()
             }
-        )
+        ), 201
     except Exception as e:
         return jsonify(
             {
@@ -754,6 +795,48 @@ def insert_links():
                 "data": "An error occurred when updating section object."
             }
         ), 500
+
+@app.route("/staff/enrol_request", methods =['POST'])
+def insert_request():
+    data = request.get_json()
+    if "staff_id" not in data or "course_id" not in data or "class_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "course_id, class_id or staff_id not in Request Body"
+            }
+        ), 400
+    
+    class_dao = ClassDAO()
+    class_to_enroll = class_dao.retrieve_one(data['course_id'], data['class_id'])
+    staff_dao = StaffDAO()
+    staff = staff_dao.retrieve_one(data['staff_id'])
+
+    if class_to_enroll == None or staff == None:
+        return jsonify(
+            {
+                "code": 404,
+                "data": "Class or Staff to enroll not found"
+            }
+        ), 404
+    
+    try:
+        requestObj = RequestDAO.insert_request_w_dict(data)
+
+        return jsonify(
+            {
+                "code": 201,
+                "data": requestObj.json()
+            }
+        ), 201
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when inserting request"
+            }
+        ), 500
+
 
 # ============= Update ==================
 @app.route("/class/enroll", methods=['PUT'])
