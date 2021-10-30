@@ -796,7 +796,7 @@ def insert_links():
             }
         ), 500
 
-@app.route("/staff/enrol_request", methods =['POST'])
+@app.route("/request", methods =['POST'])
 def insert_request():
     data = request.get_json()
     if "staff_id" not in data or "course_id" not in data or "class_id" not in data:
@@ -821,7 +821,8 @@ def insert_request():
         ), 404
     
     try:
-        requestObj = RequestDAO.insert_request_w_dict(data)
+        request_dao = RequestDAO()
+        requestObj = request_dao.insert_request_w_dict(data)
 
         return jsonify(
             {
@@ -833,7 +834,7 @@ def insert_request():
         return jsonify(
             {
                 "code": 500,
-                "data": "An error occurred when inserting request"
+                "data": "An error occurred when inserting request" + str(e)
             }
         ), 500
 
@@ -902,7 +903,6 @@ def enroll_learners():
                 "data": "An error occurred when enrolling staff"
             }
         ), 500
-
 
 @app.route("/class/trainer", methods = ['PUT'])
 def assign_trainer():
