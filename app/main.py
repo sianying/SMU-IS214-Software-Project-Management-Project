@@ -12,7 +12,7 @@ from modules.staff_manager import StaffDAO
 from modules.section_manager import SectionDAO, Material
 from modules.quiz_manager import QuizDAO
 from modules.trainer_manager import TrainerDAO
-from modules.request_manager import RequestDAO
+from modules.request_manager import RequestDAO, Request
 
 try:
     os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
@@ -841,8 +841,9 @@ def insert_request():
 
 # ============= Update ==================
 @app.route("/class/enroll", methods=['PUT'])
-def enroll_learners():
-    data = request.get_json()
+def enroll_learners(data = None):
+    if data == None:
+        data = request.get_json()
 
     if "course_id" not in data or "class_id" not in data or "staff_id" not in data:
         return jsonify(
@@ -994,6 +995,39 @@ def edit_class():
                 "data": "An error occurred when assigning staff"
             }
         ), 500
+
+@app.route("/request/update", methods = ['PUT'])
+def update_request():
+    data = request.get_json()
+    if "course_id" not in data or "class_id" not in data or "staff_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "course_id, class_id or staff_id not in Request Body"
+            }
+        )
+
+    request_dao = RequestDAO()
+    requestObj = Request(data)
+    try:
+        request_dao.update_request(requestObj)
+        if data['req_status'] == "approved":
+            return enroll_learners(data)
+        
+        return jsonify(
+            {
+                "code": 200,
+                "data": "Staff request rejected."
+            }
+        )
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating request."
+            }
+        ), 500
+
 
 # ============= Utility ==================
 
