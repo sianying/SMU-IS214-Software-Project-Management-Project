@@ -37,38 +37,33 @@
         <nav-bar></nav-bar>
     </div>
 
-    <div id='breadcrumb-div' class='mx-auto mt-4'>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Sections</li>
-            </ol>
-        </nav>
-    </div>
-
     <div id ='app'>
-        <div v-for='(section, index) in sections' class='section-card mx-auto'>
-            <div class="card my-4">
-                <div class="card-header h3">
-                    {{section.section_name}}
-                </div>
-                <div class="card-body"> 
-                    <p class="card-text">{{section.sectionDescription}}</p>
-                    <p>
-                        <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            View Materials
-                        </a>
-                        <a :href="'./add_quiz.html?course_id=' + course_id + '&class_id=' + class_id" @click='viewSection(index)' class="btn btn-warning ml-2">Add Quiz</a>
-                    </p>
-                    <div class="collapse" :id="'collapseExample' + index">
-                        <div class="card card-body">
-                            <div v-for ='material in section.materials'>
-                                <a :href="material.url" target='_blank'>{{material.mat_name}}</a>
-                            </div>
-                        </div>
-                    </div> 
+        <div id='breadcrumb-div' class='mx-auto mt-4'>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{course_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class G{{class_id}}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sections</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div id='error' class='alert alert-danger w-50 mx-auto text-center d-none'>There are currently no sections for this class.</div>
+        <div id='sections-div' class='d-none'>
+            <div v-for='(section, index) in sections' class='section-card mx-auto'>
+                <div class="card my-4">
+                    <div class="card-header h3">
+                        {{section.section_name}}
+                    </div>
+                    <div class="card-body"> 
+                        <p>
+                            <a class="btn btn-primary" href='./upload_materials_trainer.html' @click='viewSection(index)' >
+                                Add Materials
+                            </a>
+                            <a href="'./add_quiz.html" @click='viewSection(index)' class="btn btn-warning ml-2">Add Quiz</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,42 +87,33 @@
             },
 
             created: function() {
-                const queryString = window.location.search;
-                const urlParams = new URLSearchParams(queryString);
+                const course = JSON.parse(localStorage.getItem("courseDetails"));
 
-                const course_id = urlParams.get('courseId');
-                document.getElementById('breadcrumb-2').innerText = course_id;
+                const course_id = course['course_id'];
                 this.course_id = course_id;
 
-                const class_id = urlParams.get('classId');
-                document.getElementById('breadcrumb-3').innerText = "Class " + class_id;
+                const class_id = course['class_id'];
                 this.class_id = class_id;
 
                 retrieveAllSectionsFromClass(URL, course_id, class_id).then(result => {
                     if(result.code == 200){
-                        this.sections = result.data
+                        this.sections = result.data;
+                        document.getElementById('sections-div').classList.remove('d-none');
                     }
-                    // else {
-                    //     console.log(`${result.code} ${result.data}`)
-                    // }
+                    else {
+                        this.sections = "";
+                        document.getElementById('error').classList.remove('d-none');
+                    }
                 })                
             },
             methods: {
                 viewSection: function(e){
-                    // console.log(e)
-                    // selectedSection = sections[e].section_id
                     localStorage.setItem('sectionSelectedId', JSON.stringify(this.sections[e].section_id));
                     localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[e].section_name));
                 }
             }
         })
     </script>
-
-
-
-
-
-
 
     <!-- Optional JavaScript; choose one of the two! -->
 

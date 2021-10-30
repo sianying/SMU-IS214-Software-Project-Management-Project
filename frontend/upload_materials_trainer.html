@@ -65,7 +65,7 @@
                 </div>
             </div>
             <div class='row'>
-                <div id='upload-materials'>
+                <div id='upload-materials' class='mb-3'>
                     <div v-if="error !== ''" id='error' class='alert alert-danger my-4 text-center'>{{error}}</div>
                     <div id='success' class='d-none alert alert-success my-4 text-center'>Your document has been successfully uploaded!</div>
                     <h4 class='mb-4'>Upload New Materials</h4>
@@ -153,7 +153,7 @@
                         uploadMaterial(URL, requestOptions).then(result => {
                             // console.log(result);
                             if (result.code !== 201){
-                                // console.log("failed")
+                                this.error = "An error has occurred, please try again later.";
                             } else {
                                 // console.log("passed")
                                 document.getElementById('success').classList.remove('d-none')
@@ -179,8 +179,6 @@
                                     // console.log("failed")
                                     this.error = "An error has occurred, please try again later.";
                                 } else {
-                                    // console.log("passed")
-                                    this.error = "";
                                     document.getElementById('success').classList.remove('d-none');
                                     this.retrieveUploadedMaterials();
                                     document.getElementById('mat_name').value = "";
@@ -191,7 +189,7 @@
                             }
                         },
                     retrieveUploadedMaterials(){
-                        retrieveAllSectionsFromClass(URL, "IC112", 2).then(result => {
+                        retrieveAllSectionsFromClass(URL, this.course_id, this.class_id).then(result => {
                             if(result.code == 200){
                                 // console.log(result.data)
                                 for(let section of result.data){
