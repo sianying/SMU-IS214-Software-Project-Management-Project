@@ -52,10 +52,10 @@
                     <div class="card m-3">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">
-                                <a href="./view-specific-course-HR.html" @click="setCourseDetails(course)">{{ course.course_id }} {{ course.course_name }}</a>
+                                <a href="./view-specific-enrolled-course.html" @click="setCourseDetails(course)">{{ course.course_id }} {{ course.course_name }}</a>
                             </h5>
                             <p class="card-text">{{ course.course_description }}</p>
-                            <a href="./view-specific-course-HR.html" @click="setCourseDetails(course)" class="btn btn-outline-info mt-auto">View Details</a>
+                            <a href="./view-specific-enrolled-course.html" @click="setCourseDetails(course)" class="btn btn-outline-info mt-auto">View Details</a>
                             <div class="ml-auto">
                                 <!-- <span v-if = "validateEligibility(course, accountDetails.courses_completed)" class="badge badge-success">Eligible</span>
                                 <span v-else class="badge badge-danger">Not Eligible</span> -->
@@ -141,7 +141,7 @@ var app = new Vue({
             });
         } else {
             this.hideErrorAPI();
-            showErrorNoCoursesEnrolled();
+            this.showErrorNoCoursesEnrolled();
             // this.alertMessage = "No courses enrolled."
         }
 
