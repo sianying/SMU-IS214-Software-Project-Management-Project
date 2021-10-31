@@ -469,8 +469,20 @@ def insert_quiz():
     data=request.get_json()
     dao = QuizDAO()
 
+    is_final_quiz = False
+    course_id= ''
+    class_id = 0
+    if 'is_final_quiz' in data:
+        is_final_quiz = True
+        course_id = data['course_id']
+        class_id = data['class_id']
+        data.pop('is_final_quiz')
+        data.pop('course_id')
+        data.pop('class_id')
+    
     try:
         results = dao.insert_quiz_w_dict(data)
+        
     except ValueError as e:
         if str(e) == "Quiz already exists":
             return jsonify(
@@ -492,46 +504,86 @@ def insert_quiz():
                 "code": 500,
                 "data": "An error occurred when creating the quiz."
             }
-        ), 500
-        
+        ), 500      
 
-    #UPDATE SECTION OBJECT TOO
-    section_dao = SectionDAO()
-    try:
-        sectionObj = section_dao.retrieve_one(results.get_section_id())
-        sectionObj.add_quiz(results.get_quiz_id())
-        section_dao.update_section(sectionObj)
 
-        #return the results from successfully inserting the quiz previously
-        return jsonify(
-            {
-                "code": 201,
-                "data": results.json()
-            }
-        ), 201
+    #if quiz is a final graded quiz, need to update class object too.
+    if is_final_quiz:
+        class_dao = ClassDAO()
+        try:
+            classObj = class_dao.retrieve_one(course_id, class_id)
+            classObj.set_final_quiz_id(results.get_quiz_id())
+            class_dao.update_section(classObj)
 
-    #Technically need to delete the quiz from DB
-    except ValueError as e:
-        if "Update Failure with code:" in str(e):
             return jsonify(
                 {
-                    "code": 403,
-                    "data": str(e)
+                    "code": 201,
+                    "data": results.json()
                 }
-            ), 403
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating the section."
-            }
-        ), 500
-    except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating the section."
-            }
-        ), 500
+            ), 201
+
+        except ValueError as e:
+            if "Update Failure with code:" in str(e):
+                return jsonify(
+                    {
+                        "code": 403,
+                        "data": str(e) + ' for final graded quiz.'
+                    }
+                ), 403
+            return jsonify(
+                {
+                    "code": 500,
+                    "data": "An error occurred when updating the class for final graded quiz."
+                }
+            ), 500
+        except Exception as e:
+            return jsonify(
+                {
+                    "code": 500,
+                    "data": "An error occurred when updating the class for final graded quiz."
+                }
+            ), 500
+
+
+    #UPDATE SECTION OBJECT TOO, if quiz is not FINAL and not GRADED
+    else:
+        section_dao = SectionDAO()
+        try:
+            sectionObj = section_dao.retrieve_one(results.get_section_id())
+            sectionObj.add_quiz(results.get_quiz_id())
+            section_dao.update_section(sectionObj)
+
+            #return the results from successfully inserting the quiz previously
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": results.json()
+                }
+            ), 201
+
+        #Technically need to delete the quiz from DB
+        except ValueError as e:
+            if "Update Failure with code:" in str(e):
+                return jsonify(
+                    {
+                        "code": 403,
+                        "data": str(e) + ' for ungraded quiz.'
+                    }
+                ), 403
+            return jsonify(
+                {
+                    "code": 500,
+                    "data": "An error occurred when updating the section for ungraded quiz."
+                }
+            ), 500
+        except Exception as e:
+            return jsonify(
+                {
+                    "code": 500,
+                    "data": "An error occurred when updating the section for ungraded quiz."
+                }
+            ), 500
+
 
 @app.route("/attempts/<string:quiz_id>", methods=['POST'])
 def insert_attempt(quiz_id):
