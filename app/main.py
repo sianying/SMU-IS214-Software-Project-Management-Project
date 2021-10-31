@@ -389,14 +389,23 @@ def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
 
 @app.route("/request")
 def retrieve_all_pending():
-    dao = RequestDAO()
-    request_list = dao.retrieve_all_pending()
+    request_dao = RequestDAO()
+    request_list = request_dao.retrieve_all_pending()
+    staff_dao = StaffDAO()
+    toReturn = []
+
+    for requestObj in request_list:
+        staff_name = staff_dao.retrieve_one(requestObj.get_staff_id()).get_staff_name()
+        request_json = requestObj.json()
+        request_json['staff_name'] = staff_name
+        toReturn.append(request_json)
+
 
     if len(request_list):
         return jsonify(
             {
                 "code": 200,
-                "data": [requestObj.json() for requestObj in request_list]
+                "data": toReturn
             }
         )
     
