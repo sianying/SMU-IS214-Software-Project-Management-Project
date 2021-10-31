@@ -104,14 +104,12 @@ var app = new Vue({
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
 
-        //call API to get all courses if role is HR
+        //call retrieveAllCourses API to get all courses if role is HR
         if (this.accountDetails.role == "HR"){
             retrieveAllCourses(URL).then(result => {
                 if (result.code == 200) {
                     this.error = false;
-                    const courses = result.data.filter(course => {
-                        return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
-                    });
+                    const courses = result.data;
                     //sort courses according to course id in ascending order
                     this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
                 } else {
@@ -119,15 +117,23 @@ var app = new Vue({
                 }
             });
         } else {
+            // call retrieveEligibleCourses API for learners
             retrieveEligibleCourses(URL, this.accountDetails.staff_id).then(result => {
                 if (result.code == 200) {
-                    console.log(result.data);
                     this.error = false;
-                    const courses = result.data.filter(course => {
+                    let courses = result.data.filter(course => {
+                        //filter out enrolled courses
                         return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
                     });
-                    //sort courses according to course id in ascending order
-                    this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+                    // if isTrainer filter out assigned courses also
+                    if (this.accountDetails.isTrainer === 1){
+                        const filteredCourses = courses.filter(course => {
+                            return !this.accountDetails.courses_teaching.includes(course.course_id) && course
+                        })
+                        this.courses = filteredCourses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+                    } else {
+                        this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
+                    }
                 } else {
                     this.error = true;
                 }

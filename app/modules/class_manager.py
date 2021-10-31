@@ -14,12 +14,13 @@ except:
 class Class:
     def __init__(self, *args, **kwargs):
         '''__init__(
-            course_id: Course
-            class_id: Integer, 
+            course_id: string,
+            class_id: int,
             start_datetime: DateTime, 
             end_datetime: DateTime, 
-            class_size: Integer, 
-            trainer_assigned=None: staff_id, 
+            class_size: int, 
+            trainer_assigned: None-> string(staff_id),
+            final_quiz_id: None-> string(quiz_id),
             learners_enrolled = []: List 
             section_list = []: List
             )
@@ -43,10 +44,17 @@ class Class:
                 self.__trainer_assigned = kwargs['trainer_assigned']
             except:
                 self.__trainer_assigned = None
+
+            try:
+                self.__final_quiz_id = kwargs['final_quiz_id']
+            except:
+                self.__final_quiz_id = None
+
             try:
                 self.__learners_enrolled = copy.deepcopy(kwargs['learners_enrolled'])
             except:
                 self.__learners_enrolled = []
+
             try:
                 self.__section_list = copy.deepcopy(kwargs['section_list'])
             except:
@@ -65,6 +73,7 @@ class Class:
 
             self.__class_size = int(args[0]['class_size'])
             self.__trainer_assigned = args[0]['trainer_assigned']
+            self.__final_quiz_id = args[0]['final_quiz_id']
             self.__learners_enrolled = copy.deepcopy(args[0]['learners_enrolled'])
             self.__section_list = copy.deepcopy(args[0]['section_list'])
 
@@ -86,6 +95,9 @@ class Class:
     
     def get_trainer_assigned(self):
         return self.__trainer_assigned
+
+    def get_final_quiz_id(self):
+        return self.__final_quiz_id
     
     def get_learners_enrolled(self):
         return self.__learners_enrolled
@@ -99,6 +111,9 @@ class Class:
     
     def set_trainer(self, trainer):
         self.__trainer_assigned = trainer
+
+    def set_final_quiz_id(self, final_quiz_id):
+        self.__final_quiz_id = final_quiz_id
     
     def set_start_datetime(self, start_datetime):
         if isinstance(start_datetime, str):
@@ -144,6 +159,7 @@ class Class:
             "end_datetime": self.get_end_datetime().isoformat(),
             "class_size": self.get_class_size(),
             "trainer_assigned": self.get_trainer_assigned(),
+            "final_quiz_id": self.get_final_quiz_id(),
             "learners_enrolled": self.get_learners_enrolled(),
             "section_list": self.get_section_list(),
         }
@@ -153,7 +169,7 @@ class ClassDAO:
         self.table = session.resource('dynamodb', region_name='ap-southeast-1').Table('Class')
 
     #Create
-    def insert_class(self, course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = None, learners_enrolled= [], section_list=[]):
+    def insert_class(self, course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = None, final_quiz_id = None, learners_enrolled= [], section_list=[]):
         if(isinstance(start_datetime, datetime)):
             start_datetime = start_datetime.isoformat()
 
@@ -168,6 +184,7 @@ class ClassDAO:
                     'end_datetime' : end_datetime,
                     'class_size': class_size,
                     'trainer_assigned': trainer_assigned,
+                    'final_quiz_id': final_quiz_id,
                     'learners_enrolled': learners_enrolled,
                     "section_list": section_list,
                     "course_id": course_id
@@ -175,7 +192,7 @@ class ClassDAO:
                 ConditionExpression=Attr("course_id").not_exists() & Attr('class_id').not_exists()
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return Class(course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = trainer_assigned, learners_enrolled=learners_enrolled, section_list= section_list)
+                return Class(course_id, class_id, start_datetime, end_datetime, class_size, trainer_assigned = trainer_assigned, final_quiz_id = final_quiz_id, learners_enrolled=learners_enrolled, section_list= section_list)
             raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             raise ValueError("Class already exists")
@@ -192,6 +209,9 @@ class ClassDAO:
         if 'trainer_assigned' not in class_dict:
             class_dict['trainer_assigned'] = None
         
+        if 'final_quiz_id' not in class_dict:
+            class_dict['final_quiz_id'] = None
+
         if 'learners_enrolled' not in class_dict:
             class_dict['learners_enrolled'] = []
         
@@ -206,6 +226,7 @@ class ClassDAO:
                     'end_datetime' : class_dict['end_datetime'],
                     'class_size': class_dict['class_size'],
                     'trainer_assigned': class_dict['trainer_assigned'],
+                    'final_quiz_id': class_dict['final_quiz_id'],
                     'learners_enrolled': class_dict['learners_enrolled'],
                     "section_list": class_dict['section_list'],
                     "course_id": class_dict['course_id']
@@ -272,10 +293,11 @@ class ClassDAO:
                     'course_id': ClassObj.get_course_id(),
                     'class_id': ClassObj.get_class_id()
                 },
-                UpdateExpression= "set class_size = :s, trainer_assigned = :t, learners_enrolled = :l, section_list = :sec_list, start_datetime = :start, end_datetime = :end",
+                UpdateExpression= "set class_size = :s, trainer_assigned = :t, final_quiz_id = :fqid, learners_enrolled = :l, section_list = :sec_list, start_datetime = :start, end_datetime = :end",
                 ExpressionAttributeValues ={
                     ":s": ClassObj.get_class_size(),
                     ':t': ClassObj.get_trainer_assigned(),
+                    ':fqid': ClassObj.get_final_quiz_id(),
                     ':l': ClassObj.get_learners_enrolled(),
                     ':sec_list': ClassObj.get_section_list(),
                     ':start': ClassObj.get_start_datetime().isoformat(),

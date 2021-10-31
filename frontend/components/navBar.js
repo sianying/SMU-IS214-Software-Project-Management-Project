@@ -17,7 +17,7 @@ export default Vue.component("nav-bar", {
 
         // get the url of current page; if its from add new course, display success alert for course creation
         this.currentPageLink = window.location.href.split("/").at(-1);
-        if (this.currentPageLink === "view-list-of-courses-HR.html") {
+        if (this.currentPageLink === "view-list-of-courses-HR.html" || this.currentPageLink === "view-specific-course-HR.html") {
             this.isActive = ["active", 0, 0]
         } else if (this.currentPageLink === "view-list-of-enrolled-courses.html") {
             this.isActive = [0, "active", 0]

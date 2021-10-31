@@ -14,6 +14,7 @@ ITEM1= {
     "end_datetime": "2021-10-21T23:59:59",
     "class_size": 20,
     "trainer_assigned": "851252d7-b21c-4d75-95b6-321471ba3910",
+    "final_quiz_id": 'finalquiz1',
     "learners_enrolled": ["2652a20c-999f-485f-9d19-84ce47d7fefa", "b6d178fc-1c54-4d27-bad2-f6f6b75867ab", "115193a6-3d76-4e47-8a69-a9070c6ba96a"],
     "section_list": ["0a08ff5c-d72a-4207-b1de-9bbe99efa7fd"]
 }
@@ -24,7 +25,8 @@ ITEM2= {
     "start_datetime": "2021-08-21T08:00:00",
     "end_datetime": "2021-10-21T23:59:59",
     "class_size": 20,
-    "trainer_assigned": "851252d7-b21c-4d75-95b6-321471ba3910",
+    "trainer_assigned": None,
+    "final_quiz_id": None,
     "learners_enrolled": ["2652a20c-999f-485f-9d19-84ce47d7fefa"],
     "section_list": []
 }
@@ -36,6 +38,7 @@ ITEM3 = {
     "end_datetime": "2021-10-21T23:59:59",
     "class_size": 20,
     "trainer_assigned": 'dummytrainer',
+    "final_quiz_id": 'finalquiz3',
     "learners_enrolled": [],
     "section_list": []
 }
@@ -60,6 +63,14 @@ class TestClass(unittest.TestCase):
         self.assertEqual(30, self.test_class.get_class_size(), "Class size set does not match")
         self.test_class.set_class_size(Decimal(40))
         self.assertEqual(40, self.test_class.get_class_size(), "Conversion from Decimal to int failed")
+
+    def test_set_trainer(self):
+        self.test_class2.set_trainer('testtrainer')
+        self.assertEqual('testtrainer', self.test_class2.get_trainer_assigned(), "Trainer set does not match")
+
+    def test_set_final_quiz_id(self):
+        self.test_class2.set_final_quiz_id('testfinalquiz')
+        self.assertEqual('testfinalquiz', self.test_class2.get_final_quiz_id(), "Final_quiz_id set does not match")
     
     def test_set_start_datetime(self):
         correct_date = datetime(2021,9,21,8,0,0)
@@ -166,12 +177,13 @@ class TestClassDAO(unittest.TestCase):
         insertDefault = self.dao.insert_class("abcde", 1, "2021-08-21T08:00:00", "2021-09-21T08:00:00", 20)
         self.assertTrue(isinstance(insertDefault, Class))
 
-        insertTest = self.dao.insert_class(ITEM3['course_id'], ITEM3['class_id'], ITEM3['start_datetime'], ITEM3['end_datetime'], ITEM3['class_size'], ITEM3['trainer_assigned'], ITEM3['learners_enrolled'], ITEM3['section_list'])
+        insertTest = self.dao.insert_class(ITEM3['course_id'], ITEM3['class_id'], ITEM3['start_datetime'], ITEM3['end_datetime'], ITEM3['class_size'], ITEM3['trainer_assigned'], ITEM3['final_quiz_id'], ITEM3['learners_enrolled'], ITEM3['section_list'])
 
         self.assertEqual(ITEM3, insertTest.json(), "ClassDAO insert test failure")
 
         with self.assertRaises(ValueError, msg = "Failed to raise exception for duplicates") as context:
-            self.dao.insert_class(ITEM2['course_id'], ITEM2['class_id'], ITEM2['start_datetime'], ITEM2['end_datetime'], ITEM2['class_size'], ITEM2['trainer_assigned'], ITEM2['learners_enrolled'], ITEM2['section_list'])
+
+            self.dao.insert_class(ITEM2['course_id'], ITEM2['class_id'], ITEM2['start_datetime'], ITEM2['end_datetime'], ITEM2['class_size'], ITEM2['trainer_assigned'], ITEM2['final_quiz_id'], ITEM2['learners_enrolled'], ITEM2['section_list'])
         
         self.assertTrue("Class already exists" == str(context.exception))
 

@@ -10,154 +10,190 @@
 
     <!-- Enrolment CSS -->
     <link rel='stylesheet' href='css/enrolment.css'>
-
-    <!-- Nav CSS -->
-    <link rel='stylesheet' href='css/nav.css'>
-
-    <!-- Quiz CSS -->
-    <link rel='stylesheet' href='css/quiz.css'>
-
+    <!-- Nav css -->
+    <link rel="stylesheet" href="./css/nav.css">
+    <!-- Main css -->
+    <link rel="stylesheet" href="./css/courses.css">
+    <!-- Iconify -->
+    <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    
+    <!-- NavBar -->
     <!-- Vue link -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-
     <!-- jQuery link -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
 
     <title>HR Enrol Learners</title>
+    <script>
+        //Check for authentication
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+        //Check for courseDetails
+        if (!localStorage.getItem("courseDetails")) { window.location.replace("./view-list-of-courses-HR.html"); }
+    </script>
+    <div id="nav-bar-component">
+        <nav-bar></nav-bar>
+    </div>
 </head>
 <body>
-    <div id='nav'>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#"  id="navlogo">ONE STOP LMS</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Disabled</a>
-                    </li>
-                </ul>  
-            </div>
-            <a class="nav-link" href="#"><img src="../images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
-        </nav>
-    </div>
-
-    <div id='breadcrumb-div' class='mx-auto mt-4'>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item"><a href="#">Courses</a></li>
-                <li class="breadcrumb-item"><a href="#">IC111</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Enrol Learner</li>
-            </ol>
-        </nav>
-    </div>
-
     <div id='app'>
-        <div>
-            <p class='text-center h3 mt-3 mb-4'>Enrol Learner</p>
+        <div id="breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" ><a href="./view-specific-course-HR.html"></a>{{ courseId }} {{ courseName }}</li>
+                    <li class="breadcrumb-item active" aria-current="page">Class {{currentClass}}</li>
+                </ol>
+            </nav>
+            
         </div>
-        <div id='confirmation' v-if='enrolled'>
+        <div>
+            <p class='text-center h3 mt-3 mb-4 '>Enrol Learner</p>
+        </div>
+        <div id='confirmation' v-if='enrollCheck === 1'>
             <div class="alert alert-success w-50 mx-auto text-center" role="alert">
                 {{selectedName}} has been enrolled successfully!
             </div>
         </div>
-        <div id='alert-message' v-if='num_items'>
+        <div id='confirmation' v-if='enrollCheck === 2'>
+            <div class="alert alert-danger w-50 mx-auto text-center" role="alert">
+                There has been a problem enrolling {{selectedName}}!
+            </div>
+        </div>
+        <div id='alert-message' v-if="this.learners.length===0">
             <div class="alert alert-danger mx-auto w-50 text-center" role="alert">
                 There are no eligible learners for selection.
             </div>
         </div>
         <div class='mx-auto' id='learners-div'>
-            <div v-for='learner in learners'>
-                <span class='h3 ml-1'><b>{{learner.name}}</b></span>
+            <div v-for='learner in learners' >
+                <span class='h3 ml-1'><b>{{learner.staff_name}}</b></span>
                 <span class='h6 ml-2'>{{learner.role}}</span>
                 <div class='mt-2'>
-                    <span class="badge badge-pill badge-success py-2 my-2">{{learner.status}}</span>
-                    <span class="badge badge-pill badge-warning py-2 my-2">{{learner.enrolmentStatus}}</span>
+                    <span class="badge badge-pill badge-success py-2 my-2">Completed pre-requisites</span>
+                    <span class="badge badge-pill badge-warning py-2 my-2">Not Previously enrolled</span>
                     <span>
-                        <button id='enrol-btn' type='button' v-on:click='enrolLearner(learner.name)' class="btn btn-primary">Enrol</button>
+                        <button id='enrol-btn' type='button'  onclick = "this.disabled = true;" v-on:click='selfEnroll(learner.staff_id, courseId, currentClass, learner.staff_name,learner)' class="btn btn-primary">Enrol</button>
                     </span>
                 </div>
                 <hr>
             </div>
         </div>
-        <div id='submit-btn' class='mb-3'>
-            <div class='container'>
-                <div class='row'>
-                    <div class="col"></div>
-                    <div class='col mx-auto' id='submit-and-cancel-button'>
-                        <!-- <button type="button" class="btn btn-success mr-2">Confirm</button> -->
-                        <button type="button" class="btn btn-danger ml-2">Cancel</button>
-                    </div>
-                    <div class='col'></div>
-                </div>
-            </div>
-        </div>
+       
+       
     </div>
 
-    <script>
-        var staff_id = 1
+    <script type="module">
+        
+        import { URL, retrieveSpecificCourse, retrieveAllClasses, enrollLearners, retrieveEligibleCourses} from "./callAPI/endpoints.js";
+        import navBar from "./components/navBar.js"
+        var flag = false;
+        new Vue({
+            el: '#nav-bar-component' 
+        });
         var app = new Vue({
             el: '#app',
             data: {
-                learners: [
-                    {'name': 'David',
-                    'role': 'Junior Printer Engineer',
-                    'status': 'Completed Pre-requisites',
-                    'enrolmentStatus': 'Not previously enrolled'},
-                    {'name': 'Helen',
-                    'role': 'Junior Printer Engineer',
-                    'status': 'Completed Pre-requisites',
-                    'enrolmentStatus': 'Not previously enrolled'},
-                    {'name': 'John',
-                    'role': 'Junior Printer Engineer',
-                    'status': 'Completed Pre-requisites',
-                    'enrolmentStatus': 'Not previously enrolled'}
-                ],
+                courseName: "",
+                courseId: "",
+                currentClass: 0,
+                learners: [],
                 selectedName:"",
-                updatedEnrolmentStatus:"",
-                enrolled:false
+                enrollCheck:0
+                
             },
             methods: {
-                enrolLearner(selected){
-                    this.selectedName  = selected;
-                    this.updatedEnrolmentStatus = 'Enrolled';
-                    this.enrolled = true;
+                
+            
 
-                    for(item of this.items){
-                        if(item.name == this.selectedName){
-                            const index = this.learners.indexOf(item);
-                            if (index > -1) {
-                                this.learners.splice(index, 1);
-                            }
+                selfEnroll(staffid,courseid,classid,staffname,learner){
+                    this.selectedName = staffname;
+                    const body = {
+                        "staff_id": staffid,
+                        "course_id" : courseid,
+                        "class_id" : classid,
+                    }
+                    for(let i = 0; i < learner.courses_enrolled.length; i++){
+                        if(courseid == learner.courses_enrolled[i]){
+                            flag = true;
                         }
                     }
-                }
+                    fetch('http://13.250.140.89:5000/class/enroll',{
+                        method: 'PUT',
+                        headers:{
+                        'Content-Type':'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    }).then(response=>{
+                    
+                    //console.log(response.ok);
+                    if(response.ok){
+                        this.enrollCheck = 1
+                    }else{
+                        this.enrollCheck = 2
+                    }
+                    return response
+                })
+                    
+                       
+        }
 
             },
-            computed: {
-                num_learners: function(){
-                    if(this.learners.length>0){
-                        return false;
-                    }
-                    else{
-                        return true;
-                    }
-                }
-            }
+           
+            mounted: function() {
+                //Retrieve course id from URL
+                const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+                const courseDetails = (JSON.parse(localStorage.getItem("courseDetails")));
+                console.log(accountDetails);
+                console.log(courseDetails);
+                const idclass = courseDetails.class_id
+                this.currentClass = idclass
+                this.currentClass = parseInt(this.currentClass);
+                const idcourse = courseDetails.course_id;
+                this.courseId = idcourse
+                this.accountDetails = accountDetails;
+                //Call retrieveSpecificCourse API
+                //http://13.250.140.89:5000/staff/eligible/IC111
+                retrieveSpecificCourse(URL, idcourse).then(result => {
+                    if (result.code == 200){
+                        const course = result.data;
+                        this.currentClass = idclass;
+                        this.currentClass = parseInt(this.currentClass);
+                        this.courseName = course.course_name;
+                        this.courseId = course.course_id;
+                        try{
+                        fetch(`http://13.250.140.89:5000/staff/eligible/${this.courseId}`)
+                            .then(response => response.json()
 
-        })
+                            )
+
+                            .then(data => {
+                            
+                            if(data.data != "No staff found"){
+                                for(let i = 0; i < data.data.length; i++){
+                                    this.learners.push(data.data[i]);
+                                }
+                            }
+                            })
+                        }
+                            catch(error){
+                            console.log("error");
+                            console.error('Error:', error);
+                            }
+                            }
+                });
+                
+               
+
+                
+                
+            
+
+            }
+})
+
+
+        
 
 
     </script>

@@ -25,64 +25,49 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     
     <title>Upload Materials</title>
+
+    <script>
+        //Check for authentication
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
+
 </head>
 <body>
-    <div id='nav'>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#"  id="navlogo">ONE STOP LMS</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Disabled</a>
-                    </li>
-                </ul>  
-            </div>
-            <a class="nav-link" href="#"><img src="./images/image_2021-09-29_17-14-02.png" id="profilelogo"></a>
-        </nav>
-    </div>
-
-    <div id='breadcrumb-div' class='mx-auto mt-4'>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Upload Materials</li>
-            </ol>
-        </nav>
+    <div id="nav-bar-component">
+        <nav-bar></nav-bar>
     </div>
 
 
     <div id='app'>
+        <div id='breadcrumb-div' class='mx-auto mt-4'>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{course_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class G{{class_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Upload Materials</li>
+                </ol>
+            </nav>
+        </div>
         <div class='container'>
             <div class='row'>
                 <div id='uploaded-materials'>
                     <h4>Uploaded Materials</h4>
-                    <div v-if="materials.length==0" class="alert alert-danger my-4 text-center" role="alert">
+                    <div id='no-materials' class="d-none alert alert-danger my-4 text-center" role="alert">
                         There are no uploaded materials, choose a material to upload!
                     </div>
-                    <ul v-else id='material-list' class="my-3">
+                    <ul id='material-list' class="my-3">
                         <li v-for='material in materials'>
-                            {{material}}
+                            {{material.mat_name}}
                         </li>
                     </ul>
                 </div>
             </div>
             <div class='row'>
-                <div id='upload-materials'>
+                <div id='upload-materials' class='mb-3'>
+                    <div v-if="error !== ''" id='error' class='alert alert-danger my-4 text-center'>{{error}}</div>
+                    <div id='success' class='d-none alert alert-success my-4 text-center'>Your document has been successfully uploaded!</div>
                     <h4 class='mb-4'>Upload New Materials</h4>
 
                     <span>Material Type: </span>
@@ -91,16 +76,18 @@
                     </select>
                     <div class="mt-4" v-if="type == 'File' || type == 'Video'">
                         <input type="file" name="file" v-on:change="onUpload">
-                        <input type="submit" value="Upload" v-on:click="uploadFile()">
+                        <input type="submit" value="Upload" v-on:click="uploadFile">
                     </div>
                     <div class="mt-4" v-if="type == 'Link'">
-                        <div class='mb-3'>
-                            Material Name: <input type= "text" v-model="mat_name"> 
-                        </div>
-                        <span>
-                            Material Link: <input type= "url" id='uploaded-link' v-model="url"> 
-                        </span>
-                        <input type="submit" value="Upload" v-on:click="uploadLink()">
+                        <form>
+                            <div class='mb-3'>
+                                Material Name: <input id='mat_name' type= "text" v-model="mat_name"> 
+                            </div>
+                            <span>
+                                Material Link: <input id='mat_link' type= "url" id='uploaded-link' v-model="url"> 
+                            </span>
+                            <input type="submit" value="Upload" v-on:click="uploadLinks">
+                        </form>
                     </div>
                 </div>
             </div>
@@ -109,32 +96,42 @@
 
 
     <script type="module">
-        // import { URL, retrieveSpecificSection, createQuiz} from "./callAPI/endpoints.js";
-        var section_id = JSON.parse(localStorage.getItem('sectionSelectedId'));
+        import navBar from "./components/navBar.js"
 
-        // set breadcrumb
-        var course_id = JSON.parse(localStorage.getItem('course_id'));
-        document.getElementById('breadcrumb-2').innerText = course_id
+        new Vue({
+            el: '#nav-bar-component'
+        });
 
-        var class_id = JSON.parse(localStorage.getItem('class_id'));
-        document.getElementById('breadcrumb-3').innerText = "Class " + class_id
+        import { URL, uploadMaterial, uploadLink, retrieveAllSectionsFromClass} from "./callAPI/endpoints.js";
 
         var section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
-        document.getElementById('breadcrumb-4').innerText = section_name
+        document.getElementById('breadcrumb-4').innerText = section_name;
         
         var app = new Vue({
             el: "#app",
             data:{
                 section: "",
+                course_id:"",
+                class_id:"",
                 materials: [],
                 file: "",
                 options: ["File", "Video", "Link"],
                 type: "",
                 mat_name: "",
-                url: ""
+                url: "",
+                error: ""
             },
             created: function(){  
+                const course = JSON.parse(localStorage.getItem("courseDetails"));
+
+                const course_id = course['course_id'];
+                this.course_id = course_id;
+
+                const class_id = course['class_id'];
+                this.class_id = class_id;
+
                 this.section = JSON.parse(localStorage.getItem('sectionSelectedId'));
+                this.retrieveUploadedMaterials();
             },
             methods:{
                     onUpload(element){
@@ -143,7 +140,6 @@
                             return;
                         }
                         this.file = files[0];
-                        // console.log(this.file)
                     },
                     uploadFile(){
                         var fd = new FormData();
@@ -153,27 +149,62 @@
                             method: "POST",
                             body: fd
                         };
-                        
-                        fetch("http://127.0.0.1:5000/materials/file", requestOptions)
-                            .then(response => response.json())
-                            .then(data => (console.log(data)));
+
+                        uploadMaterial(URL, requestOptions).then(result => {
+                            // console.log(result);
+                            if (result.code !== 201){
+                                this.error = "An error has occurred, please try again later.";
+                            } else {
+                                // console.log("passed")
+                                document.getElementById('success').classList.remove('d-none')
+                                this.retrieveUploadedMaterials()
+                            }
+                            
+                        })
                     
                     },
-                    uploadLink(){
-                        var fd = new FormData();
-                        fd.append("mat_name", this.mat_name)
-                        fd.append("mat_type", this.type)
-                        fd.append("section_id", this.section)
-                        fd.append("url", this.url)
-                        const requestOptions ={
-                            method: "POST",
-                            body: fd
-                        };
-                        
-                        fetch("http://127.0.0.1:5000/materials/link", requestOptions)
-                            .then(response => response.json())
-                            .then(data => (console.log(data)));
-                    
+                    uploadLinks(){
+                        var fd = {};
+                        fd["mat_name"] = this.mat_name
+                        fd["mat_type"] = this.type
+                        fd["section_id"] = this.section
+                        fd["url"] = this.url
+
+                        if(this.url == "" || this.mat_name == ""){
+                            this.error = "Please fill up all fields before submitting!";
+                        } else{ 
+                            this.error = ""
+                            uploadLink(URL, fd).then(result =>{
+                                if (result.code !== 201){
+                                    // console.log("failed")
+                                    this.error = "An error has occurred, please try again later.";
+                                } else {
+                                    document.getElementById('success').classList.remove('d-none');
+                                    this.retrieveUploadedMaterials();
+                                    document.getElementById('mat_name').value = "";
+                                    document.getElementById('mat_link').value = "";
+
+                                }
+                            })
+                            }
+                        },
+                    retrieveUploadedMaterials(){
+                        retrieveAllSectionsFromClass(URL, this.course_id, this.class_id).then(result => {
+                            if(result.code == 200){
+                                // console.log(result.data)
+                                for(let section of result.data){
+                                    // console.log(section)
+                                    if(section['section_id'] == this.section){
+                                        // console.log(section)
+                                        this.materials = section.materials;
+                                        // console.log("hello")
+                                    }
+                                }
+                                if(this.materials.length == 0){
+                                    document.getElementById('no-materials').classList.remove('d-none')
+                                }
+                            }
+                        })  
                     }
             }
         })

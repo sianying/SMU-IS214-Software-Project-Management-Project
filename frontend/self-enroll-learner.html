@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- VueJS -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <!-- Navbar css-->
+    <link rel="stylesheet" href="./css/nav.css">
+    <!-- Main css -->
+    <link rel="stylesheet" href="./css/courses.css">
+    <!-- Iconify -->
+    <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    <!-- NavBar -->
+    <div id="nav-bar-component">
+        <nav-bar
+        home-link="./home.html"
+        all-courses-link="./view-list-of-courses-HR.html"
+        my-courses-link="#">
+        </nav-bar>
+    </div>
+</head>
+
+<body>
+   
+    <div id="app" class="wrapper container mx-auto">
+        <div id="breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Home</a></li>
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ courseId }} {{ courseName }}</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div v-if="enrollCheck===1" id='duplicate-qn-alert' class="alert alert-success mx-auto text-center justify-content-center" role="alert">
+            Your request to enroll in {{courseId}} {{courseName}} has been logged
+        </div>
+        
+        <div v-else-if="enrollCheck===2" id='duplicate-qn-alert' class="alert alert-danger mx-auto text-center justify-content-center"  role="alert">
+            You are already enrolled in {{courseId}} {{courseName}}
+        </div>
+        
+
+        <div class="card text-center m-2">
+            <div class="card-body pt-4 px-5">
+                <h2 class="card-title font-weight-bold">{{ courseId }} {{ courseName }}</h2>
+                <p class="card-text">{{ courseDescription }}</p>
+                <div class="mx-auto">
+                    <span v-if = "prerequisiteCourses.length === 0" class="badge badge-info mr-1">No pre-requisites</span>
+                    <span v-else v-for ="prereq in prerequisiteCourses" class="badge badge-info mr-1">{{ prereq }}</span>
+                </div>
+            </div>
+        </div>
+
+     
+
+        <div class="row" v-if="eligibleCheck">
+            <div v-if="selectedClass.class_size - selectedClass.learners_enrolled.length !== 0" v-for = "selectedClass in classList" class="col-6 p-0 d-flex justify-content-center">
+                <div  class="card m-3" style="width: 540px;" >
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            <a href="#">G{{ selectedClass.class_id }}</a>
+                        </h5>
+                        <p class="card-text">
+                            <b>Duration: </b> {{ datetimeToDate(selectedClass.start_datetime, selectedClass.end_datetime) }}
+                            <br>
+                            <b>Availability: </b> {{ getAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
+                        </p>
+                        <a v-if="selectedClass.learners_enrolled.length !== selectedClass.class_size"  class="btn btn-outline-info mt-auto"  v-on:click="selfEnroll(accountDetails.staff_id, courseId, selectedClass.class_id)">Enrol</a>
+                        <!-- <button v-else href="#" class="btn btn-light mt-auto" disabled>Enroll</button> -->
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Already enrolled/have not cleared pre-requisites   -->
+        <div v-if = "eligibleCheck !== true" class="alert alert-danger m-2 mt-3 text-center" role="alert">
+            You are not eligible to enroll for this course as you are already enrolled or have not cleared the pre-requisites!
+        </div>
+        <div v-if="classList.length === 0" class="alert alert-danger m-2 mt-3 text-center" role="alert">
+            There are no classes available!
+        </div>
+        
+        
+    </div>
+
+<script type="module">
+import { URL, retrieveSpecificCourse, retrieveAllClasses, enrollLearners, retrieveEligibleCourses} from "./callAPI/endpoints.js";
+import navBar from "./components/navBar.js"
+
+
+
+
+new Vue({
+    el: '#nav-bar-component' 
+});
+
+var app = new Vue({
+    el: '#app',
+    data: {
+        
+        courseName: "",
+        courseId: "",
+        courseDescription: "",
+        prerequisiteCourses: [],
+        classList: [],
+        selected: 'not selected',
+        courses:[],
+        enrollCheck:0,
+        eligibleCheck:false,
+        
+        
+    },
+    methods: {
+        datetimeToDate(startDatetime, endDatetime) {
+            const startDatetimeStr = new Date(startDatetime);
+            const startDate = startDatetimeStr.toLocaleDateString();
+
+            const endDatetimeStr = new Date(endDatetime);
+            const endDate = endDatetimeStr.toLocaleDateString();
+
+            return startDate + " to " + endDate;
+        },
+        getAvailability(learnersEnrolled, classSize){
+            return (classSize - learnersEnrolled.length).toString() + "/" + (classSize).toString();
+            
+        },
+    
+        selfEnroll(staffid,courseid,classid){
+            this.enrollCheck = 2;
+            const body = {
+                "staff_id": staffid,
+                "course_id" : courseid,
+                "class_id" : classid,
+                
+            }
+            
+            fetch('http://13.250.140.89:5000/class/enroll',{
+                method: 'PUT',
+                headers:{
+                'Content-Type':'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(response=>{
+                    
+                    //console.log(response.ok);
+                    if(response.ok){
+                        this.enrollCheck = 1
+                    }else{
+                        this.enrollCheck = 2
+                    }
+                    return response
+                })
+        }
+    },
+
+    created: function(){
+        
+        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        this.accountDetails = accountDetails;
+        retrieveEligibleCourses(URL, this.accountDetails.staff_id).then(result => {
+                if (result.code == 200) {
+                    result = result.data;
+                    for (let i = 0; i < result.length; i++) {
+                        if(this.courseId == result[i].course_id){
+                            this.eligibleCheck = true;
+                        }
+                    }
+                } 
+            })
+        },
+    mounted: function() {
+        //Retrieve course id from URL
+        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        const courseDetails = (JSON.parse(localStorage.getItem("courseDetails")));
+        const idcourse = courseDetails.course_id;
+        this.accountDetails = accountDetails;
+        this.courseId = idcourse
+         //Call retrieveSpecificCourse API
+        retrieveSpecificCourse(URL, idcourse).then(result => {
+            console.log(idcourse);
+            if (result.code == 200){
+                const course = result.data;
+                this.courseName = course.course_name;
+                this.courseId = course.course_id;
+                this.courseDescription = course.course_description;
+                this.prerequisiteCourses = course.prerequisite_course
+            }
+        });
+        //Call retrieveAllClasses API
+        retrieveAllClasses(URL, idcourse).then(result => {
+            if (result.code == 200){
+                
+                const classes = result.data;
+                this.classList = classes;
+            }
+        });
+
+        const selectedCourse = this.courses.filter(course => course.course_id === idcourse)[0];
+        this.courseName = selectedCourse.course_name;
+        this.courseId = selectedCourse.course_id;
+        this.courseDescription = selectedCourse.course_description;
+        this.classList = selectedCourse.class_list;
+        
+    
+
+    }
+})
+
+</script>
+
+
+<!-- Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+</body>
+</html>
