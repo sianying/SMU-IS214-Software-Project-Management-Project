@@ -55,8 +55,9 @@ ITEM2 = {
     ]
 }
 
+# Final Quiz is not tied to a section but rather a class, so section_id can be None. 
 ITEM3 = {
-    "section_id": "s3",
+    "section_id": None,
     "quiz_id": "q3",
     "time_limit": 400,
     "questions": [

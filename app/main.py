@@ -66,8 +66,16 @@ def retrieve_eligible_courses(staff_id):
             }
         ), 404
 
+    # If staff is Trainer, need to remove courses he is enrolled in + assigned to teach as well.
+    courses_to_remove=staff.get_courses_enrolled()
+
+    if staff.get_isTrainer():
+        trainer_dao = TrainerDAO()
+        trainer = trainer_dao.retrieve_one(staff_id)
+        courses_to_remove += trainer.get_courses_can_teach()
+
     course_dao = CourseDAO()
-    course_list = course_dao.retrieve_eligible_course(staff.get_courses_completed(),staff.get_courses_enrolled())
+    course_list = course_dao.retrieve_eligible_course(staff.get_courses_completed(), courses_to_remove)
 
     if len(course_list):
         return jsonify(
