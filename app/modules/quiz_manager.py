@@ -105,6 +105,9 @@ class Quiz:
     def get_section_id(self):
         return self.__section_id
 
+    def get_time_limit(self):
+        return self.__time_limit
+
     def get_questions(self):
         return self.__questions
     
@@ -115,9 +118,6 @@ class Quiz:
     
     def remove_question(self, question_index):
         self.__questions.pop(question_index)
-
-    def get_time_limit(self):
-        return self.__time_limit
 
     def json(self):
         return {
@@ -227,8 +227,9 @@ class QuizDAO:
                     'quiz_id': QuizObj.get_quiz_id(),
                     'section_id': QuizObj.get_section_id()
                 },
-                UpdateExpression= "set questions = :q",
+                UpdateExpression= "set time_limit = :t, questions = :q",
                 ExpressionAttributeValues ={
+                    ":t": QuizObj.get_time_limit(),
                     ":q": [question.json() for question in QuizObj.get_questions()],
                 }
             )

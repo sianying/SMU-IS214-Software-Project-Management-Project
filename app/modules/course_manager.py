@@ -199,9 +199,9 @@ class CourseDAO:
         except Exception as e:
             raise ValueError("List entered is empty")
 
-    def retrieve_eligible_course(self, courses_completed, courses_enrolled):
+    def retrieve_eligible_course(self, courses_completed, courses_enrolled_or_teaching):
         try:
-            course_list = self.retrieve_all_not_in_list(courses_completed+courses_enrolled)
+            course_list = self.retrieve_all_not_in_list(courses_completed+courses_enrolled_or_teaching)
         except ValueError:
             course_list = self.retrieve_all()
         

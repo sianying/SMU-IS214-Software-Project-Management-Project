@@ -10,90 +10,78 @@ except:
     session = boto3.Session(profile_name="EC2")
 
 
-class Attempt:
+class Progress:
     def __init__(self, *args, **kwargs):
         '''
             __init__(
-                quiz_id: string,
+                course_id: string,
+                class_id: int,
                 staff_id: string,
-                attempt_id: int, 
-                overall_score: int,
-                attempt_uuid = None: string, 
-                options_selected = []: List,
-                individual_scores = []: List
+                final_quiz_passed: boolean, 
+                sections_completed = []: List
             )
 
             __init__(attempt_dict)
         '''
 
         if len(args) > 1:
-            self.__quiz_id = args[0]
-            self.__staff_id = args[1]
-            self.__attempt_id = args[2]
-            self.__overall_score = args[3] 
-            self.__attempt_uuid = args[4]
+            self.__course_id = args[0]
+            self.__class_id = args[1]
+            self.__staff_id = args[2]
+            self.__final_quiz_passed = args[3] 
 
             try:
-                self.__options_selected = kwargs['options_selected']
+                self.__sections_completed = kwargs['sections_completed']
             except:
-                self.__options_selected = []
+                self.__sections_completed = []
 
-            try:
-                self.__individual_scores = kwargs['individual_scores']
-            except:
-                self.__individual_scores = []
-            
 
         elif isinstance(args[0], dict):
-            self.__quiz_id= args[0]['quiz_id']
+            self.__course_id= args[0]['course_id']
+            self.__class_id= args[0]['class_id']
             self.__staff_id = args[0]['staff_id']
-            self.__attempt_id = args[0]['attempt_id']
-            self.__overall_score = args[0]['overall_score']
-            self.__attempt_uuid = args[0]['attempt_uuid']
-            self.__options_selected = args[0]['options_selected']
-            self.__individual_scores = args[0]['individual_scores']
+            self.__final_quiz_passed = args[0]['final_quiz_passed']
+            self.__sections_completed = args[0]['sections_completed']
         
-    def get_quiz_id(self):
-        return self.__quiz_id
+    def get_course_id(self):
+        return self.__course_id
     
+    def get_class_id(self):
+        return self.__class_id
+
     def get_staff_id(self):
         return self.__staff_id
 
-    def get_attempt_id(self):
-        return self.__attempt_id
+    def get_final_quiz_passed(self):
+        return self.__final_quiz_passed
 
-    def get_overall_score(self):
-        return self.__overall_score
+    def get_sections_completed(self):
+        return self.__sections_completed
 
-    def get_options_selected(self):
-        return self.__options_selected
+    def set_final_quiz_passed(self, final_quiz_passed):
+        self.__final_quiz_passed = final_quiz_passed
 
-    def get_individual_scores(self):
-        return self.__individual_scores
-
-    def get_attempt_uuid(self):
-        return self.__attempt_uuid
+    def add_completed_section(self, section_uuid):
+        self.__sections_completed.append(section_uuid)
 
     def json(self):
         return {
             "quiz_id": self.get_quiz_id(),
+            "class_id": self.get_class_id(),
             "staff_id": self.get_staff_id(),
-            "attempt_id": self.get_attempt_id(),
-            "overall_score": self.get_overall_score(),
-            "attempt_uuid": self.get_attempt_uuid(),
-            "options_selected": self.get_options_selected(),
-            "individual_scores": self.get_individual_scores()
+            "final_quiz_passed": self.get_final_quiz_passed(),
+            "sections_completed": self.get_sections_completed()           
         }
 
 
-class AttemptDAO:
+class ProgressDAO:
     def __init__(self):
-        self.table = session.resource('dynamodb', region_name = "ap-southeast-1").Table('Attempt')
+        self.table = session.resource('dynamodb', region_name = "ap-southeast-1").Table('Progress')
 
     #Create
-    def insert_attempt(self, attempt_dict, correct_options, marks):
+    def insert_progress(self, progress_dict):
         try:
-            attempt_list = self.retrieve_by_learner(attempt_dict['quiz_id'], attempt_dict['staff_id'])
+            attempt_list = self.retrieve_by_learner(progress_dict['quiz_id'], attempt_dict['staff_id'])
 
             if 'attempt_id' in attempt_dict and attempt_dict['attempt_id'] in attempt_list:
                 raise ValueError('Attempt already exists')
@@ -165,4 +153,3 @@ class AttemptDAO:
             attempts_list.append(Attempt(item))
 
         return attempts_list
-
