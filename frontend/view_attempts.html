@@ -36,9 +36,9 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">Course Id here</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class Id here</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#">Section Name Here</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{course_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">{{class_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#">{{section_name}}</a></li>
                     <li class="breadcrumb-item active" aria-current="page">All Attempts</li>
                 </ol>
             </nav>
@@ -91,6 +91,13 @@
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
                 this.quiz_id = urlParams.get('quiz_id');
+                const course = JSON.parse(localStorage.getItem("courseDetails"));
+
+                const course_id = course['course_id'];
+                this.course_id = course_id;
+
+                const class_id = course['class_id'];
+                this.class_id = class_id;
                 // this.quiz_id = "4301fff4-6adb-4bd4-b995-40fcf6a4b4ee"
                 // To pass section name and quiz_id from prev page
                 retrieveAttemptsByLearner(URL, this.quiz_id, this.accountDetails.staff_id).then(result =>{

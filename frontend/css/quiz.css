@@ -3,7 +3,7 @@
     /* justify-content: center; */
 }
 
-#breadcrumb-div{
+#breadcrumb-div, #finalQuiz, #error{
     width: 95%;
 }
 
@@ -42,7 +42,7 @@
     color: #3C64B1;
 }
 
-#form-div, .duplicate-alert, #answer-div{
+.limitDivWidth{
     width: 90%;
 }
 
