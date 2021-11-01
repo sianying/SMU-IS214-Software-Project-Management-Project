@@ -52,11 +52,7 @@
         </div>
 
         <div v-if="enrollCheck===1" id='duplicate-qn-alert' class="alert alert-success mx-auto text-center justify-content-center" role="alert">
-            Your request to enroll in {{ course.course_id }} {{ course.course_name }} has been logged
-        </div>
-        
-        <div v-else-if="enrollCheck===2" id='duplicate-qn-alert' class="alert alert-danger mx-auto text-center justify-content-center"  role="alert">
-            You are already enrolled in {{ course.course_id }} {{ course.course_name }}
+            Your request to enroll in {{ course.course_id }} {{ course.course_name }} G{{this.classId}} has been logged
         </div>
 
         <div class="card text-center m-2">
@@ -131,6 +127,7 @@ var app = new Vue({
         courses:[],
         error: false,
         enrollCheck:0,
+        selectedClass : ""
     },
     methods: {
         datetimeToDate(startDatetime, endDatetime) {
@@ -152,22 +149,22 @@ var app = new Vue({
             return learnersEnrolled.length === classSize.length ? false : true;
         },
         selfEnroll(staffid,courseid,classid){
-            this.enrollCheck = 2;
+            
             const body = {
                 "staff_id": staffid,
                 "course_id" : courseid,
                 "class_id" : classid,
                 
             }
-            fetch('http://13.250.140.89:5000/class/enroll',{
-                method: 'PUT',
+            fetch('http://13.250.140.89:5000/request',{
+                method: 'POST',
                 headers:{
                 'Content-Type':'application/json'
                 },
                 body: JSON.stringify(body)
             }).then(response=>{
                     //console.log(response.ok);
-                    if(response.status == 200){
+                    if(response.status == 201){
                         this.enrollCheck = 1
                     }else{
                         this.enrollCheck = 2
@@ -177,6 +174,7 @@ var app = new Vue({
         },
         setClassId(classId) {
             this.course.class_id = classId;
+            this.classId = classId
             localStorage.setItem("courseDetails", JSON.stringify(this.course));
         },
         // get the url of last visited page

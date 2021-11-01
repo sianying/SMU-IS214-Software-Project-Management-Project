@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <!-- Enrolment CSS -->
+    <link rel='stylesheet' href='css/enrolment.css'>
+    <!-- Nav css -->
+    <link rel="stylesheet" href="./css/nav.css">
+    <!-- Main css -->
+    <link rel="stylesheet" href="./css/courses.css">
+    <!-- Iconify -->
+    <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    
+    <!-- NavBar -->
+    <!-- Vue link -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!-- jQuery link -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <title>HR Enrol Learners</title>
+    <script>
+        //Check for authentication
+
+    </script>
+    <div id="nav-bar-component">
+        <nav-bar></nav-bar>
+    </div>
+</head>
+<body>
+    <div id='app'>
+        <div id="breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" ></a>Pending Requests</li>
+            
+                </ol>
+            </nav>
+            
+        </div>
+        <div>
+            <p class='text-center h3 mt-3 mb-4 '>Enrol Learner</p>
+        </div>
+        <div id='confirmation' v-if='enrollCheck === 1'>
+            <div class="alert alert-success w-50 mx-auto text-center" role="alert">
+                {{selectedName}} has been enrolled into {{selectedCourse}} Class {{selectedClass}} successfully!
+            </div>
+        </div>
+        <div id='confirmation' v-if='enrollCheck === 2'>
+            <div class="alert alert-danger w-50 mx-auto text-center" role="alert">
+                There has been a problem enrolling {{selectedName}}!
+            </div>
+        </div>
+        <div id='alert-message' v-if="this.requests.length===0">
+            <div class="alert alert-danger mx-auto w-50 text-center" role="alert">
+                There are no eligible learners for selection.
+            </div>
+        </div>
+        <div class='mx-auto' id='learners-div'>
+            <div v-for='request in requests' >
+                <span class='h3 ml-1'><b>{{request.staff_name}}</b></span>
+                <span class='h6 ml-2'>{{request.course_id}} Class {{request.class_id}}</span>
+                <div class='mt-2'>
+                    <span class="badge badge-pill badge-success py-2 my-2">Completed pre-requisites</span>
+                    <span class="badge badge-pill badge-warning py-2 my-2">Not Previously enrolled</span>
+                    <span>
+                        <button id='enrol-btn' type='button'  onclick = "this.disabled = true;" v-on:click='processRequest(request.staff_id, request.course_id, request.class_id, request.staff_name)' class="btn btn-primary">Approve</button>
+                    </span>
+                </div>
+                <hr>
+            </div>
+        </div>
+       
+       
+    </div>
+
+    <script type="module">
+        
+        import { URL, retrieveSpecificCourse, retrieveAllClasses, enrollLearners, retrieveEligibleCourses} from "./callAPI/endpoints.js";
+        import navBar from "./components/navBar.js"
+        var flag = false;
+        new Vue({
+            el: '#nav-bar-component' 
+        });
+        var app = new Vue({
+            el: '#app',
+            data: {
+                courseName: "",
+                courseId: "",
+                currentClass: 0,
+                learners: [],
+                requests: [],
+                selectedName:"",
+                selectedCourse:"",
+                selectedClass:"",
+                enrollCheck:0
+                
+            },
+            methods: {
+                processRequest(staffid,courseid,classid,staffname){
+                    console.log(staffid);
+                    console.log(courseid);
+                    console.log(classid);
+                    this.selectedName = staffname;
+                    this.selectedCourse = courseid;
+                    this.selectedClass = classid;
+                    const body = {
+                        "staff_id": staffid,
+                        "course_id" : courseid,
+                        "class_id" : classid,
+                        "req_status" : "approved"
+                    }
+                    fetch('http://127.0.0.1:5000/request/update',{
+                        method: 'PUT',
+                        headers:{
+                        'Content-Type':'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    }).then(response=>{
+                    if(response.ok){
+                        this.enrollCheck = 1
+                    }else{
+                        this.enrollCheck = 2
+                    }
+                    return response
+                })        
+        }
+
+            },
+           
+            mounted: function() {
+                //Retrieve course id from URL
+                const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+                const courseDetails = (JSON.parse(localStorage.getItem("courseDetails")));
+                
+                fetch('http://127.0.0.1:5000/request',{
+                    }).then(response => response.json())
+                .then(data => {
+                    console.log(data.data);
+                    if(data.data != "No pending requests found"){
+                        for(let i = 0; i < data.data.length ; i++){
+                        this.requests.push(data.data[i]);
+                    }
+                    }
+                    })
+            }
+})
+
+
+        
+
+
+    </script>
+
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
+    -->
+</body>
+</html>
