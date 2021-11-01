@@ -60,10 +60,6 @@
             </div>
         </div>
     </div>
-    <script>
-        document.cookie = "AC-C=ac-c;expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/;SameSite=Secure";
-        // alert( document.cookie );
-    </script>
     <script type="module">
         import navBar from "./components/navBar.js"
 
@@ -109,14 +105,43 @@
                                     source.setAttribute('src', material['url']);
                                     video.appendChild(source);
                                     
-                                } else{
+                                } else if(material['mat_type'] == ".pdf"){
                                     document.getElementById('iframe-div').classList.remove('d-none');
                                     var doc = document.getElementById('iframe-div');
                                     var iframe = document.createElement('iframe');
-                                    var source = document.createElement('source');
+                                    iframe.setAttribute('id', 'pdfFrame');
                                     iframe.setAttribute('width', '900px');
                                     iframe.setAttribute('height', '800px');
-                                    iframe.setAttribute('src', `http://docs.google.com/gview?url=${material['url']}&embedded=true`);
+                                    iframe.setAttribute('src', `https://docs.google.com/viewer?url=${material['url']}&embedded=true`);
+                                    doc.appendChild(iframe);
+
+                                    var count = 0;
+                                            
+                                    $(`#iframe-div`).html(iframe);
+                                            $('#pdfFrame').on('load', function(){ 
+                                            count++;
+                                            if(count>0){
+                                                clearInterval(ref)
+                                            }
+                                        });
+
+                                    var ref = setInterval(()=>{
+                                        $(`#iframe-div`).html(iframe);
+                                        $('#pdfFrame').on('load', function() {
+                                            count++;
+                                            if (count > 0) {
+                                                clearInterval(ref)
+                                            }
+                                        });
+                                    }, 4000)
+                                }
+                                else{
+                                    document.getElementById('iframe-div').classList.remove('d-none');
+                                    var doc = document.getElementById('iframe-div');
+                                    var iframe = document.createElement('iframe');
+                                    iframe.setAttribute('width', '900px');
+                                    iframe.setAttribute('height', '800px');
+                                    iframe.setAttribute('src', `https://view.officeapps.live.com/op/embed.aspx?src=${material['url']}`);
                                     doc.appendChild(iframe);
                                 }
                             }
