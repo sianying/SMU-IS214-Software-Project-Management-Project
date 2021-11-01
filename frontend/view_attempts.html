@@ -95,7 +95,10 @@
                 // To pass section name and quiz_id from prev page
                 retrieveAttemptsByLearner(URL, this.quiz_id, this.accountDetails.staff_id).then(result =>{
                     if(result.code == 200){
-                        this.attempts = result.data;
+                        this.attempts = result.data.sort(function(a,b){
+                            return a.attempt_id - b.attempt_id;
+                        });
+                        
                     }
                 })
             },
@@ -103,7 +106,7 @@
                 view_quiz: function(attempt_index){
                     localStorage.setItem("attempt", JSON.stringify(this.attempts[attempt_index]))
                     window.location.replace("./review_quiz.html?quiz_id="+this.quiz_id)
-                }
+                },
             }
         })
     </script>
