@@ -49,31 +49,41 @@
             </nav>
         </div>
 
-        <div class="container d-flex justify-content-end">
-            <a href = "./add-new-section.html" class="btn btn-outline-info">
+        <!-- <div class="container d-flex justify-content-end">
+            <a href = "./add-new-section.html" class="btn btn-secondary">
                 Add New Section
                 <span class="iconify" data-icon="akar-icons:circle-plus"></span>
             </a>
-        </div>
+        </div> -->
 
-        <div id='error' class='alert alert-danger w-50 mx-auto text-center d-none'>There are currently no sections for this class.</div>
-        <div id='sections-div' class='d-none'>
-            <div v-for='(section, index) in sections' class='section-card mx-auto'>
-                <div class="card my-4">
-                    <div class="card-header h3">
-                        {{section.section_name}}
-                    </div>
-                    <div class="card-body"> 
-                        <p>
-                            <a class="btn btn-primary" href='./upload_materials_trainer.html' @click='viewSection(index)' >
-                                Add Materials
-                            </a>
-                            <a href="'./add_quiz.html" @click='viewSection(index)' class="btn btn-warning ml-2">Add Quiz</a>
-                        </p>
-                    </div>
+        <div id='error' class='alert alert-danger mx-auto text-center d-none '>There are currently no sections for this class.</div>
+        <!-- <div id='sections-div' class='d-none'> -->
+        <div id='finalQuiz' class='d-flex justify-content-end'>
+            <a href = "./add-new-section.html" class="btn btn-outline-primary mr-3">
+                Add New Section
+                <!-- <span class="iconify" data-icon="akar-icons:circle-plus"></span> -->
+            </a>
+            <a class="btn btn-outline-info" href='./add_quiz.html' @click='addFinalQuiz' >
+                Add Final Graded Quiz
+            </a>
+        </div>
+        <div id='sections' v-for='(section, index) in sections' class='section-card mx-auto'>
+            <div class="card my-4">
+                <div class="card-header h3">
+                    {{section.section_name}}
+                </div>
+                <div class="card-body"> 
+                    <p>
+                        <a class="btn btn-primary" href='./upload_materials_trainer.html' @click='viewSection(index)' >
+                            Add Materials
+                        </a>
+                        <a v-if='section.quiz == null' href="./add_quiz.html" @click='viewSection(index)' class="btn btn-warning ml-2">Add Quiz</a>
+                        <a v-if='section.quiz != null' href="./edit_quiz.html" @click='viewSection(index)' class="btn btn-secondary ml-2">Edit Quiz</a>
+                    </p>
                 </div>
             </div>
         </div>
+        <!-- </div> -->
     </div>
     
     <script type="module">
@@ -105,7 +115,7 @@
                 retrieveAllSectionsFromClass(URL, course_id, class_id).then(result => {
                     if(result.code == 200){
                         this.sections = result.data;
-                        document.getElementById('sections-div').classList.remove('d-none');
+                        // document.getElementById('sections').classList.remove('d-none');
                     }
                     else {
                         this.sections = "";
@@ -117,6 +127,12 @@
                 viewSection: function(e){
                     localStorage.setItem('sectionSelectedId', JSON.stringify(this.sections[e].section_id));
                     localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[e].section_name));
+                    if(this.sections[e].quiz!= null){
+                        localStorage.setItem('sectionQuizId', JSON.stringify(this.sections[e].quiz));
+                    }
+                },
+                addFinalQuiz: function(){
+                    localStorage.setItem('isFinalQuiz', true);
                 }
             }
         })

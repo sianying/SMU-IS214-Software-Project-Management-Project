@@ -62,12 +62,13 @@
                             <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
                                 View Materials
                             </a>
-                            <a :href="'./attempt_quiz.html?quiz_id=' + section.quiz" v-if='section.quiz' class="btn btn-warning ml-2">Attempt Quiz</a>
+                            <a :href="'./view_attempts.html?quiz_id=' + section.quiz" v-if='section.quiz' class="btn btn-warning ml-2">Attempt Quiz</a>
                         </p>
                         <div class="collapse" :id="'collapseExample' + index">
                             <div class="card card-body">
+                                <div v-if='section.materials.length == 0'>No materials</div>
                                 <div v-for ='material in section.materials'>
-                                    <a v-if="material.mat_type=='link'" :href="material.url" target='_blank'>{{material.mat_name}}</a>
+                                    <a v-if="material.mat_type=='Link'" :href="material.url" target='_blank'>{{material.mat_name}}</a>
                                     <a v-else href="view_material.html" @click="addMatName(material.mat_name, index)" target='_blank'>{{material.mat_name}}</a>
                                 </div>
                             </div>
@@ -98,11 +99,13 @@
             created: function() {
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
 
-                const course_id = course['course_id'];
-                this.course_id = course_id;
+                // const course_id = course['course_id'];
+                const course_id = "IC112";
+                this.course_id = "IC112";
 
-                const class_id = course['class_id'];
-                this.class_id = class_id;
+                // const class_id = course['class_id'];
+                const class_id = 1;
+                this.class_id = 1;
                 
                 retrieveAllSectionsFromClass(URL, course_id, class_id).then(result => {
                     if(result.code == 200){
