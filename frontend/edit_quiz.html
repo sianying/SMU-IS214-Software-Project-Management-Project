@@ -14,7 +14,7 @@
     <!-- Nav CSS -->
     <link rel='stylesheet' href='css/nav.css'>
 
-    <title>Add Quiz</title>
+    <title>Edit Quiz</title>
 
     <!-- Vue link -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
@@ -40,100 +40,141 @@
                 <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
                 <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
                 <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Add Quiz</li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Quiz</li>
             </ol>
         </nav>
     </div>
 
     <div id='app'>
-        <div id='alert-and-button'>
-            <div v-if='questionsList.length == 0' id='alert-no-qn' class="alert alert-danger mx-auto" role="alert">
-                There are no questions. Add one by clicking a button below!
+        <div id='existing-questions' class='mx-auto limitDivWidth'> 
+            <div class='text-center'>
+                <h2>Edit Quiz</h2>
             </div>
-            <div id='alertToAddQn' class='d-none'>
-                <div id='alert-no-qn' class="alert alert-warning mx-auto" role="alert">
-                    Click on one of the buttons below to add a question!
+            
+            <div id='alert-and-button' class='my-3'>
+                <div id='alertToAddQn' class='d-none'>
+                    <div id='alert-no-qn' class="alert alert-warning mx-auto" role="alert">
+                        Click on one of the buttons below to add a question!
+                    </div>
+                </div>
+                <div id='qnButtons'>
+                    <div id='add-qn-button' class='mx-2'>
+                        <button id='true-false-button' type="button" class="btn btn-outline-info" v-on:click='createTFQuestion'>Add New T/F Question</button>
+                    </div>
+                    <div id='add-mcq-qn-button' class='mx-2'>
+                        <button id='mcq-button' type="button" class="btn btn-outline-secondary" v-on:click='createMCQQuestion'>Add New MCQ Question</button>
+                    </div>
                 </div>
             </div>
-            <div id='qnButtons'>
-                <div id='add-qn-button' class='mx-2'>
-                    <button id='true-false-button' type="button" class="btn btn-outline-info" v-on:click='createTFQuestion'>Add T/F Question</button>
+            <div v-for='(question, index) in questionsList' class='mt-4 limitDivWidth mx-auto'>
+                <div :id="'question' + index">
+                    {{index + 1}}. {{question.question_name}}
+                    <span><button :id="'editBtn' + index" type='button' v-on:click='editQuestion(index)' class="btn btn-primary btn-sm ml-2">Edit Question</button></span>
+                    <div v-if='question.isMCQ==true' v-for='(option, ind) in question.options' class='ml-3 mt-2'>{{ind + 1}}. {{option}}</div>
+                    <div v-if='question.isMCQ==false' v-for='(option, ind) in question.options' class='ml-3 mt-2'>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions">
+                            <label class="form-check-label" for="inlineRadio1">{{option}}</label>
+                        </div>
+                    </div>
                 </div>
-                <div id='add-mcq-qn-button' class='mx-2'>
-                    <button id='mcq-button' type="button" class="btn btn-outline-secondary" v-on:click='createMCQQuestion'>Add MCQ Question</button>
-                </div>
-            </div>
-        </div>
 
-        <div v-if='error!=""' id='error'>
-            <div id='duplicate-alert' class="alert alert-danger mx-auto text-center justify-content-center limitDivWidth" role="alert">
-                {{error}}
-            </div>
-        </div>
-        <div id='form-div' class='mx-auto d-none limitDivWidth'>
-            <div id='TFQn' class='d-none'>
-                <div class="form-group">
-                    <label for="question">Question Title</label>
-                    <input type="text" maxlength="128" class="form-control" id="TFquestion">
-                </div>
-                <button id='question-title-submit-btn' type='button' v-on:click='addTFQuestion' class="btn btn-primary">Add T/F Question</button>
-            </div>
-            <div id='MCQQn' class='d-none'>
-                <div class="form-group">
-                    <label for="question">Question Title</label>
-                    <input type="text" maxlength="128" class="form-control" id="MCQquestion">
-                </div>
-                <button id='question-title-submit-btn' type='button' v-on:click='addMCQQuestion' class="btn btn-primary">Add MCQ Question</button>
-            </div>
-        </div>
-        <div id='question-div' class='question-div'></div>
-        <div id='answer-div' class='mx-auto d-none limitDivWidth'>
-            <div id='answerOptions'>
-                <div class="form-group">
-                    <div id='completedAnswerOptions' class='d-none'>
+                <div id='edit' class=''>
+                    <div :id="'editQuestions' + index" class='mt-4 d-none'>
+                        <label for="questions">Question Title</label>
+                        <div>
+                            <!-- <input type="text" maxlength="128" class="form-control" id="question" v-model='questionsList[index].question_name'> -->
+                            <input type="text" maxlength="128" id="question" class='form-control my-2' v-model='questionsList[index].question_name'>
+                        </div>
+                        <label for="answers">Answer Options</label>
+                        <div v-if='question.isMCQ==true' v-for='(option, ind) in question.options'>
+                            <!-- {{ind + 1}}. {{option}} -->
+                            <input type="text" id="question" class='form-control mb-1' v-model='question.options[ind]'>
+                        </div>
+                        <div v-if='question.isMCQ==false' v-for='(option, ind) in question.options' class='ml-3'>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="inlineRadioOptions">
+                                <label class="form-check-label" for="inlineRadio1">{{option}}</label>
+                            </div>
+                        </div>
                         <div class='container'>
                             <div class='row'>
                                 <div class="col"></div>
-                                <div class='col mb-3 d-flex justify-content-center' id='confirmAnswerOptions'>
-                                    <button type="button" class="btn btn-secondary"><a id='addAnswers' style='color:white' href="#" v-on:click='addAnswers'>Confirm</a></button>
+                                <div class='col mb-3 d-flex justify-content-center'>
+                                    <button type="button" class="btn btn-secondary mt-3"><a style='color:white' href="#" v-on:click='confirmEdit(index)'>Confirm</a></button>
                                 </div>
                                 <div class='col'></div>
                             </div>
                         </div>
                     </div>
-                    <label for="answers">Add answer options</label>
-                    <input type="text" maxlength="128" class="form-control" id="answer">
                 </div>
-                <button id='question-title-submit-btn' type='button' v-on:click='addAnswerOptions' class="btn btn-primary">Add Answer Option</button>
+            </div>
+            
+            <div v-if='error!=""' id='error'>
+                <div id='duplicate-alert' class="alert alert-danger mx-auto w-75 text-center justify-content-center limitDivWidth" role="alert">
+                    {{error}}
+                </div>
+            </div>
+            <div id='form-div' class='my-3 d-none limitDivWidth mx-auto'>
+                <div id='TFQn' class='d-none'>
+                    <div class="form-group">
+                        <label for="question">Question Title</label>
+                        <input type="text" maxlength="128" class="form-control" id="TFquestion">
+                    </div>
+                    <button id='question-title-submit-btn' type='button' v-on:click='addTFQuestion' class="btn btn-primary">Add T/F Question</button>
+                </div>
+                <div id='MCQQn' class='d-none edit'>
+                    <div class="form-group">
+                        <label for="question">Question Title</label>
+                        <input type="text" maxlength="128" class="form-control" id="MCQquestion">
+                    </div>
+                    <button id='question-title-submit-btn' type='button' v-on:click='addMCQQuestion' class="btn btn-primary">Add MCQ Question</button>
+                </div>
+            </div>
+            <div id='answer-div' class='d-none my-3 limitDivWidth mx-auto'>
+                <div id='answerOptions'>
+                    <div class="form-group">
+                        <div id='completedAnswerOptions' class='d-none'>
+                            <div class='container'>
+                                <div class='row'>
+                                    <div class="col"></div>
+                                    <div class='col mb-3 d-flex justify-content-center' id='confirmAnswerOptions'>
+                                        <button type="button" class="btn btn-secondary"><a id='addAnswers' style='color:white' href="#" v-on:click='addAnswers'>Confirm</a></button>
+                                    </div>
+                                    <div class='col'></div>
+                                </div>
+                            </div>
+                        </div>
+                        <label for="answers">Add answer options</label>
+                        <input type="text" maxlength="128" class="form-control" id="answer">
+                    </div>
+                    <button id='question-title-submit-btn' type='button' v-on:click='addAnswerOptions' class="btn btn-primary">Add Answer Option</button>
+                </div>
             </div>
         </div>
-        <div v-if='questionsList.length > 0' id='submit-btn'>
-            <div class='container'>
-                <div class='row'>
-                    <div class="col"></div>
-                    <div class='col mx-auto mb-3' id='submit-and-cancel-button'>
-                        <button type="button" class="btn btn-success mr-2"><a id='confirmBtn' href="#" v-on:click='checkEmpty' style='color:white'>Confirm</a></button>
-                        <button type="button" class="btn btn-danger ml-2"><a href='#' style='color:white'>Cancel</a></button>
+        <div id='confirm'>
+            <div v-if='questionsList.length > 0' id='submit-btn' class='limitDivWidth mx-auto'>
+                <div class='container'>
+                    <div class='row'>
+                        <div class="col"></div>
+                        <div class='col mx-auto mb-3' id='submit-and-cancel-button'>
+                            <button type="button" class="btn btn-success mr-2"><a id='confirmBtn' href="#" v-on:click='checkEmpty' style='color:white'>Confirm</a></button>
+                            <button type="button" class="btn btn-danger ml-2"><a href='#' style='color:white'>Cancel</a></button>
+                        </div>
+                        <div class='col'></div>
                     </div>
-                    <div class='col'></div>
                 </div>
             </div>
         </div>
     </div>
 
-
-
     <script type="module">
+        import { URL, retrieveQuizById} from "./callAPI/endpoints.js";
+
         var section_id = JSON.parse(localStorage.getItem('sectionSelectedId'));
 
         var section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
         document.getElementById('breadcrumb-4').innerText = section_name;
-
-        import navBar from "./components/navBar.js"
-
-        new Vue({
-            el: '#nav-bar-component'
-        });
 
         const course = JSON.parse(localStorage.getItem("courseDetails"));
 
@@ -144,21 +185,53 @@
         const class_id = course['class_id'];
         document.getElementById('breadcrumb-3').innerText = "Class " + class_id
 
+
+        import navBar from "./components/navBar.js"
+
+        new Vue({
+            el: '#nav-bar-component'
+        });
+
         var app = new Vue({
             el: "#app",
             data: {
                 questionsList: [],
+                quiz_id: "",
+                section_id: "",
+                time_limit: null,
                 questionNames: [],
-                questionNumber: 0,
                 error: ""
             },
-            methods:{
-                showAlertDiv: function(){
-                    document.getElementById('form-div').classList.add("d-none");
-                    document.getElementById('alert-and-button').classList.remove("d-none");
-                    document.getElementById("alertToAddQn").classList.remove('d-none');
+            created: function() {
+                var quiz_id = JSON.parse(localStorage.getItem('sectionQuizId'));
+                retrieveQuizById(URL, quiz_id).then(result => {
+                    if(result.code == 200){
+                        console.log(result.data)
+                        this.questionsList = result.data.questions;
+                        this.quiz_id = result.data.quiz_id;
+                        this.section_id = result.data.section_id;
+                        this.time_limit = result.data.time_limit;
+                        for(let question of result.data.questions){
+                            this.questionNames.push(question.question_name.toLowerCase());
+                        }
+                        for(let question of this.questionsList){
+                            question['options_lower']=[];
+                        }
+                    }
+                })    
+            },
+            methods: {
+                editQuestion: function(ind){
+                    document.getElementById(`editQuestions${ind}`).classList.remove('d-none');
+                    document.getElementById(`question${ind}`).classList.add('d-none');
+                    document.getElementById('alert-and-button').classList.add('d-none');
+                    
                 },
-                // function to trigger the creation of TF question title
+                confirmEdit: function(ind){
+                    document.getElementById(`editQuestions${ind}`).classList.add('d-none');
+                    document.getElementById(`question${ind}`).classList.remove('d-none');
+                    document.getElementById('alert-and-button').classList.remove('d-none');
+                },
                 createTFQuestion: function(){
                     document.getElementById('form-div').classList.remove("d-none");
                     document.getElementById('alert-and-button').classList.add("d-none");
@@ -176,8 +249,8 @@
                         document.getElementById('TFQn').classList.add("d-none");
                     }
                     document.getElementById('MCQQn').classList.remove("d-none");
+                    
                 },
-                // function to add the TF question to questionsList
                 addTFQuestion: function(){
                     var question = {};
                     var questionTitle = document.getElementById('TFquestion').value;
@@ -185,32 +258,13 @@
                         document.getElementById('TFquestion').value = "";
                         this.error = "Duplicate question alert! Enter another question."
                     } else if((!this.questionNames.includes(questionTitle.toLowerCase())) && (questionTitle !== "")){
-                        // this.errorList.remove("Duplicate question alert! Enter another question.")
                         this.error = "";
-                        this.questionNumber ++;
                         this.questionNames.push(questionTitle.toLowerCase());
-
-                        const questionDiv = document.getElementById('question-div');
-                        const questionInputNode = document.createElement('p');
-                        questionInputNode.innerText = this.questionNumber + ". " + questionTitle;
-                        questionInputNode.className ='h5 ml-4 mt-4';
-                        questionInputNode.setAttribute('id', 'question-title');
 
                         question['question_name'] = questionTitle;
                         question['isMCQ'] = false;
                         question['options'] = ['True', 'False'];
 
-                        questionDiv.appendChild(questionInputNode);
-                        questionDiv.innerHTML += `<div class='ml-4'>
-                                                    <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="trueOption" value="option1">
-                                                        <label class="form-check-label" for="inlineRadio1">True</label>
-                                                    </div>
-                                                    <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="falseOption" value="option2">
-                                                        <label class="form-check-label" for="inlineRadio2">False</label>
-                                                    </div>
-                                                </div>`;
                         document.getElementById('TFquestion').value = "";
                         this.questionsList.push(question);
                         this.showAlertDiv();
@@ -223,36 +277,26 @@
                         document.getElementById('MCQquestion').value = "";
                         this.error = "Duplicate question alert! Enter another question."
                     } else if((!this.questionNames.includes(questionTitle.toLowerCase())) && (questionTitle !== "")){
+                        
                         this.error = "";
-                        this.questionNumber ++;
                         document.getElementById('completedAnswerOptions').classList.add('d-none');
                         this.questionNames.push(questionTitle.toLowerCase());
-
-                        const questionDiv = document.getElementById('question-div');
-                        const questionInputNode = document.createElement('p');
-                        questionInputNode.innerText = this.questionNumber + ". " + questionTitle;
-                        questionInputNode.className ='h5 ml-4 mt-4';
-                        questionInputNode.setAttribute('id', 'question-title');
 
                         question['question_name'] = questionTitle;
                         question['isMCQ'] = true;
                         question['options'] = [];
                         question['options_lower'] = [];
 
-                        questionDiv.appendChild(questionInputNode);
-
                         document.getElementById('form-div').classList.add('d-none');
                         this.questionsList.push(question);
+                        // let index = this.questionsList.findIndex((element) => element == question);
+                        // console.log(document.getElementById(`editBtn${index}`).classList)
                         this.showAnswerDiv();
                     }
                 },
-                showAnswerDiv: function(){
-                    document.getElementById('answer-div').classList.remove('d-none');
-                },
                 addAnswerOptions: function(){
                     var answer = document.getElementById('answer').value;
-                    var questionNumber = this.questionNumber-1;
-
+                    var questionNumber = this.questionsList.length-1;
                     if(this.questionsList[questionNumber].options_lower.includes(answer.toLowerCase())){
                         document.getElementById('answer').value="";
                         this.error = 'Duplicate answer alert! Enter another answer.';
@@ -264,13 +308,6 @@
                         if(numAnswers >=3){
                             document.getElementById('completedAnswerOptions').classList.remove('d-none');
                         }
-                        const questionDiv = document.getElementById('question-div');
-                        const answerInputNode = document.createElement('p');
-                        answerInputNode.innerText = numAnswers + ". " + answer;
-                        answerInputNode.className ='h5 ml-5';
-                        answerInputNode.setAttribute('id', 'answer-title');
-
-                        questionDiv.appendChild(answerInputNode);
                         document.getElementById('answer').value ="";
                     }
                 },
@@ -278,14 +315,18 @@
                     document.getElementById('answer-div').classList.add('d-none');
                     this.showAlertDiv();
                 },
+                showAlertDiv: function(){
+                    document.getElementById('form-div').classList.add("d-none");
+                    document.getElementById('alert-and-button').classList.remove("d-none");
+                },
+                showAnswerDiv: function(){
+                    document.getElementById('answer-div').classList.remove('d-none');
+                },
                 checkEmpty: function(){
                     if(this.questionsList.length == 0){
                         this.error = "The quiz cannot be empty! Please add a question before submitting.";
-                        document.getElementById('error').remove('d-none');
+                        // document.getElementById('error').remove('d-none');
                     }
-                    // } else if(document.getElementById('completedAnswerOptions').classList.contains('d-none')){
-                    //     this.error = "Please enter at least 3 answer options for MCQ questions!";  
-                    // }
                     else{
                         var numOptions = true;
                         for(let question in this.questionsList){
@@ -307,20 +348,9 @@
                 }
             }
         })
-
-        $(document).ready(function() {
-            $(window).keydown(function(event){
-                if(event.keyCode == 13) {
-                event.preventDefault();
-                return false;
-                }
-            });
-        });
     </script>
 
-
-
-    <!-- Optional JavaScript; choose one of the two! -->
+<!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

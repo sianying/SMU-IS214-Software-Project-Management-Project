@@ -24,8 +24,8 @@ def create_course_table(dynamodb):
                 }
             ],
             ProvisionedThroughput={
-                'ReadCapacityUnits':5,
-                'WriteCapacityUnits':5
+                'ReadCapacityUnits':2,
+                'WriteCapacityUnits':2
             }
         )
     except Exception as e:
@@ -59,8 +59,8 @@ def create_class_table(dynamodb):
                 },
             ],
             ProvisionedThroughput={
-                'ReadCapacityUnits':5,
-                'WriteCapacityUnits':5
+                'ReadCapacityUnits':2,
+                'WriteCapacityUnits':2
             }
         )
     except Exception as e:
@@ -119,8 +119,8 @@ def create_section_table(dynamodb):
                 }
             ],
             ProvisionedThroughput={
-                'ReadCapacityUnits':5,
-                'WriteCapacityUnits':5
+                'ReadCapacityUnits':2,
+                'WriteCapacityUnits':2
             }
             
         )
@@ -172,8 +172,8 @@ def create_quiz_table(dynamodb):
                 }
             ],
             ProvisionedThroughput={
-                'ReadCapacityUnits':5,
-                'WriteCapacityUnits':5
+                'ReadCapacityUnits':2,
+                'WriteCapacityUnits':2
             }
             
         )
@@ -233,8 +233,8 @@ def create_attempt_table(dynamodb):
                 }
             ],
             ProvisionedThroughput={
-                'ReadCapacityUnits':5,
-                'WriteCapacityUnits':5
+                'ReadCapacityUnits':2,
+                'WriteCapacityUnits':2
             }
             
         )
@@ -268,8 +268,8 @@ def create_staff_table(dynamodb):
                 }
             ],
             ProvisionedThroughput={
-                'ReadCapacityUnits':5,
-                'WriteCapacityUnits':5
+                'ReadCapacityUnits':2,
+                'WriteCapacityUnits':2
             }
             
         )
@@ -325,8 +325,8 @@ def create_request_table(dynamodb):
                 }
             ],
             ProvisionedThroughput={
-                'ReadCapacityUnits':5,
-                'WriteCapacityUnits':5
+                'ReadCapacityUnits':2,
+                'WriteCapacityUnits':2
             }
             
         )
@@ -365,8 +365,8 @@ def create_progress_table(dynamodb):
                 }
             ], 
             ProvisionedThroughput={
-                'ReadCapacityUnits':5,
-                'WriteCapacityUnits':5
+                'ReadCapacityUnits':2,
+                'WriteCapacityUnits':2
             }
         )
     except Exception as e:

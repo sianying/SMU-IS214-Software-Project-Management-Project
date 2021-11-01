@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head SameSite=None>
+    
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -59,7 +60,10 @@
             </div>
         </div>
     </div>
-
+    <script>
+        document.cookie = "AC-C=ac-c;expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/;SameSite=Secure";
+        // alert( document.cookie );
+    </script>
     <script type="module">
         import navBar from "./components/navBar.js"
 
