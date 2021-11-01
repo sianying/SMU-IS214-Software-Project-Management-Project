@@ -128,8 +128,11 @@
                     localStorage.setItem('sectionSelectedId', JSON.stringify(this.sections[e].section_id));
                     localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[e].section_name));
                     if(this.sections[e].quiz!= null){
-                        localStorage.setItem('sectionQuizId', JSON.stringify(this.sections[e].quiz));
+                        localStorage.setItem('selectedQuizId', JSON.stringify(this.sections[e].quiz));
+                    } else{
+                        localStorage.setItem('selectedQuizId', null);
                     }
+                    localStorage.setItem('isFinalQuiz', null);
                 },
                 addFinalQuiz: function(){
                     localStorage.setItem('isFinalQuiz', true);
