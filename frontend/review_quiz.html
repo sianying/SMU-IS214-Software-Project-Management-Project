@@ -39,7 +39,7 @@
                     <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">Course Id here</a></li>
                     <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class Id here</a></li>
                     <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#">Section Name Here</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-5' href="#">All Attempts</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-5' :href="'./view_attempts.html?quiz_id='+quiz_id">All Attempts</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Quiz Attempt {{attempt.attempt_id}}</li>
                 </ol>
             </nav>
@@ -71,7 +71,9 @@
                 </div>
             </div>
         </div>
-
+        <div class = "container-fluid mt-4 text-right width">
+                Total Score: {{attempt.overall_score}} / {{score}}
+        </div>
     </div>
 
     <script type="module">
@@ -91,20 +93,21 @@
                 questions: null,
                 answers: [],
                 accountDetails: {},
+                score: 0
             },
             created: function() {
-                // this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
-                // this.section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
-                // this.attempt = JSON.parse(localStorage.getItem('attempt'));
-                this.attempt = {
-                    "quiz_id":"4301fff4-6adb-4bd4-b995-40fcf6a4b4ee",
-                    "attempt_uuid":"63d98d98-6dcc-4001-996b-c555fe919cfd",
-                    "overall_score": 0,
-                    "options_selected": [0,0],
-                    "individual_scores": [1,0],
-                    "attempt_id": 1,
-                    "staff_id": "aae3e316-af31-40ae-9540-0e3a401b20f6"
-                }
+                this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
+                this.section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
+                this.attempt = JSON.parse(localStorage.getItem('attempt'));
+                // this.attempt = {
+                //     "quiz_id":"4301fff4-6adb-4bd4-b995-40fcf6a4b4ee",
+                //     "attempt_uuid":"63d98d98-6dcc-4001-996b-c555fe919cfd",
+                //     "overall_score": 0,
+                //     "options_selected": [0,0],
+                //     "individual_scores": [1,0],
+                //     "attempt_id": 1,
+                //     "staff_id": "aae3e316-af31-40ae-9540-0e3a401b20f6"
+                // }
 
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
@@ -114,6 +117,9 @@
                 retrieveQuizById(URL, this.quiz_id).then(result =>{
                     if(result.code == 200){
                         this.questions = result.data.questions;
+                        this.questions.forEach(question => {
+                            this.score += question.marks;
+                        });
                     }
                 })
 
