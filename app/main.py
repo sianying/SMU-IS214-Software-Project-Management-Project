@@ -266,11 +266,24 @@ def retrieve_eligible_staff(course_id):
 def retrieve_all_classes(course_id):
     dao = ClassDAO()
     class_list = dao.retrieve_all_from_course(course_id)
+    staff_dao = StaffDAO()
+    toReturn = []
+
+    for classObj in class_list:
+        class_json = classObj.json()
+        if classObj.get_trainer_assigned() != None:
+            class_json['trainer_name'] = staff_dao.retrieve_one(classObj.get_trainer_assigned()).get_staff_name()
+        else:
+            class_json['trainer_name'] = None
+
+        toReturn.append(class_json)
+
+
     if len(class_list):
         return jsonify(
             {    
                 "code":200,
-                "data": [classObj.json() for classObj in class_list]
+                "data": toReturn
             }
         )
     
@@ -1089,7 +1102,7 @@ def update_request():
                 "code": 400,
                 "data": "course_id, class_id or staff_id not in Request Body"
             }
-        )
+        ), 400
 
     request_dao = RequestDAO()
     requestObj = Request(data)
