@@ -234,6 +234,7 @@ class TestClassDAO(unittest.TestCase):
         classObj.enrol_learner(str(uuid4()))
         classObj.add_section(str(uuid4()))
         classObj.remove_section("0a08ff5c-d72a-4207-b1de-9bbe99efa7fd")
+        classObj.set_final_quiz_id('newfinalquiz')
         self.dao.update_class(classObj)
         toCheck = self.table.get_item(Key={'course_id':classObj.get_course_id(), 'class_id':classObj.get_class_id()})['Item']
         self.assertEqual(classObj.json(), toCheck, "ClassDAO updated values does not match")

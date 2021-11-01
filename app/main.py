@@ -485,9 +485,6 @@ def insert_quiz():
         is_final_quiz = True
         course_id = data['course_id']
         class_id = data['class_id']
-        data.pop('is_final_quiz')
-        data.pop('course_id')
-        data.pop('class_id')
     
     try:
         results = dao.insert_quiz_w_dict(data)
@@ -522,7 +519,7 @@ def insert_quiz():
         try:
             classObj = class_dao.retrieve_one(course_id, class_id)
             classObj.set_final_quiz_id(results.get_quiz_id())
-            class_dao.update_section(classObj)
+            class_dao.update_class(classObj)
 
             return jsonify(
                 {
@@ -542,14 +539,14 @@ def insert_quiz():
             return jsonify(
                 {
                     "code": 500,
-                    "data": "An error occurred when updating the class for final graded quiz."
+                    "data": str(e) + " for final graded quiz."
                 }
             ), 500
         except Exception as e:
             return jsonify(
                 {
                     "code": 500,
-                    "data": "An error occurred when updating the class for final graded quiz."
+                    "data": str(e) + ' for final graded quiz'
                 }
             ), 500
 
@@ -561,7 +558,7 @@ def insert_quiz():
             sectionObj = section_dao.retrieve_one(results.get_section_id())
             sectionObj.add_quiz(results.get_quiz_id())
             section_dao.update_section(sectionObj)
-
+            
             #return the results from successfully inserting the quiz previously
             return jsonify(
                 {
@@ -570,7 +567,6 @@ def insert_quiz():
                 }
             ), 201
 
-        #Technically need to delete the quiz from DB
         except ValueError as e:
             if "Update Failure with code:" in str(e):
                 return jsonify(
