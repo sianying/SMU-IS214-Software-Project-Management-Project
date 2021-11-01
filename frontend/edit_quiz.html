@@ -203,7 +203,7 @@
                 error: ""
             },
             created: function() {
-                var quiz_id = JSON.parse(localStorage.getItem('sectionQuizId'));
+                var quiz_id = JSON.parse(localStorage.getItem('selectedQuizId'));
                 retrieveQuizById(URL, quiz_id).then(result => {
                     if(result.code == 200){
                         console.log(result.data)
