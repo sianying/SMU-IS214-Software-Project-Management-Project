@@ -204,6 +204,24 @@ export async function retrieveQuizBySection(URL, sectionId) {
     
 }
 
+// Retrieve all attempts by quiz id and staff id
+export async function retrieveAttemptsByLearner(URL, quizId, staffId){
+    try {
+        const response = await fetch(`${URL}/attempts/${quizId}/${staffId}`);
+        if (response) {
+            const result = await response.json();
+            return result;
+        }
+    } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+
 // ====== create ========
 //Create course
 export async function createCourse(URL, body) {
