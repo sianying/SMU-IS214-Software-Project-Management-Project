@@ -335,6 +335,45 @@ def create_request_table(dynamodb):
     return "Table Created"
 
 
+def create_progress_table(dynamodb):
+    try:
+        # Data in with same partition key are stored together sorted by sort key value
+        table = dynamodb.create_table(
+            TableName='Progress',
+            KeySchema=[
+                {
+                    'AttributeName': 'staff_id',
+                    'KeyType': 'HASH' # Partition Key
+                },
+                {
+                    'AttributeName': 'course_id',
+                    'KeyType': 'RANGE' # Sort key
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'staff_id',
+                    'AttributeType': 'S'
+                },
+                {
+                    'AttributeName': 'course_id',
+                    'AttributeType': 'S'
+                },
+                {
+                    "AttributeName": 'class_id',
+                    'AttributeType': 'S'
+                }
+            ], 
+            ProvisionedThroughput={
+                'ReadCapacityUnits':5,
+                'WriteCapacityUnits':5
+            }
+        )
+    except Exception as e:
+        return e
+    return "Table Created"
+
+
 
 
 if __name__ == "__main__":
