@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- VueJS -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <!-- Navbar css-->
+    <link rel="stylesheet" href="./css/nav.css">
+    <!-- Main css -->
+    <link rel="stylesheet" href="./css/courses.css">
+    <!-- Iconify -->
+    <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
+    <!-- Check for authentication -->
+    <script>
+        if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+    </script>
+    <!-- NavBar -->
+    <div id="nav-bar-component">
+        <nav-bar></nav-bar>
+    </div>
+</head>
+
+<body>
+    <div v-cloak id="app" class="wrapper container mx-auto">
+        <div id="breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
+                    <li class="breadcrumb-item"><a href="./view-specific-course-HR.html">{{ course.course_id }}</a></li>
+                    <li class="breadcrumb-item"><a href="./trainer_section_page.html">G{{ course.class_id }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add New Section</li>
+                </ol>
+            </nav>
+        </div>
+
+        <h4 class="pt-3 pl-2">Set Section Details</h4>
+        <div class="form-border rounded">
+            <form>
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Section Name</label><span class="form-error ml-2">{{ error.sectionName }}</span>
+                    <input class="form-control" v-model="sectionName" placeholder="e.g. Section Name" maxlength="128" @input="validateForm">
+                </div>
+                <!-- <div class="form-group">
+                    <label for="exampleFormControlInput1">Section Number</label>
+                    <select v-model="selected" class="form-control">
+                        <option v-for="num in 30" >{{num}}</option>
+                    </select>
+                </div> -->
+                <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
+                    {{ apiError }}
+                </div>
+                <div class="d-flex justify-content-center">
+                    <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
+                    <!-- <a v-else class="btn btn-success mt-4" @click="onSubmit">Confirm</a> -->
+                    <a class="btn btn-success mt-4" @click="onSubmit">Confirm</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+    
+<script type="module">
+import { URL, createSection } from "./callAPI/endpoints.js";
+import navBar from "./components/navBar.js"
+
+new Vue({
+    el: '#nav-bar-component' 
+});
+
+var app = new Vue({
+    el: '#app',
+    data: {
+        accountDetails: {},
+        course: {
+            course_name: "",
+            course_id: "",
+            course_description: "",
+            prerequisite_course: [],
+            class_list: [],
+            class_id: ""
+        },
+        sectionName: "",
+        selected: "",
+        error: {
+            sectionName: "",
+        },
+        errorMessages: ["* Section name is not filled."],
+        apiError: false,
+    },
+    methods: {
+        onSubmit() {
+            // 1. Validate form
+            this.validateForm();
+            if (this.error.sectionName.length !== 0 ) {
+                event.preventDefault();
+            } else {
+            // 2. Set course object and call create course API
+                const section = {}
+                section.section_name = this.sectionName;
+                section.class_id = this.course.class_id;
+                section.course_id = this.course.course_id;
+                //Call createClass endpoint
+                createSection(URL, section).then(result => {
+                    if (result.code == 201){
+                        this.apiError = false;
+                        const createdSection = result.data;
+                        window.location.replace("./trainer_section_page.html");
+                        
+                    } else {
+                        this.apiError = result.data + ".";
+                    }
+                });
+                
+            }
+        },
+        validateForm() {
+            if (this.sectionName === ""){
+                this.error.sectionName = this.errorMessages[0];
+            } else {
+                this.error.sectionName = "";
+            }
+        }
+        
+    },
+    created: function() {
+        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        this.accountDetails = accountDetails;
+
+        const course = JSON.parse(localStorage.getItem("courseDetails"));
+        this.course = course;
+    }
+
+})
+
+</script>
+
+
+<!-- Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -49,6 +49,13 @@
             </nav>
         </div>
 
+        <div class="container d-flex justify-content-end">
+            <a href = "./add-new-section.html" class="btn btn-outline-info">
+                Add New Section
+                <span class="iconify" data-icon="akar-icons:circle-plus"></span>
+            </a>
+        </div>
+
         <div id='error' class='alert alert-danger w-50 mx-auto text-center d-none'>There are currently no sections for this class.</div>
         <div id='sections-div' class='d-none'>
             <div v-for='(section, index) in sections' class='section-card mx-auto'>
