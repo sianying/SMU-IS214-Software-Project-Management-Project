@@ -23,9 +23,6 @@
 </head>
 
 <body>
-    <!-- <div id="nav-bar-component">
-        <nav-bar></nav-bar>
-    </div> -->
     <div id='app'>
         <div class="container-fluid mt-4 p-2 pl-3 quizheader">
             <div class="row">
@@ -130,11 +127,12 @@
                     };
 
                     createAttempt(URL, requestBody).then(result => {
-                        console.log(result);
-                        // if(result.code == 201){
-                        //     // to redirect to view quiz page
-                            
-                        // } 
+                        if(result.code == 201){
+                            // to redirect to view quiz page
+                            // console.log(result.data)
+                            localStorage.setItem("attempt", JSON.stringify(result.data));
+                            window.location.replace("./review_quiz.html?quiz_id="+this.quiz_id)
+                        } 
                     })
                 }
             }

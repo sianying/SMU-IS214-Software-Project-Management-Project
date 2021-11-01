@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <!-- Quiz CSS -->
+    <link rel='stylesheet' href='css/view_attempt.css'>
+
+    <!-- Nav CSS -->
+    <link rel='stylesheet' href='css/nav.css'>
+
+    <!-- Vue link -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+    <!-- Axios link -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <title>View Quiz Attempts</title>
+</head>
+
+<body>
+    <div id =nav-bar-component>
+        <nav-bar></nav-bar>
+    </div>
+
+    
+    <div id='app'>
+        <div id='breadcrumb-div' class='mx-auto mt-4'>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">Course Id here</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class Id here</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#">Section Name Here</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">All Attempts</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div class="container-fluid width mt-4">
+            <p class = "font-weight-bold h5">Viewing Quiz for {{section_name}}</p>
+            <p class ="h5 mt-4">Instructions</p>
+            <p class = "mt-1">
+                Before you submit the quiz, you will have the opportunity to return to questions that you may have missed or have not yet answered.
+                <br/>You can submit your quiz responses at any time.
+            </p>
+            <p class= "mt-1">The timer will start once the button is clicked.</p>
+            <p class= "mt-1">Click "Attempt Quiz" to begin.</p>
+            <a class="btn btn-primary" :href="'./attempt_quiz.html?quiz_id='+quiz_id">Attempt Quiz!</a>
+        </div>
+
+        <div v-if="attempts.length > 0" class="container-fluid width mt-4">
+            <div class="font-weight-bold p-1">
+                Previous Attempts
+            </div>
+            <ul class = "list-group mb-4">
+                <li v-for='(attempt, index) in attempts' class="list-group-item list-group-item-action text-primary" @click="view_quiz(index)">
+                    Attempt {{attempt.attempt_id}}
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import {URL, retrieveAttemptsByLearner, retrieveQuizById} from "./callAPI/endpoints.js";
+        import navBar from "./components/navBar.js";
+        new Vue({
+            el: "#nav-bar-component"
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                quiz_id:  "",
+                section_name: "",
+                attempts: [],
+                accountDetails: {},
+            },
+            created: function() {
+                this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
+                this.section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
+
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                this.quiz_id = urlParams.get('quiz_id');
+                // this.quiz_id = "4301fff4-6adb-4bd4-b995-40fcf6a4b4ee"
+                // To pass section name and quiz_id from prev page
+                retrieveAttemptsByLearner(URL, this.quiz_id, this.accountDetails.staff_id).then(result =>{
+                    if(result.code == 200){
+                        this.attempts = result.data;
+                    }
+                })
+            },
+            methods: {
+                view_quiz: function(attempt_index){
+                    localStorage.setItem("attempt", JSON.stringify(this.attempts[attempt_index]))
+                    window.location.replace("./review_quiz.html?quiz_id="+this.quiz_id)
+                }
+            }
+        })
+    </script>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous">
+    </script>
+</body>
+
+
+
+
+</html>
