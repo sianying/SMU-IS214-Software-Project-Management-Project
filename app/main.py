@@ -211,6 +211,25 @@ def retrieve_assigned_classes(course_id, staff_id):
             }
         )
 
+@app.route("/staff/<string:staff_id>")
+def retrieve_specific_staff(staff_id):
+    dao = StaffDAO()
+    staffObj = dao.retrieve_one(staff_id)
+    if staffObj != None:
+        return jsonify(
+            {
+                "code":200,
+                'data': staffObj.json()
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "No staff found with staff_id "+staff_id
+        }
+    ),404
+
 
 @app.route("/staff/eligible/<string:course_id>")
 def retrieve_eligible_staff(course_id):
