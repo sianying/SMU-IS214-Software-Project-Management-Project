@@ -31,18 +31,27 @@
                 <ol class="breadcrumb bg-light">
                     <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
                     <li class="breadcrumb-item"><a href="./view-specific-course-HR.html">{{ course.course_id }}</a></li>
-                    <li class="breadcrumb-item"><a href="./trainer_section_page.html">G{{ course.class_id }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Add New Section</li>
+                    <li class="breadcrumb-item"><a href="./trainer_section_page.html">G{{ classObj.class_id }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Assign Trainer</li>
                 </ol>
             </nav>
         </div>
 
-        <h4 class="pt-3 pl-2">Set Section Details</h4>
+        <h4 class="pt-3 pl-2">Assign Trainer</h4>
         <div class="form-border rounded">
+            <div class="text-center">
+                <h5 class="mb-2">Trainer Assigned for G{{ classObj.class_id }}:</h5>
+                <h5 class="mb-5"><strong>{{ displayTrainerName() }}</strong></h5>
+            </div>
             <form>
                 <div class="form-group">
-                    <label for="exampleFormControlInput1">Section Name</label><span class="form-error ml-2">{{ error.sectionName }}</span>
-                    <input class="form-control" v-model="sectionName" placeholder="e.g. Section Name" maxlength="128" @input="validateForm">
+                    <label for="exampleFormControlInput1">Assign Trainer</label><span class="form-error ml-2">{{ error.assignedTrainer }}</span>
+                    <select v-if="!apiError" v-model="selectedTrainer" class="form-control">
+                        <option v-for="trainer in trainersList" :value="trainer.staff_id">{{ trainer.staff_name }}</option>
+                    </select>
+                </div>
+                <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
+                    {{ apiError }}
                 </div>
                 <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
                     {{ apiError }}
@@ -58,7 +67,7 @@
     </div>
     
 <script type="module">
-import { URL, createSection } from "./callAPI/endpoints.js";
+import { URL, retrieveQualifiedTrainers, assignTrainer } from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -69,41 +78,35 @@ var app = new Vue({
     el: '#app',
     data: {
         accountDetails: {},
-        course: {
-            course_name: "",
-            course_id: "",
-            course_description: "",
-            prerequisite_course: [],
-            class_list: [],
-            class_id: ""
-        },
-        sectionName: "",
-        selected: "",
+        course: {},
+        classObj: {},
         error: {
-            sectionName: "",
+            assignedTrainer: "",
         },
-        errorMessages: ["* Section name is not filled."],
+        errorMessages: ["* Eligible trainers are not loaded. Please try again later."],
         apiError: false,
+        selectedTrainer: "",
+        trainersList: [],
     },
     methods: {
         onSubmit() {
             // 1. Validate form
-            this.validateForm();
-            if (this.error.sectionName.length !== 0 ) {
+            if (this.error.assignedTrainer !== ""){
                 event.preventDefault();
             } else {
             // 2. Set course object and call create course API
-                const section = {}
-                section.section_name = this.sectionName;
-                section.class_id = this.course.class_id;
-                section.course_id = this.course.course_id;
-                //Call createClass endpoint
-                createSection(URL, section).then(result => {
-                    if (result.code == 201){
-                        this.apiError = false;
-                        const createdSection = result.data;
-                        window.location.replace("./trainer_section_page.html");
-                        
+                const assignedTrainerObj = {}
+                assignedTrainerObj.course_id = this.course.course_id;
+                assignedTrainerObj.class_id = this.classObj.class_id;
+                assignedTrainerObj.staff_id = this.selectedTrainer;
+
+                //Call assign trainer endpoint
+                assignTrainer(URL, assignedTrainerObj).then(result => {
+                    this.apiError = false;
+                    if (result.code == 200){
+                        const assignedTrainer = result.data;
+                    // Return 200, redirect to next page
+                        window.location.replace("./view-specific-course-HR.html")
                     } else {
                         this.apiError = result.data + ".";
                     }
@@ -111,21 +114,37 @@ var app = new Vue({
                 
             }
         },
-        validateForm() {
-            if (this.sectionName === ""){
-                this.error.sectionName = this.errorMessages[0];
+        displayTrainerName() {
+            if (this.classObj.trainer_name === null){
+                return "Not assigned";
             } else {
-                this.error.sectionName = "";
+                return this.classObj.trainer_name;
             }
         }
         
     },
     created: function() {
-        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
-        this.accountDetails = accountDetails;
-
+        this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         const course = JSON.parse(localStorage.getItem("courseDetails"));
         this.course = course;
+        this.classObj = JSON.parse(localStorage.getItem("classDetails"));
+
+        this.displayTrainerName();
+
+         //call API to get qualified trainers
+        retrieveQualifiedTrainers(URL, course.course_id).then(result => {
+            if (result.code == 200){
+                this.apiError = false;
+                this.error.assignedTrainer = ""
+                const trainersList = result.data;
+                //sort courses according to course id in ascending order
+                this.trainersList = trainersList.sort((a, b) => (a.staff_name > b.staff_name) ? 1 : -1);
+                this.selectedTrainer = trainersList[0].staff_id
+            } else {
+                this.error.assignedTrainer = this.errorMessages[0]
+            }
+            
+        });
     }
 
 })
