@@ -110,6 +110,15 @@ class Quiz:
 
     def get_questions(self):
         return self.__questions
+
+    def set_time_limit(self, time_limit):
+        self.__time_limit= time_limit
+
+    def set_questions(self, questions):
+        for question in questions:
+            if not isinstance(question, Question):
+                raise ValueError('At least one of the objects in list is not a Question Object')
+        self.__questions = questions
     
     def add_question(self, question):
         if not isinstance(question, Question):
