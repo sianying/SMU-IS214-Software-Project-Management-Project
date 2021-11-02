@@ -137,7 +137,7 @@ class AttemptDAO:
             raise Exception("Insert Failure with Exception: "+str(e))
     
     #Read
-    #for the trainer to see his entire section's scores
+    #to check if any attempts has been made, then cannot update quiz anymore
     def retrieve_by_quiz(self, quiz_id):
         
         # retrieve all items and add them to a list of Attempt objects
