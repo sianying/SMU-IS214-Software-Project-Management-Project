@@ -104,22 +104,8 @@ class ProgressDAO:
             raise Exception("Insert Failure with Exception: "+str(e))
     
     #Read
-    #for the learner to see his progress across all courses
-    def retrieve_all_by_learner(self, staff_id):
-
-        # retrieve all items and add them to a list of Progress objects
-        response = self.table.scan(FilterExpression = Key('staff_id').eq(staff_id))
-        data = response['Items']
-
-        progress_list = []
-        for item in data:
-            progress_list.append(Progress(item))
-
-        return progress_list
-
-
-    #for the learner to see his progress for a specific course
-    def retrieve_one_by_course(self, staff_id, course_id):
+    #to retrieve learner's progress for a specific course
+    def retrieve_by_learner_and_course(self, staff_id, course_id):
 
         #retrieve all items for a particular learner for a particular course
         response = self.table.scan(FilterExpression = Key('staff_id').eq(staff_id) & Key('course_id').eq(course_id))

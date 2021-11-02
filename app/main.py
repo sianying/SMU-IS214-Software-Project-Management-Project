@@ -10,9 +10,10 @@ from modules.course_manager import CourseDAO
 from modules.class_manager import ClassDAO, Class
 from modules.staff_manager import StaffDAO
 from modules.section_manager import SectionDAO, Material
-from modules.quiz_manager import QuizDAO
+from modules.quiz_manager import QuizDAO, Quiz
 from modules.trainer_manager import TrainerDAO
 from modules.request_manager import RequestDAO, Request
+from modules.progress_manager import ProgressDAO
 
 try:
     os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
@@ -113,6 +114,7 @@ def retrieve_specific_course(course_id):
         }
     ), 404
 
+
 # retrieve those that can teach a course, not those that are currently teaching the course.
 # for HR
 @app.route("/courses/qualified/<string:course_id>")
@@ -133,6 +135,7 @@ def retrieve_qualified_trainers(course_id):
             "data": "No trainer found"
         }
     ), 404
+
 
 # retrieve all the courses that a trainer is actually teaching.
 # class_list is filtered to only include classes that the trainer is teaching.
@@ -179,6 +182,7 @@ def retrieve_courses_trainer_teaches(staff_id):
         }
     )
     
+
 @app.route("/class/assigned/<string:course_id>/<string:staff_id>")
 def retrieve_assigned_classes(course_id, staff_id):
     dao = ClassDAO()
@@ -210,6 +214,7 @@ def retrieve_assigned_classes(course_id, staff_id):
             "data": "An error occured while retrieving classes a trainer is assigned to teach."
             }
         )
+
 
 @app.route("/staff/<string:staff_id>")
 def retrieve_specific_staff(staff_id):
@@ -261,6 +266,7 @@ def retrieve_eligible_staff(course_id):
             "data": "No staff found"
         }
     ), 404    
+
 
 @app.route("/class/<string:course_id>")
 def retrieve_all_classes(course_id):
@@ -419,6 +425,7 @@ def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
         }
     ), 404
 
+
 @app.route("/request")
 def retrieve_all_pending():
     request_dao = RequestDAO()
@@ -448,6 +455,7 @@ def retrieve_all_pending():
         }
     ), 404
 
+
 @app.route("/request/<string:staff_id>")
 def retrieve_all_request_by_staff(staff_id):
     dao = RequestDAO()
@@ -467,6 +475,27 @@ def retrieve_all_request_by_staff(staff_id):
             "data": "No requests found"
         }
     ), 404
+
+
+@app.route("/progress/<string:staff_id>/<string:course_id>")
+def check_learner_progress(staff_id, course_id):
+    dao = ProgressDAO()
+    progressObj = dao.retrieve_by_learner_and_course(staff_id, course_id)
+
+    if progressObj:
+        return jsonify(
+            {
+                "code":200,
+                "data": progressObj.json()
+            }
+        )
+    
+    return jsonify(
+        {
+            "code": 404,
+            "data": "Could not find any progress for staff " + staff_id + " and course " + course_id
+        }
+    )
 
 
 
@@ -504,6 +533,7 @@ def insert_course():
                 "data": "An error occurred when creating the course."
             }
         ), 500
+
 
 @app.route("/quiz/create", methods=['POST'])
 def insert_quiz():
@@ -677,6 +707,7 @@ def insert_attempt(quiz_id):
             }
         ), 500
 
+
 @app.route("/class", methods =['POST'])
 def insert_class():
     data = request.get_json()
@@ -738,6 +769,7 @@ def insert_class():
             }
         ), 500
 
+
 @app.route("/section", methods=['POST'])
 def insert_section():
     data = request.get_json()
@@ -793,6 +825,7 @@ def insert_section():
             }
         ), 500
 
+
 @app.route("/materials/file",methods =['POST'])
 def insert_files():
     try:
@@ -844,6 +877,7 @@ def insert_files():
             }
         ), 500
 
+
 @app.route("/materials/link", methods = ['POST'])
 def insert_links():
     data = request.get_json()
@@ -892,6 +926,7 @@ def insert_links():
                 "data": "An error occurred when updating section object."
             }
         ), 500
+
 
 @app.route("/request", methods =['POST'])
 def insert_request():
@@ -1002,6 +1037,7 @@ def enroll_learners(data = None):
             }
         ), 500
 
+
 @app.route("/class/trainer", methods = ['PUT'])
 def assign_trainer():
     data = request.get_json()
@@ -1044,6 +1080,7 @@ def assign_trainer():
                 "data": "An error occurred when assigning staff"
             }
         ), 500
+
 
 @app.route("/class/edit", methods = ['PUT'])
 def edit_class():
@@ -1092,6 +1129,65 @@ def edit_class():
                 "data": "An error occurred when assigning staff"
             }
         ), 500
+
+
+@app.route("/quiz/update", methods=['PUT'])
+def update_quiz():
+    data = request.get_json()
+    if "quiz_id" not in data:
+        return jsonify(
+            {
+                "code": 400,
+                "data": "quiz_id not in Request Body"
+            }
+        ), 400
+
+    quiz_dao = QuizDAO()
+    quizObj = quiz_dao.retrieve_one(data['quiz_id'])
+
+    if quizObj==None:
+        return jsonify(
+            {
+                "code": 404,
+                "data": "Quiz does not exist."
+            }
+        )
+
+    # Before updating, check if any attempts have been made before
+    attempt_dao = AttemptDAO()
+    attempt_list = attempt_dao.retrieve_by_quiz(data['quiz_id'])
+
+    if len(attempt_list):
+        return jsonify(
+                {
+                    "code": 401,
+                    "data": "Quiz cannot be updated because there are already existing attempts."
+                }
+            )
+
+    if "time_limit" in data:
+        quizObj.set_time_limit(data['time_limit'])
+
+    if "questions" in data:
+        quizObj.set_questions(data['questions'])
+    
+    try:
+        quiz_dao.update_quiz(quizObj)
+        return jsonify(
+            {
+                "code": 200,
+                "data": "Quiz Updated"
+            }
+        )
+
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating quiz: " + str(e)
+            }
+        ), 500
+
 
 @app.route("/request/update", methods = ['PUT'])
 def update_request():
