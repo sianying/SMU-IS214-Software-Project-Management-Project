@@ -57,12 +57,6 @@
                         <option v-for="num in 30" >{{num}}</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="exampleFormControlInput1">Assign Trainer</label><span class="form-error ml-2">{{ error.assignedTrainer }}</span>
-                    <select v-if="!apiError" v-model="selectedTrainer" class="form-control">
-                        <option v-for="trainer in trainersList" :value="trainer.staff_id">{{ trainer.staff_name }}</option>
-                    </select>
-                </div>
                 <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
                     {{ apiError }}
                 </div>
@@ -77,7 +71,7 @@
     </div>
     
 <script type="module">
-import { URL, retrieveAllClasses, createClass, retrieveQualifiedTrainers, assignTrainer } from "./callAPI/endpoints.js";
+import { URL, retrieveAllClasses, createClass } from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -106,15 +100,12 @@ var app = new Vue({
         endDatetime: "",
         selectedClassSize: 1,
         createdClass: {},
-        selectedTrainer: "",
-        
-        trainersList: [],
+
         minDatetime: "",
         error: {
             className: "",
             startDatetime: "",
             endDatetime: "",
-            assignedTrainer: "",
         },
         errorMessages: ["* Class Name not loaded. Please try again later.", "* Start Date and Time should be before End Date and Time", "* End Date and Time should be after Start Date and Time", "* Please try again later."],
         apiError: false,
@@ -123,7 +114,7 @@ var app = new Vue({
         onSubmit() {
             // 1. Validate form
             this.validateDateTime();
-            if (this.error.className.length !== 0 || this.error.startDatetime.length !== 0 || this.error.endDatetime.length !== 0 || this.error.assignedTrainer.length !== 0) {
+            if (this.error.className.length !== 0 || this.error.startDatetime.length !== 0 || this.error.endDatetime.length !== 0) {
                 event.preventDefault();
             } else {
             // 2. Set course object and call create course API
@@ -138,26 +129,7 @@ var app = new Vue({
                     if (result.code == 201){
                         const createdClass = result.data;
                         // this.createdClass = createdClass;
-
-                        const assignTrainerObj = {}
-                        assignTrainerObj.course_id = this.course.course_id;
-                        assignTrainerObj.class_id = createdClass.class_id;
-                        assignTrainerObj.staff_id = this.selectedTrainer;
-
-                        this.setClassId(createdClass.class_id);
-
-                        //If create course if successful,  //Call assign trainer endpoint
-                        assignTrainer(URL, assignTrainerObj).then(result => {
-                            this.apiError = false;
-                            if (result.code == 200){
-                                const assignedTrainer = result.data;
-                                
-                            // Return 201, redirect to next page
-                                location.href = "./view-specific-course-HR.html"
-                            } else {
-                                this.apiError = result.data + ".";
-                            }
-                        });
+                        location.href = "./view-specific-course-HR.html"
 
                     } else {
                         this.apiError = result.data + ".";
@@ -192,9 +164,7 @@ var app = new Vue({
         
     },
     created: function() {
-        const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
-        this.accountDetails = accountDetails;
-
+        this.accountDetails  = JSON.parse(localStorage.getItem("accountDetails"));
         const course = JSON.parse(localStorage.getItem("courseDetails"));
         this.course = course;
 
@@ -209,22 +179,6 @@ var app = new Vue({
             } else {
                 this.error.className = this.errorMessages[0]
             }
-        });
-
-        //call API to get qualified trainers
-        retrieveQualifiedTrainers(URL, course.course_id).then(result => {
-            if (result.code == 200){
-                this.apiError = false;
-                this.error.assignedTrainer = ""
-                const trainersList = result.data;
-                //sort courses according to course id in ascending order
-                this.trainersList = trainersList.sort((a, b) => (a.staff_name > b.staff_name) ? 1 : -1);
-                this.selectedTrainer = trainersList[0].staff_id
-            } else {
-                this.apiError = result.data + ".";
-                this.error.assignedTrainer = this.errorMessages[3]
-            }
-            
         });
     }
 
