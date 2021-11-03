@@ -1063,21 +1063,50 @@ def assign_trainer():
             }
         ), 404
 
-    class_to_assign.set_trainer(data['staff_id'])
-    try:
-        class_dao.update_class(class_to_assign)
 
+    try:
+        class_to_assign.set_trainer(data['staff_id'])
+        class_dao.update_class(class_to_assign)
+    except ValueError as e:
         return jsonify(
             {
-                "code": 200,
-                "data": "Staff assigned"
+                "code": 500,
+                "data": "An error occurred when updating class: " + str(e)
             }
-        )
+        ), 500
     except Exception as e:
         return jsonify(
             {
                 "code": 500,
-                "data": "An error occurred when assigning staff"
+                "data": "An exception occurred when updating class: " + str(e)
+            }
+        ), 500
+
+
+    try:
+        trainer_dao = TrainerDAO()
+        trainerObj = trainer_dao.retrieve_one(data['staff_id'])
+        trainerObj.add_course_teaching(data['course_id'])
+        trainer_dao.update_trainer(trainerObj)
+
+        return jsonify(
+                {
+                    "code": 200,
+                    "data": "Staff assigned"
+                }
+            )
+    except ValueError as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating trainer: " + str(e)
+            }
+        ), 500
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An exception occurred when updating trainer: " + str(e)
             }
         ), 500
 
