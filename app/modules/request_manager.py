@@ -9,35 +9,21 @@ except:
     session = boto3.Session(profile_name="EC2")
 
 class Request:
-
-    def __init__(self, *args):
+    def __init__(self, request_dict):
         '''
-            __init__(
+            __init__(request_dict)
+            request_dict = {
                 course_id: String,
                 class_id: Integer,
                 staff_id: String,
                 req_status = 'pending': String
-            )
-
-            __init__(request_dict)
+            }
         '''
 
-        if len(args) > 1:
-            self.__course_id = args[0]
-            self.__class_id = int(args[1])
-            self.__staff_id = args[2]
-            try: 
-                self.__req_status = args[3]
-            except:
-                self.__req_status = 'pending'
-        elif isinstance(args[0], dict):
-            self.__course_id = args[0]['course_id']
-            self.__class_id = int(args[0]['class_id'])
-            self.__staff_id = args[0]['staff_id']
-            try: 
-                self.__req_status = args[0]['req_status']
-            except:
-                self.__req_status = 'pending'
+        self.__course_id = request_dict['course_id']
+        self.__class_id = int(request_dict['class_id'])
+        self.__staff_id = request_dict['staff_id']
+        self.__req_status = request_dict['req_status'] if 'req_status' in request_dict else 'pending'
 
     def get_course_id(self):
         return self.__course_id
@@ -129,23 +115,3 @@ class RequestDAO:
             raise ValueError('Update Failure with error: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except Exception as e:
             raise Exception("Update Failure with Exception: "+ str(e))
-
-if __name__ == "__main__":
-    pass
-    # item = {
-    #     "staff_id": "95874dea-a6d1-4f30-9062-61ac85bcfe6a",
-    #     "course_id": "IC116",
-    #     "class_id": 1,
-    #     "req_status": "approved"
-    # }
-    # item2 ={
-    #     "staff_id": "80e6f2f7-2827-4a3d-828a-0fdcea180641",
-    #     "course_id": "IC116",
-    #     "class_id": 1
-    # }
-    # dao = RequestDAO()
-    # print(dao.insert_request_w_dict(item).json())
-    # print(dao.insert_request_w_dict(item2).json())
-    # print(dao.update_request(Request(item)))
-    # print([a.json() for a in dao.retrieve_all_pending()])
-    # print([a.json() for a in dao.retrieve_all_from_staff("95874dea-a6d1-4f30-9062-61ac85bcfe6a")])

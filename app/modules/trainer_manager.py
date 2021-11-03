@@ -8,9 +8,10 @@ from modules.staff_manager import Staff
 os.environ['AWS_SHARED_CREDENTIALS_FILE'] = "../aws_credentials"
 
 class Trainer(Staff):
-    def __init__(self, courses_can_teach, courses_teaching, *args, **kwargs):
+    def __init__(self, staff_dict):
         '''
-            __init__(
+            __init__(staff_dict)
+            staff_dict = {
                 ------Inherited from Staff-----
                 staff_id: int,
                 staff_name: String,
@@ -22,23 +23,12 @@ class Trainer(Staff):
                 --------Trainer Only----------
                 courses_can_teach = []: List
                 courses_teaching = []: List
-            )
-
-            __init__(staff_dict)
+            }
         '''
+        super().__init__(staff_dict)
+        self.__courses_can_teach = copy.deepcopy(staff_dict['courses_can_teach']) if 'courses_can_teach' in staff_dict else []
+        self.__courses_teaching = copy.deepcopy(staff_dict['courses_teaching']) if 'courses_teaching' in staff_dict else []
 
-        super().__init__(*args, **kwargs)
-        try:
-            self.__courses_can_teach = copy.deepcopy(courses_can_teach)
-        except:
-            self.__courses_can_teach = []
-
-        try: 
-            self.__courses_teaching = copy.deepcopy(courses_teaching)
-        except:
-            self.__courses_teaching=[]
-
-    # --------------Methods inherited from Staff-----------
     # Getter: get_staff_id(), get_staff_name(), get_role(), get_courses_completed(), get_courses_enrolled()
     # Setter: add_completed(course), add_enrolled(course), removed_enrolled(course)
     # Miscellaneous: can_enrol(course_id_to_enrol, prerequisite_list) 
@@ -67,56 +57,18 @@ class Trainer(Staff):
     def remove_course_teaching(self, course):
         self.__courses_teaching.remove(course)
 
-
     def json(self):
         return {
-            "staff_id": self.get_staff_id(),
-            "staff_name": self.get_staff_name(),
-            "role": self.get_role(),
-            "isTrainer": self.get_isTrainer(),
-            "courses_completed": self.get_courses_completed(),
-            "courses_enrolled": self.get_courses_enrolled(),
+            **super().json(),
             "courses_can_teach": self.get_courses_can_teach(),
             "courses_teaching": self.get_courses_teaching()
         }
-
-
-def prepare_dict(dict):
-    temp=dict.copy()
-    temp.pop('courses_can_teach')
-    temp.pop('courses_teaching')
-    return temp
 
 class TrainerDAO:
     def __init__(self):
         self.table = boto3.resource('dynamodb', region_name="ap-southeast-1").Table('Staff')
 
-    #Create
-    def insert_trainer(self, staff_name, role, isTrainer=True, staff_id = None, courses_completed= [], courses_enrolled = [], courses_can_teach=[], courses_teaching=[]):
-        try:
-            if staff_id == None:
-                staff_id = str(uuid4())
-            response = self.table.put_item(
-                Item = {
-                    "staff_id": staff_id,
-                    "staff_name": staff_name,
-                    'role' : role,
-                    'isTrainer': isTrainer,
-                    'courses_completed': courses_completed,
-                    'courses_enrolled': courses_enrolled,
-                    'courses_can_teach': courses_can_teach,
-                    'courses_teaching': courses_teaching
-                },
-                ConditionExpression=Attr("staff_id").not_exists()
-            )
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return Trainer(courses_can_teach, courses_teaching, staff_id, staff_name, role, isTrainer, courses_completed=courses_completed, courses_enrolled=courses_enrolled)
-            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
-        except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
-            raise ValueError("Trainer already exists")
-        except Exception as e:
-            raise Exception("Insert Failure with Exception: "+str(e))
-    
+    #Create   
     def insert_trainer_w_dict(self, trainer_dict):
         try:
             if 'staff_id' not in trainer_dict or trainer_dict['staff_id'] == None:
@@ -151,14 +103,12 @@ class TrainerDAO:
                 ConditionExpression=Attr("staff_id").not_exists()
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                temp=prepare_dict(trainer_dict)
-                return Trainer(trainer_dict['courses_can_teach'], trainer_dict['courses_teaching'], temp)
+                return Trainer(trainer_dict)
             raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
             raise ValueError("Trainer already exists")
         except Exception as e:
             raise Exception("Insert Failure with Exception: " + str(e))
-
 
     #Read
     def retrieve_all(self):
@@ -173,23 +123,17 @@ class TrainerDAO:
         trainer_list = []
 
         for item in data:
-            temp = prepare_dict(item)
-            trainer_list.append(Trainer(item['courses_can_teach'], item['courses_teaching'], temp))
+            trainer_list.append(Trainer(item))
 
         return trainer_list
     
-
     def retrieve_one(self, staff_id):
         response = self.table.scan(FilterExpression = Key('staff_id').eq(staff_id) & Key('isTrainer').eq(True))
         
         if response['Items'] == []:
-            return 
-        
-        trainer = response['Items'][0]
-        temp = prepare_dict(trainer)
-
-        return Trainer(trainer['courses_can_teach'], trainer['courses_teaching'], temp)
-
+            return
+            
+        return Trainer(response['Items'][0])
 
     def retrieve_qualified_trainers(self, course_id):
         trainer_list = self.retrieve_all()
@@ -202,7 +146,6 @@ class TrainerDAO:
 
         return returned_list
 
-
     def retrieve_courses_teaching(self, staff_id):
         trainer = self.retrieve_one(staff_id)
         
@@ -210,35 +153,16 @@ class TrainerDAO:
             raise ValueError('No trainer found for the given staff id.')
         return trainer.get_courses_teaching()
 
-
-    def retrieve_eligible_trainer_to_enrol(self, courseObj):
-        trainer_list = self.retrieve_all()
-        prereq_course = courseObj.get_prerequisite_course()
-        course_id_to_enroll = courseObj.get_course_id()
-
-        result_list = []
-        for trainer in trainer_list:
-            if trainer.can_enrol(course_id_to_enroll, prereq_course):
-                result_list.append(trainer)
-        
-        return result_list
-
     #Update
     def update_trainer(self, trainerObj):
-        # method updates the DB if there is new prereq course, removing of prereq course, adding new class
-        # assumes staff_id, staff_name cannot be updated
         try:
             response = self.table.update_item(
                 Key = {
                     'staff_id': trainerObj.get_staff_id(),
                     'staff_name': trainerObj.get_staff_name(),
                 },
-                # role is a reserved keyword, so for now just assume role cannot be updated too.
-                UpdateExpression= "set isTrainer = :it, courses_completed = :c, courses_enrolled = :e, courses_can_teach = :t, courses_teaching = :x",
+                UpdateExpression= "set courses_can_teach = :t, courses_teaching = :x",
                 ExpressionAttributeValues ={
-                    ":it": trainerObj.get_isTrainer(),
-                    ":c": trainerObj.get_courses_completed(),
-                    ':e': trainerObj.get_courses_enrolled(),
                     ':t': trainerObj.get_courses_can_teach(),
                     ':x': trainerObj.get_courses_teaching()
                 }
@@ -246,23 +170,5 @@ class TrainerDAO:
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return 'Trainer Updated'
             raise ValueError('Update Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
-            
         except Exception as e:
             raise Exception("Update Failure with Exception: "+str(e))
-
-
-
-    #Delete
-    def delete_trainer(self, trainerObj):
-        try:
-            response = self.table.delete_item(
-                Key = {
-                    'staff_id': trainerObj.get_staff_id(),
-                    'staff_name': trainerObj.get_staff_name()
-                }
-            )
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return 'Trainer Deleted'
-            raise ValueError('Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
-        except Exception as e:
-            raise ValueError("Delete Failure with Exception: "+str(e))

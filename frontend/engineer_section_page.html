@@ -62,7 +62,7 @@
                             <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
                                 View Materials
                             </a>
-                            <a :href="'./view_attempts.html?quiz_id=' + section.quiz" v-if='section.quiz' class="btn btn-warning ml-2">View Attempts</a>
+                            <a :href="'./view_attempts.html?quiz_id=' + section.quiz" @click='addSectionName(index)' v-if='section.quiz' class="btn btn-warning ml-2">View Attempts</a>
                         </p>
                         <div class="collapse" :id="'collapseExample' + index">
                             <div class="card card-body">
@@ -77,6 +77,9 @@
                 </div>
             </div>
         </div> 
+        <div id = 'finalQuiz' class='d-flex justify-content-center d-none'>
+            <a :href="'./view_attempts.html?quiz_id=' + final_quiz_id" v-if='final_quiz_id' class="btn btn-info mb-4">View Final Quiz Attempts</a>
+        </div>
     </div>
     
     <script type="module">
@@ -94,23 +97,32 @@
                 sections: "",
                 course_id: null,
                 class_id: null,
+                final_section: null,
+                final_quiz_id: null
             },
 
             created: function() {
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
+                const class_details= JSON.parse(localStorage.getItem("classDetails"));
 
-                // const course_id = course['course_id'];
-                const course_id = "IC112";
-                this.course_id = "IC112";
+                const course_id = course['course_id'];
+                this.course_id = course_id;
 
-                // const class_id = course['class_id'];
-                const class_id = 1;
-                this.class_id = 1;
+                const class_id = class_details['class_id'];
+                this.class_id = class_id;
+
+                this.final_quiz_id = class_details['final_quiz_id'];
+
+                if(this.final_quiz_id){
+                    document.getElementById('finalQuiz').classList.remove('d-none');
+                }
+
                 
                 retrieveAllSectionsFromClass(URL, course_id, class_id).then(result => {
                     if(result.code == 200){
                         this.sections = result.data;
                         document.getElementById('sections-div').classList.remove('d-none');
+                        this.final_section = result.data[result.data.length -1]['section_id'];
                     }
                     else {
                         this.sections = "";
@@ -123,6 +135,18 @@
                     localStorage.setItem('matName', JSON.stringify(mat_name));
                     localStorage.setItem('sectionSelectedId', JSON.stringify(this.sections[ind].section_id));
                     localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[ind].section_name));
+                },
+                addSectionName: function(ind){
+                    localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[ind].section_name));
+                }
+            },
+            computed: {
+                checkIfEligibleForFinalQuiz(){
+                    if(this.sections_completed.includes(this.final_section)){
+                        return true
+                    } else {
+                        return false
+                    }
                 }
             }
         })

@@ -159,7 +159,7 @@
                         <div class="col"></div>
                         <div class='col mx-auto mb-3' id='submit-and-cancel-button'>
                             <button type="button" class="btn btn-success mr-2"><a id='confirmBtn' href="#" v-on:click='checkEmpty' style='color:white'>Confirm</a></button>
-                            <button type="button" class="btn btn-danger ml-2"><a href='#' style='color:white'>Cancel</a></button>
+                            <button type="button" class="btn btn-danger ml-2"><a href='./trainer_section_page.html' style='color:white'>Cancel</a></button>
                         </div>
                         <div class='col'></div>
                     </div>
@@ -177,12 +177,13 @@
         document.getElementById('breadcrumb-4').innerText = section_name;
 
         const course = JSON.parse(localStorage.getItem("courseDetails"));
+        const class_details= JSON.parse(localStorage.getItem("classDetails"));
 
         // set breadcrumb
         const course_id = course['course_id'];
         document.getElementById('breadcrumb-2').innerText = course_id
 
-        const class_id = course['class_id'];
+        const class_id = class_details['class_id'];
         document.getElementById('breadcrumb-3').innerText = "Class " + class_id
 
 
@@ -206,7 +207,7 @@
                 var quiz_id = JSON.parse(localStorage.getItem('selectedQuizId'));
                 retrieveQuizById(URL, quiz_id).then(result => {
                     if(result.code == 200){
-                        console.log(result.data)
+                        // console.log(result.data)
                         this.questionsList = result.data.questions;
                         this.quiz_id = result.data.quiz_id;
                         this.section_id = result.data.section_id;

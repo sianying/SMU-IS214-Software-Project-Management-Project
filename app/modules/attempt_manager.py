@@ -11,47 +11,27 @@ except:
 
 
 class Attempt:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, attempt_dict):
         '''
-            __init__(
+            __init__(attempt_dict)
+            attempt_dict = {
                 quiz_id: string,
                 staff_id: string,
                 attempt_id: int, 
                 overall_score: int,
-                attempt_uuid = None: string, 
-                options_selected = []: List,
-                individual_scores = []: List
-            )
-
-            __init__(attempt_dict)
+                attempt_uuid: String, 
+                options_selected: List,
+                individual_scores: List
+            }
         '''
 
-        if len(args) > 1:
-            self.__quiz_id = args[0]
-            self.__staff_id = args[1]
-            self.__attempt_id = args[2]
-            self.__overall_score = args[3] 
-            self.__attempt_uuid = args[4]
-
-            try:
-                self.__options_selected = kwargs['options_selected']
-            except:
-                self.__options_selected = []
-
-            try:
-                self.__individual_scores = kwargs['individual_scores']
-            except:
-                self.__individual_scores = []
-            
-
-        elif isinstance(args[0], dict):
-            self.__quiz_id= args[0]['quiz_id']
-            self.__staff_id = args[0]['staff_id']
-            self.__attempt_id = args[0]['attempt_id']
-            self.__overall_score = args[0]['overall_score']
-            self.__attempt_uuid = args[0]['attempt_uuid']
-            self.__options_selected = args[0]['options_selected']
-            self.__individual_scores = args[0]['individual_scores']
+        self.__quiz_id= attempt_dict['quiz_id']
+        self.__staff_id = attempt_dict['staff_id']
+        self.__attempt_id = attempt_dict['attempt_id']
+        self.__overall_score = attempt_dict['overall_score']
+        self.__attempt_uuid = attempt_dict['attempt_uuid']
+        self.__options_selected = attempt_dict['options_selected']
+        self.__individual_scores = attempt_dict['individual_scores']
         
     def get_quiz_id(self):
         return self.__quiz_id
@@ -133,7 +113,6 @@ class AttemptDAO:
                 return Attempt(attempt_dict)
             raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
         except Exception as e:
-            print(e)
             raise Exception("Insert Failure with Exception: "+str(e))
     
     #Read
@@ -150,7 +129,6 @@ class AttemptDAO:
             attempt_list.append(Attempt(item))
 
         return attempt_list
-
 
     #for the learner to see different attempts for the same quiz
     def retrieve_by_learner(self, quiz_id, staff_id):

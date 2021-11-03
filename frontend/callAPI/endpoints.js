@@ -222,6 +222,24 @@ export async function retrieveAttemptsByLearner(URL, quizId, staffId){
 }
 
 
+// Retrieve all attempts by quiz id and staff id
+export async function retrieveLearnerProgress(URL, staffId, courseId){
+    try {
+        const response = await fetch(`${URL}/progress/${staffId}/${courseId}`);
+        if (response) {
+            const result = await response.json();
+            return result;
+        }
+    } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+
 // ====== create ========
 //Create course
 export async function createCourse(URL, body) {
@@ -467,7 +485,7 @@ export async function assignTrainer(URL, body) {
     }
 }
 
-//Edit Class
+//Update Class
 export async function updateClassDetails(URL, body) {
     try {
         const data = {
@@ -478,6 +496,31 @@ export async function updateClassDetails(URL, body) {
             body: JSON.stringify(body)
         }
         const response = await fetch(`${URL}/class/edit`, data)
+        if (response) {
+            const result = await response.json()
+            return result;
+        }
+    } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+
+//Update Quiz
+export async function updateQuiz(URL, body) {
+    try {
+        const data = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        }
+        const response = await fetch(`${URL}/quiz/update`, data)
         if (response) {
             const result = await response.json()
             return result;

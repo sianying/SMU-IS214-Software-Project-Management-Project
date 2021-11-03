@@ -91,12 +91,14 @@
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
                 this.quiz_id = urlParams.get('quiz_id');
+                
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
+                const class_details= JSON.parse(localStorage.getItem("classDetails"));
 
                 const course_id = course['course_id'];
                 this.course_id = course_id;
 
-                const class_id = course['class_id'];
+                const class_id = class_details['class_id'];
                 this.class_id = class_id;
                 // this.quiz_id = "4301fff4-6adb-4bd4-b995-40fcf6a4b4ee"
                 // To pass section name and quiz_id from prev page

@@ -115,21 +115,6 @@ class TestSectionDAO(unittest.TestCase):
         self.table = None
         self.dynamodb= None
     
-    def test_insert_section(self):
-        from modules.section_manager import Section
-        insertDefault = self.dao.insert_section("abcd","efgh",1)
-        self.assertTrue(isinstance(insertDefault, Section))
-        self.assertEqual(1, insertDefault.get_section_number(), "Inserted section number wrong")
-
-        insertTest = self.dao.insert_section(SECTION3['section_name'], SECTION3['course_id'], SECTION3['class_id'], SECTION3['section_number'], SECTION3['section_id'], SECTION3['materials'], SECTION3['quiz'])
-
-        self.assertEqual(SECTION3, insertTest.json(), "SectionDAO inserted values do not match")
-
-        with self.assertRaises(ValueError, msg ="Failed to prevent duplicate insert") as context:
-            self.dao.insert_section(SECTION1['section_name'], SECTION1['course_id'], SECTION1['class_id'], SECTION3['section_number'], SECTION1['section_id'], SECTION1['materials'], SECTION1['quiz'])
-        
-        self.assertTrue("Section already exists" == str(context.exception))
-    
     def test_insert_section_w_dict(self):
         from modules.section_manager import Section
         insertDefault = self.dao.insert_section_w_dict({"section_name": 'abdce', 'course_id':'abcde', 'class_id':1})
@@ -164,14 +149,6 @@ class TestSectionDAO(unittest.TestCase):
         self.dao.update_section(sectionObj)
         toCheck = self.table.get_item(Key={'section_id': sectionObj.get_section_id(), 'class_id': sectionObj.get_class_id()})['Item']
         self.assertEqual(sectionObj.json(), toCheck, "SectionDAO update test failure")
-
-    def test_delete_course(self):
-        from modules.section_manager import Section
-        sectionObj = Section(SECTION2)
-        self.dao.delete_section(sectionObj)
-        key = {'section_id':sectionObj.get_section_id(), 'class_id': sectionObj.get_class_id()}
-        with self.assertRaises(Exception, msg="SectionDAO delete test failure"):
-            self.table.get_item(Key = key)['Item']
 
 if __name__ == "__main__":
     unittest.main()

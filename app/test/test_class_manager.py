@@ -172,21 +172,6 @@ class TestClassDAO(unittest.TestCase):
         self.table = None
         self.dynamodb = None
 
-    def test_insert_class(self):
-        from modules.class_manager import Class
-        insertDefault = self.dao.insert_class("abcde", 1, "2021-08-21T08:00:00", "2021-09-21T08:00:00", 20)
-        self.assertTrue(isinstance(insertDefault, Class))
-
-        insertTest = self.dao.insert_class(ITEM3['course_id'], ITEM3['class_id'], ITEM3['start_datetime'], ITEM3['end_datetime'], ITEM3['class_size'], ITEM3['trainer_assigned'], ITEM3['final_quiz_id'], ITEM3['learners_enrolled'], ITEM3['section_list'])
-
-        self.assertEqual(ITEM3, insertTest.json(), "ClassDAO insert test failure")
-
-        with self.assertRaises(ValueError, msg = "Failed to raise exception for duplicates") as context:
-
-            self.dao.insert_class(ITEM2['course_id'], ITEM2['class_id'], ITEM2['start_datetime'], ITEM2['end_datetime'], ITEM2['class_size'], ITEM2['trainer_assigned'], ITEM2['final_quiz_id'], ITEM2['learners_enrolled'], ITEM2['section_list'])
-        
-        self.assertTrue("Class already exists" == str(context.exception))
-
     def test_insert_class_w_dict(self):
         from modules.class_manager import Class
         insertDefault = self.dao.insert_class_w_dict({"course_id": "asvde", "class_id":1, "start_datetime": "2021-08-21T08:00:00", "end_datetime":"2021-09-21T08:00:00", "class_size":20})
@@ -199,10 +184,6 @@ class TestClassDAO(unittest.TestCase):
             self.dao.insert_class_w_dict(ITEM2)
         
         self.assertTrue("Class already exists" == str(context.exception))
-
-    def test_retrieve_all(self):
-        class_list = self.dao.retrieve_all()
-        self.assertEqual([ITEM1, ITEM2], [classObj.json() for classObj in class_list])
 
     def test_retrieve_one(self):
         self.assertEqual(ITEM1, self.dao.retrieve_one(ITEM1['course_id'], ITEM1['class_id']).json(), "ClassDAO retrieve existing one test failure")
@@ -226,7 +207,6 @@ class TestClassDAO(unittest.TestCase):
 
         self.assertTrue("No classes found for the given course_id IS42000" == str(context.exception))
 
-
     def test_update_class(self):
         from modules.class_manager import Class
         classObj = Class(ITEM1)
@@ -238,14 +218,6 @@ class TestClassDAO(unittest.TestCase):
         self.dao.update_class(classObj)
         toCheck = self.table.get_item(Key={'course_id':classObj.get_course_id(), 'class_id':classObj.get_class_id()})['Item']
         self.assertEqual(classObj.json(), toCheck, "ClassDAO updated values does not match")
-
-    def test_delete_course(self):
-        from modules.class_manager import Class
-        classObj = Class(ITEM2)
-        self.dao.delete_class(classObj)
-        key = {'course_id':classObj.get_course_id(), 'class_id': classObj.get_class_id()}
-        with self.assertRaises(Exception, msg="ClassDAO delete test failure"):
-            self.table.get_item(Key = key)['Item']
 
 
 if __name__ == "__main__":
