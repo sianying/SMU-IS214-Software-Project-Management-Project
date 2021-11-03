@@ -455,7 +455,6 @@ def retrieve_all_pending():
         }
     ), 404
 
-
 @app.route("/request/<string:staff_id>")
 def retrieve_all_request_by_staff(staff_id):
     dao = RequestDAO()
@@ -496,7 +495,6 @@ def check_learner_progress(staff_id, course_id):
             "data": "Could not find any progress for staff " + staff_id + " and course " + course_id
         }
     )
-
 
 
 # ============= Create ==================
