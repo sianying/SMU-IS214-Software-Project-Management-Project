@@ -172,7 +172,7 @@ def retrieve_courses_trainer_teaches(staff_id):
                     "code": 404,
                     'data': "Course with course_id " + course_id + " could not be found."
                 }
-            )
+            ), 404
         course_list.append(courseObj)
 
     return jsonify(
@@ -213,7 +213,7 @@ def retrieve_assigned_classes(course_id, staff_id):
             "code": 404,
             "data": "An error occured while retrieving classes a trainer is assigned to teach."
             }
-        )
+        ), 404
 
 
 @app.route("/staff/<string:staff_id>")
@@ -360,7 +360,7 @@ def retrieve_quiz_by_ID(quiz_id):
             "code": 404,
             "data": "No quiz was found with id " + quiz_id
         }
-    )
+    ), 404
 
 
 @app.route("/quiz/section/<string:section_id>")
@@ -381,7 +381,7 @@ def retrieve_quiz_by_section(section_id):
             "code": 404,
             "data": "No quiz was found for section " + section_id
         }
-    )
+    ), 404
 
 
 @app.route("/attempts/<string:quiz_id>")
@@ -495,7 +495,7 @@ def check_learner_progress(staff_id, course_id):
             "code": 404,
             "data": "Could not find any progress for staff " + staff_id + " and course " + course_id
         }
-    )
+    ), 404
 
 
 
@@ -663,7 +663,7 @@ def insert_attempt(quiz_id):
                 "code": 404,
                 "data": "No quiz was found with id " + quiz_id
             }
-        )
+        ), 404
 
     quiz_questions = quiz_obj.get_questions()
 
@@ -832,19 +832,23 @@ def insert_files():
         file = request.files.get('file')
         section_id = request.form.get('section_id')
     except Exception as e:
-        return jsonify({
-            "code": 400,
-            "data": "Error in uploading file " + str(e)
-        })
+        return jsonify(
+            {
+                "code": 400,
+                "data": "Error in uploading file " + str(e)
+            }
+        ), 400
     
     section_dao = SectionDAO()
     section = section_dao.retrieve_one(section_id)
     
     if section == None:
-        return jsonify({
-            "code": 404,
-            "data": "Section {} does not exist".format(section_id)
-        }), 404
+        return jsonify(
+            {
+                "code": 404,
+                "data": "Section {} does not exist".format(section_id)
+            }
+        ), 404
 
     filename, extension = os.path.splitext(file.filename)
     transformed_name = transform_file_name(filename, extension)
@@ -1120,7 +1124,7 @@ def edit_class():
                 "code": 400,
                 "data": "course_id or class_id not in Request Body"
             }
-        )
+        ), 400
     
     class_dao = ClassDAO()
 
@@ -1132,7 +1136,7 @@ def edit_class():
                 "code": 404,
                 "data": "Class does not exist."
             }
-        )
+        ), 404
 
     if "class_size" in data:
         class_obj.set_class_size(data['class_size'])
@@ -1180,7 +1184,7 @@ def update_quiz():
                 "code": 404,
                 "data": "Quiz does not exist."
             }
-        )
+        ), 404
 
     # Before updating, check if any attempts have been made before
     attempt_dao = AttemptDAO()
@@ -1192,7 +1196,7 @@ def update_quiz():
                     "code": 401,
                     "data": "Quiz cannot be updated because there are already existing attempts."
                 }
-            )
+            ), 401
 
     if "time_limit" in data:
         quizObj.set_time_limit(data['time_limit'])
