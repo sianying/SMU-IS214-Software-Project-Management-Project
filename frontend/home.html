@@ -23,17 +23,24 @@
             <h1>Learn a New Skill Today!</h1>
             
             <div v-cloak id="app" class="mt-4 home-links">
-                <a href="./view-list-of-courses-HR.html" @click="authenticateHR">HR</a>
-                <a href="./view-list-of-courses-HR.html" class="mx-4" @click="authenticateLearner">Learner</a>
-                <a href="./view-list-of-courses-HR.html" @click="authenticateTrainer">Trainer</a>
-                
+                <a class="mx-3" @click="authenticateStaff(HRStaffId, HRLink)">HR</a>
+                <a class="mx-3" @click="authenticateStaff(learnerStaffId, learnerLink)">Learner</a>
+                <a class="mx-3" @click="authenticateStaff(trainerStaffId, trainerLink)">Trainer</a>
             </div>
-            
+
+            <!-- <div v-if="error" class="alert alert-success alert-dismissible fade show text-center mx-2 mt-3" role="alert">
+                Log in unsuccessful. Please try again.
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="error=false">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div> -->
         </div>
     </div>
 
     
 <script type="module">
+import { URL, retrieveSpecificStaff } from "./callAPI/endpoints.js";
+
 var app = new Vue({
     el: '#app',
     data: {
@@ -41,20 +48,26 @@ var app = new Vue({
         courses: [],
         // e.g. accountDetails taken from session e.g. session.accountDetails
         accountDetails: {},
+        HRStaffId: "95874dea-a6d1-4f30-9062-61ac85bcfe6a", //Johnny
+        learnerStaffId: "80e6f2f7-2827-4a3d-828a-0fdcea180641", //Bob
+        trainerStaffId: "aae3e316-af31-40ae-9540-0e3a401b20f6", //Tim
+        HRLink: "./view-list-of-courses-HR.html",
+        learnerLink: "./view-list-of-courses-HR.html",
+        trainerLink: "./view-list-of-courses-HR.html",
         error: false
     },
     methods: {
-        authenticateHR(){
-            const accountDetails = {
-            "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
-            "staff_name": "Jonny",
-            "courses_completed": ["IC110", "IC113"],
-            "courses_enrolled": ["IC110"],
-            "role": "HR",
-            "isTrainer": 0
-            }
-            localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
-        },
+        // authenticateHR(){
+        //     const accountDetails = {
+        //     "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
+        //     "staff_name": "Jonny",
+        //     "courses_completed": ["IC110", "IC113"],
+        //     "courses_enrolled": [],
+        //     "role": "HR",
+        //     "isTrainer": 0
+        //     }
+        //     localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
+        // },
 
         // authenticateLearner(){
         //     const accountDetails = {
@@ -67,34 +80,47 @@ var app = new Vue({
         //     }
         //     localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
         // },
-        authenticateLearner(){
-            const accountDetails = {
-            "staff_id": "80e6f2f7-2827-4a3d-828a-0fdcea180641",
-            "staff_name": "Bob",
-            "courses_completed": [],
-            "courses_enrolled": ["IC114"],
-            "role": "Engineer",
-            "isTrainer": 0
-            }
-            localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
-        },
+        // authenticateLearner(){
+        //     const accountDetails = {
+        //     "staff_id": "80e6f2f7-2827-4a3d-828a-0fdcea180641",
+        //     "staff_name": "Bob",
+        //     "courses_completed": [],
+        //     "courses_enrolled": ["IC114"],
+        //     "role": "Engineer",
+        //     "isTrainer": 0
+        //     }
+        //     localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
+        // },
 
-        authenticateTrainer(){
-            const accountDetails = {
-            "staff_id": "aae3e316-af31-40ae-9540-0e3a401b20f6",
-            "staff_name": "Tim",
-            "courses_completed": ["IC110", "IC113"],
-            "courses_enrolled": ["IC114"],
-            "role": "Engineer",
-            "isTrainer": 1,
-            "courses_teaching": ["IC112"],
-            "courses_can_teach": []
-            }
-            localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
+        authenticateStaff(staffId, link){
+            retrieveSpecificStaff(URL, staffId).then(result => {
+                if (result.code == 200) {
+                    this.error = false;
+                    const accountDetails = result.data;
+                    localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
+                    window.location.replace(link);
+                } else {
+                    this.error = true;
+                }
+            })
+
+            // const accountDetails = {
+            // "staff_id": "aae3e316-af31-40ae-9540-0e3a401b20f6",
+            // "staff_name": "Tim",
+            // "courses_completed": ["IC110", "IC113"],
+            // "courses_enrolled": ["IC114"],
+            // "role": "Engineer",
+            // "isTrainer": 1,
+            // "courses_teaching": ["IC112"],
+            // "courses_can_teach": []
+            // }
+            
         }
     },
     created: function() {
         localStorage.removeItem("accountDetails");
+        localStorage.removeItem("courseDetails");
+        localStorage.removeItem("classDetails");
     }
     
     

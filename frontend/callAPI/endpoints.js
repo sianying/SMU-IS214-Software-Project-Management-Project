@@ -240,6 +240,24 @@ export async function retrieveLearnerProgress(URL, staffId, courseId){
 }
 
 
+// Retrieve specific staff
+export async function retrieveSpecificStaff(URL, staffId){
+    try {
+        const response = await fetch(`${URL}/staff/${staffId}`);
+        if (response) {
+            const result = await response.json();
+            return result;
+        }
+    } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+}
+
+
 // ====== create ========
 //Create course
 export async function createCourse(URL, body) {
