@@ -11,37 +11,22 @@ except:
 
 
 class Progress:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, progress_dict):
         '''
-            __init__(
+            __init__(progress_dict)
+            progress_dict = {
                 staff_id: string,
                 course_id: string,
                 class_id: int,
                 final_quiz_passed: boolean, 
                 sections_completed = []: List
-            )
-
-            __init__(attempt_dict)
+            }
         '''
-
-        if len(args) > 1:
-            self.__staff_id = args[0]
-            self.__course_id = args[1]
-            self.__class_id = args[2]
-            self.__final_quiz_passed = args[3] 
-
-            try:
-                self.__sections_completed = kwargs['sections_completed']
-            except:
-                self.__sections_completed = []
-
-
-        elif isinstance(args[0], dict):
-            self.__staff_id= args[0]['staff_id']
-            self.__course_id= args[0]['course_id']
-            self.__class_id = args[0]['class_id']
-            self.__final_quiz_passed = args[0]['final_quiz_passed']
-            self.__sections_completed = args[0]['sections_completed']
+        self.__staff_id= progress_dict['staff_id']
+        self.__course_id= progress_dict['course_id']
+        self.__class_id = progress_dict['class_id']
+        self.__final_quiz_passed = progress_dict['final_quiz_passed']
+        self.__sections_completed = progress_dict['sections_completed'] if 'sections_completed' in progress_dict else []
 
     def get_staff_id(self):
         return self.__staff_id
@@ -121,12 +106,11 @@ class ProgressDAO:
                 Key = {
                     'staff_id': progressObj.get_staff_id(),
                     'course_id': progressObj.get_course_id(),
-                    'class_id': progressObj.get_class_id()
                 },
                 UpdateExpression = "set final_quiz_passed = :f, sections_completed = :s",
                 ExpressionAttributeValues ={
                     ':f': progressObj.get_final_quiz_passed(),
-                    ':s': progressObj.get_sections_cmmpleted()
+                    ':s': progressObj.get_sections_completed()
                 }
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:

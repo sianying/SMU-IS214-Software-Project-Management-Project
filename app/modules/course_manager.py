@@ -10,35 +10,22 @@ except:
 
 class Course:
 
-    def __init__(self, *args, **kwargs):
-        '''__init__(
-            course_id: String, 
-            course_name: String,
-            course_description: String, 
-            class_list = []: List, 
-            prerequisite_course = []: List 
-            )
-
-            __init__(course_dict)
+    def __init__(self, course_dict):
         '''
-        if len(args) > 1:
-            self.__course_id = args[0]
-            self.__course_name = args[1]
-            self.__course_description = args[2]
-            try:
-                self.__class_list = [int(class_id) for class_id in kwargs['class_list']] # stores a list of primary keys for the class objects
-            except:
-                self.__class_list = []
-            try:
-                self.__prerequisite_course = copy.deepcopy(kwargs['prerequisite_course']) # stores a list of primary keys for the course objects
-            except:
-                self.__prerequisite_course = []
-        elif isinstance(args[0], dict):
-            self.__course_id = args[0]['course_id']
-            self.__course_name = args[0]['course_name']
-            self.__course_description = args[0]['course_description']
-            self.__class_list = [int(class_id) for class_id in args[0]['class_list']]
-            self.__prerequisite_course = copy.deepcopy(args[0]['prerequisite_course'])
+            __init__(course_dict)
+            course_dict = {
+                course_id: String, 
+                course_name: String,
+                course_description: String, 
+                class_list = []: List, 
+                prerequisite_course = []: List 
+            }
+        '''
+        self.__course_id = course_dict['course_id']
+        self.__course_name = course_dict['course_name']
+        self.__course_description = course_dict['course_description']
+        self.__class_list = [int(class_id) for class_id in course_dict['class_list']] if 'class_list' in course_dict else []
+        self.__prerequisite_course = copy.deepcopy(course_dict['prerequisite_course']) if 'prerequisite_course' in course_dict else []
 
     # Getter Methods
     def get_course_id(self):
@@ -82,27 +69,7 @@ class CourseDAO:
     def __init__(self):
         self.table = session.resource('dynamodb', region_name='ap-southeast-1').Table('Course')
     
-    #Create
-    def insert_course(self, course_id, course_name, course_description, class_list=[], prerequisite_course=[]):
-        try: 
-            response = self.table.put_item(
-                Item = {
-                    "course_id": course_id,
-                    "course_name": course_name,
-                    "course_description": course_description,
-                    "prerequisite_course": prerequisite_course,
-                    "class_list": class_list
-                },
-                ConditionExpression=Attr("course_id").not_exists(),
-            )
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return Course(course_id, course_name, course_description, class_list=class_list, prerequisite_course=prerequisite_course)
-            raise ValueError('Insert Failure with course_id: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
-        except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
-            raise ValueError("Course already exists")
-        except Exception as e:
-            raise Exception("Insert Failure with Exception: "+str(e))
-    
+    #Create    
     def insert_course_w_dict(self, course_dict):
         try:
             if 'class_list' not in course_dict:
@@ -133,16 +100,16 @@ class CourseDAO:
     def retrieve_all(self):
         # retrieve all items and add them to a list of Course objects
         response = self.table.scan()
-        data = response['Items']
+        course_dict = response['Items']
 
         # When last evaluated key is present in response it means the results return exceeds the scan limits -> recall scan and explicitly include the key to start at
         while 'LastEvaluatedKey' in response:
             response = self.table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-            data.extend(response['Items'])
+            course_dict.extend(response['Items'])
 
         course_list = []
 
-        for item in data:
+        for item in course_dict:
             course_list.append(Course(item))
 
         return course_list
@@ -155,44 +122,22 @@ class CourseDAO:
         
         return Course(response['Items'][0])
 
-    def retrieve_all_in_list(self, course_list):
-        try:
-            response = self.table.scan(
-                FilterExpression= Attr("course_id").is_in(course_list)
-            )
-            data = response['Items']
-
-            while 'LastEvaluatedKey' in response:
-                response = self.table.scan(
-                    FilterExpression= Attr("course_id").is_in(course_list),
-                    ExclusiveStartKey=response['LastEvaluatedKey']
-                )
-                data.extend(response['Items'])
-            
-            course_list = []
-            for item in data:
-                course_list.append(Course(item))
-            
-            return course_list
-        except Exception as e:
-            raise ValueError("List entered is empty")
-
     def retrieve_all_not_in_list(self, course_list):
         try:
             response = self.table.scan(
                 FilterExpression=~Attr("course_id").is_in(course_list)
             )
-            data = response['Items']
+            course_dict = response['Items']
 
             while 'LastEvaluatedKey' in response:
                 response = self.table.scan(
                     FilterExpression= Attr("course_id").is_in(course_list),
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
-                data.extend(response['Items'])
+                course_dict.extend(response['Items'])
             
             course_list = []
-            for item in data:
+            for item in course_dict:
                 course_list.append(Course(item))
             
             return course_list
@@ -234,22 +179,3 @@ class CourseDAO:
         except Exception as e:
             raise Exception("Update Failure with Exception: "+str(e))
 
-    #Delete
-    def delete_course(self, CourseObj):
-        try:
-            response = self.table.delete_item(
-                Key = {
-                    'course_id': CourseObj.get_course_id(),
-                    'course_name': CourseObj.get_course_name()
-                }
-            )
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return 'Course Deleted'
-            raise ValueError('Delete Failure with course_id: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
-        except Exception as e:
-            raise Exception("Delete Failure with Exception: "+str(e))
-
-
-if __name__ == "__main__":
-    dao = CourseDAO()
-    print([course.json() for course in dao.retrieve_all()])

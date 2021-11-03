@@ -7,10 +7,10 @@ from botocore.errorfactory import ClientError
 from decimal import Decimal
 from modules.attempt_manager import AttemptDAO
 from modules.course_manager import CourseDAO
-from modules.class_manager import ClassDAO, Class
+from modules.class_manager import ClassDAO
 from modules.staff_manager import StaffDAO
 from modules.section_manager import SectionDAO, Material
-from modules.quiz_manager import QuizDAO, Quiz
+from modules.quiz_manager import QuizDAO
 from modules.trainer_manager import TrainerDAO
 from modules.request_manager import RequestDAO, Request
 from modules.progress_manager import ProgressDAO
@@ -455,7 +455,6 @@ def retrieve_all_pending():
         }
     ), 404
 
-
 @app.route("/request/<string:staff_id>")
 def retrieve_all_request_by_staff(staff_id):
     dao = RequestDAO()
@@ -498,7 +497,6 @@ def check_learner_progress(staff_id, course_id):
     )
 
 
-
 # ============= Create ==================
 @app.route("/courses", methods =['POST'])
 def insert_course():
@@ -537,12 +535,11 @@ def insert_course():
 
 @app.route("/quiz/create", methods=['POST'])
 def insert_quiz():
+    #TODO: make sure section id is a fixed value for final quiz
     data=request.get_json()
     dao = QuizDAO()
 
     is_final_quiz = False
-    course_id= ''
-    class_id = 0
     if 'is_final_quiz' in data:
         is_final_quiz = True
         course_id = data['course_id']
@@ -565,7 +562,6 @@ def insert_quiz():
                 "data": "An error occurred when creating the quiz."
             }
         ), 500
-
     except Exception as e:
         return jsonify(
             {
@@ -611,8 +607,6 @@ def insert_quiz():
                     "data": str(e) + ' for final graded quiz'
                 }
             ), 500
-
-
     #UPDATE SECTION OBJECT TOO, if quiz is not FINAL and not GRADED
     else:
         section_dao = SectionDAO()
@@ -670,7 +664,6 @@ def insert_attempt(quiz_id):
     correct_answers=[]
     marks=[]
     for question in quiz_questions:
-        # need to create question class and get these attributes as methods?
         correct_answers.append(question.get_correct_option())
         marks.append(question.get_marks())
 
@@ -678,7 +671,7 @@ def insert_attempt(quiz_id):
     dao = AttemptDAO()
 
     try:
-        results = dao.insert_attempt(data, correct_answers, marks)
+        results = dao.insert_attempt(data, correct_answers, marks)        
         return jsonify(
             {
                 "code": 201,
