@@ -63,8 +63,11 @@
                 Add New Section
                 <!-- <span class="iconify" data-icon="akar-icons:circle-plus"></span> -->
             </a>
-            <a class="btn btn-outline-info" href='./add_quiz.html' @click='addFinalQuiz' >
+            <a id='add-final-quiz' class="btn btn-outline-info d-none" href='./add_quiz.html' @click='addFinalQuiz' >
                 Add Final Graded Quiz
+            </a>
+            <a id='edit-final-quiz' class="btn btn-outline-info d-none" href='./edit_quiz.html' @click='editFinalQuiz' >
+                Edit Final Graded Quiz
             </a>
         </div>
         <div id='sections' v-for='(section, index) in sections' class='section-card mx-auto'>
@@ -100,17 +103,27 @@
             data: {
                 sections: null,
                 course_id: null,
-                class_id: null
+                class_id: null,
+                final_quiz_id: null
             },
 
             created: function() {
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
+                const class_details= JSON.parse(localStorage.getItem("classDetails"));
 
                 const course_id = course['course_id'];
                 this.course_id = course_id;
 
-                const class_id = course['class_id'];
+                const class_id = class_details['class_id'];
                 this.class_id = class_id;
+
+                this.final_quiz_id = class_details['final_quiz_id'];
+
+                if(this.final_quiz_id != null){
+                    document.getElementById('edit-final-quiz').classList.remove('d-none');
+                } else {
+                    document.getElementById('add-final-quiz').classList.remove('d-none');
+                }
 
                 retrieveAllSectionsFromClass(URL, course_id, class_id).then(result => {
                     if(result.code == 200){
@@ -136,6 +149,9 @@
                 },
                 addFinalQuiz: function(){
                     localStorage.setItem('isFinalQuiz', true);
+                },
+                editFinalQuiz: function(){
+                    localStorage.setItem('selectedQuizId', JSON.stringify(this.final_quiz_id));
                 }
             }
         })

@@ -52,7 +52,8 @@
             <div class='mt-4 mb-4'>
                 <div class="text-center h3">Enter a score and select the correct answer for a question</div>
                 <div id='error-quiz-creation' class="d-none alert alert-danger mx-auto text-center justify-content-center mt-4" role="alert"></div>
-                <div v-if= "error" class="d-none alert alert-danger mx-auto text-center justify-content-center" role="alert">An error has occurred when creating quiz. Please try again later.</div>
+                <div id='error' v-if= "error" class="alert alert-danger mx-auto text-center justify-content-center" role="alert">An error has occurred when creating quiz. Please try again later.</div>
+                <div  v-if= "errorEdit" class="alert alert-danger mx-auto text-center justify-content-center" role="alert">Editing of this quiz is not allowed as a learner has attempted it before.</div>
                 <div>
                     <div id='timeLimitDiv' class="input-group mx-auto mt-4">
                         <div class="input-group-prepend">
@@ -93,7 +94,7 @@
                     <div class="col"></div>
                     <div class='col mx-auto' id='submit-and-cancel-button'>
                         <button type="button" class="btn btn-success mr-2" @click='createQuizzes'>Confirm</button>
-                        <button type="button" class="btn btn-danger ml-2">Cancel</button>
+                        <button type="button" class="btn btn-danger ml-2"><a href='./trainer_section_page.html' style='color:white'>Cancel</a></button>
                     </div>
                     <div class='col'></div>
                 </div>
@@ -102,7 +103,7 @@
     </div>
 
     <script type="module">
-        import { URL, retrieveSpecificSection, createQuiz} from "./callAPI/endpoints.js";
+        import { URL, retrieveSpecificSection, createQuiz, updateQuiz} from "./callAPI/endpoints.js";
         var section_id = JSON.parse(localStorage.getItem('sectionSelectedId'));
 
         var section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
@@ -125,14 +126,24 @@
                 error: false,
                 time_limit: 1, 
                 course_id: "",
-                class_id: ""
+                class_id: "",
+                errorEdit: false
             },
             created() {
+                // const course = JSON.parse(localStorage.getItem("courseDetails"));
+
+                // const course_id = course['course_id'];
+                // this.course_id = course_id;
+                // const class_id = course['class_id'];
+                // this.class_id = class_id;
+
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
+                const class_details= JSON.parse(localStorage.getItem("classDetails"));
 
                 const course_id = course['course_id'];
                 this.course_id = course_id;
-                const class_id = course['class_id'];
+
+                const class_id = class_details['class_id'];
                 this.class_id = class_id;
 
                 this.questions = questionsList
@@ -179,15 +190,28 @@
 
                     if(errorCheck === false){
                         if(JSON.parse(localStorage.getItem("isFinalQuiz")) == true){
-                            var quizDetails = {
-                                        // "quiz_id": 3,
+                            if(JSON.parse(localStorage.getItem("selectedQuizId")) != null){
+                                var quizDetails = {
+                                        "quiz_id": JSON.parse(localStorage.getItem("selectedQuizId")),
                                         "section_id": section_id,
                                         "questions": qns,
                                         "time_limit": this.time_limit * 60,
                                         "course_id": this.course_id,
                                         "class_id": this.class_id,
                                         "is_final_quiz": true
+                                }
+                            } else {
+                                var quizDetails = {
+                                        // "quiz_id": JSON.parse(localStorage.getItem("selectedQuizId")),
+                                        "section_id": section_id,
+                                        "questions": qns,
+                                        "time_limit": this.time_limit * 60,
+                                        "course_id": this.course_id,
+                                        "class_id": this.class_id,
+                                        "is_final_quiz": true
+                                }
                             }
+                            
                         } else {
                             if(JSON.parse(localStorage.getItem("selectedQuizId")) == null){
                                 var quizDetails = {
@@ -205,16 +229,34 @@
                                             "time_limit": this.time_limit * 60
                                 }
                             }
-                        }   
-                        createQuiz(URL, quizDetails).then(result => {
-                            // console.log(result);
-                            if (result.code !== 201){
-                                this.error = true;
-                            } else {
-                                location.href = "./trainer_section_page.html?";
-                            }
+                        } 
+                        if(JSON.parse(localStorage.getItem("selectedQuizId")) != null) {
+                            updateQuiz(URL, quizDetails).then(result => {
+                                console.log(quizDetails)
+                                console.log(result)
+                                if (result.code !== 200){
+                                    this.error = true;
+                                    if(result.code === 401){
+                                        this.errorEdit = true;
+                                    }
+                                    // document.getElementById('errorEdit').innerText = "Editing the quiz is not allowed as a learner has attempted this quiz before."
+                                } else {
+                                    window.location.href = "./trainer_section_page.html";
+                                }
+                            })
+                        } else  {
+                            createQuiz(URL, quizDetails).then(result => {
+                                // console.log(result);
+                                console.log(quizDetails)
+                                if (result.code !== 201){
+                                    this.error = true;
+                                } else {
+                                    // window.location.href = "./trainer_section_page.html";
+                                }
                             
-                        })
+                            })
+                        }
+                        
                     }      
                 }
             }
