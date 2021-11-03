@@ -60,6 +60,12 @@
                 <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
                     {{ apiError }}
                 </div>
+                <div v-if="successAlert" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                    Class successfully updated.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="successAlert=false">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 <div class="d-flex justify-content-center">
                     <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
                     <!-- <a v-else class="btn btn-success mt-4" @click="onSubmit">Confirm</a> -->
@@ -109,6 +115,7 @@ var app = new Vue({
         },
         errorMessages: ["* Class Name not loaded. Please try again later.", "* Start Date and Time should be before End Date and Time", "* End Date and Time should be after Start Date and Time", "* Please try again later."],
         apiError: false,
+        successAlert: false,
     },
     methods: {
         onSubmit() {
@@ -128,10 +135,12 @@ var app = new Vue({
                     this.apiError = false;
                     if (result.code == 201){
                         const createdClass = result.data;
+                        this.successAlert = true
                         // this.createdClass = createdClass;
-                        location.href = "./view-specific-course-HR.html"
+                        // location.href = "./view-specific-course-HR.html"
 
                     } else {
+                        this.successAlert = false;
                         this.apiError = result.data + ".";
                     }
                 });

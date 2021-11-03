@@ -70,6 +70,12 @@
                 <div v-if="apiError" class="alert alert-danger mt-4 text-center" role="alert">
                     {{ apiError }}
                 </div>
+                <div v-if="successAlert" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                    {{ course.course_id }} successfully updated.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="successAlert=false">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 <div class="d-flex justify-content-center">
                     <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
                     <!-- <a v-else class="btn btn-success mt-4" @click="onSubmit">Confirm</a> -->
@@ -106,6 +112,7 @@ var app = new Vue({
         apiError: false,
         course: {},
         courses: [],
+        successAlert: false
     },
     methods: {
         onSubmit() {
@@ -127,15 +134,14 @@ var app = new Vue({
                     // console.log(result);
                     if (result.code == 201){
                         const course = result.data;
+                        this.successAlert = true;
             // 3. Return 201, pass returned course id to next page
-                        // let para = new URLSearchParams();
-                        // para.append("courseId", course.course_id);
-                        // location.href = "./view-specific-course-HR.html?" + para.toString();
 
                         //set course details for next page usage
                         this.setCourseDetails(course)
-                        location.href = "./view-specific-course-HR.html?" + para.toString();
+                        location.href = "./view-specific-course-HR.html"
                     } else {
+                        this.successAlert = false;
                         this.apiError = result.data + ".";
                     }
                 });

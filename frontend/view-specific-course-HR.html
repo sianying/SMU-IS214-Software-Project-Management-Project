@@ -18,7 +18,7 @@
         //Check for authentication
         if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
         //Check for classDetails
-        if (!localStorage.getItem("classDetails")) { window.location.replace("./view-list-of-courses-HR.html"); }
+        if (!localStorage.getItem("courseDetails")) { window.location.replace("./view-list-of-courses-HR.html"); }
     </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
@@ -35,13 +35,6 @@
                     <li class="breadcrumb-item active" aria-current="page">{{ course.course_id }}</li>
                 </ol>
             </nav>
-        </div>
-
-        <div v-if="successAlert" class="alert alert-success alert-dismissible fade show text-center mx-2" role="alert">
-            <strong>{{ successAlertMsg }}</strong>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="successAlert=false">
-                <span aria-hidden="true">&times;</span>
-            </button>
         </div>
 
         <div v-if="enrollCheck===1" id='duplicate-qn-alert' class="alert alert-success mx-auto text-center justify-content-center" role="alert">
@@ -108,7 +101,7 @@
     </div>
     
 <script type="module">
-import { URL, retrieveSpecificCourse, retrieveAllClasses, retrieveAssignedClasses } from "./callAPI/endpoints.js";
+import { URL, retrieveSpecificCourse, retrieveAllClasses, retrieveAssignedClasses, retrieveSpecificStaff} from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -119,8 +112,6 @@ var app = new Vue({
     el: '#app',
     data: {
         accountDetails: {},
-        successAlert: false,
-        successAlertMsg: "",
         classId: "",
         course: {
             course_name: "",
@@ -192,29 +183,22 @@ var app = new Vue({
             localStorage.setItem("classDetails", JSON.stringify(classDetails));
         },
         // get the url of last visited page, show create/update course and class success alert
-        showSuccessAlert() {
-            const lastVisitedLink = document.referrer.split("/").at(-1);
-            //if previous page was add new course, display success alert for course creation
-            if (lastVisitedLink == "add-new-course-HR.html"){
-                this.successAlert = true;
-                this.successAlertMsg = `Course successfully created`;
-            } else if (lastVisitedLink == "add-new-class-HR.html"){
-                this.successAlert = true;
-                this.successAlertMsg = `Class successfully created`;
-            } else if (lastVisitedLink == "edit-class-details.html"){
-                this.successAlert = true;
-                this.successAlertMsg = `Class successfully updated`;
-            } else if (lastVisitedLink == "assign-trainer.html"){
-                this.successAlert = true;
-                this.successAlertMsg = `Trainer successfully assgined`;
-            }
+        setAccountDetails(staffId){
+            retrieveSpecificStaff(URL, staffId).then(result => {
+                if (result.code == 200) {
+                    this.error = false;
+                    const accountDetails = result.data;
+                    localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
+                } else {
+                    this.error = true;
+                }
+            })
         }
         
     },
     created: function() {
-        //show successful course creation alert if applicable
-        this.showSuccessAlert()
-
+        this.successAlert = false;
+        //show successful course creation alert if applicable        
         //retrieve accountDetails
         this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         //Retrieve course id from URL
