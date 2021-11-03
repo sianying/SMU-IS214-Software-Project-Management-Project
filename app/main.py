@@ -1173,7 +1173,7 @@ def update_quiz():
                 "code": 404,
                 "data": "Quiz does not exist."
             }
-        )
+        ), 404
 
     # Before updating, check if any attempts have been made before
     attempt_dao = AttemptDAO()
@@ -1185,7 +1185,7 @@ def update_quiz():
                     "code": 401,
                     "data": "Quiz cannot be updated because there are already existing attempts."
                 }
-            )
+            ), 401
 
     if "time_limit" in data:
         quizObj.set_time_limit(data['time_limit'])
