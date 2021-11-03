@@ -122,20 +122,6 @@ class TestStaffDAO(unittest.TestCase):
         self.table = None
         self.dynamodb = None
 
-    def test_insert_staff(self):
-        from modules.staff_manager import Staff
-        insertDefault = self.dao.insert_staff("abcde", "HR", 0)
-        self.assertTrue(isinstance(insertDefault, Staff))
-
-        insertTest = self.dao.insert_staff(ITEM3['staff_name'], ITEM3['role'], ITEM3['isTrainer'], ITEM3['staff_id'], ITEM3['courses_completed'], ITEM3['courses_enrolled'])
-
-        self.assertEqual(ITEM3, insertTest.json(), "StaffDAO insert test failure")
-
-        with self.assertRaises(ValueError, msg = "Failed to raise exception for duplicates") as context:
-            self.dao.insert_staff(ITEM2['staff_name'], ITEM2['role'], ITEM2['isTrainer'], ITEM2['staff_id'], ITEM2['courses_completed'], ITEM2['courses_enrolled'])
-
-        self.assertTrue("Staff already exists" == str(context.exception))
-
     def test_insert_staff_w_dict(self):
         from modules.staff_manager import Staff
         insertDefault = self.dao.insert_staff_w_dict({"staff_name": "abcde", "role":"HR"})
@@ -167,14 +153,6 @@ class TestStaffDAO(unittest.TestCase):
         toCheck = self.table.get_item(Key={'staff_id': staffObj.get_staff_id(), "staff_name": staffObj.get_staff_name()})['Item']
         self.assertEqual(staffObj.json(), toCheck, "StaffDAO updated values does not match")
 
-    def test_delete_staff(self):
-        from modules.staff_manager import Staff
-        staffObj = Staff(ITEM2)
-        self.dao.delete_staff(staffObj)
-        key = {'staff_id': staffObj.get_staff_id(), 'staff_name': staffObj.get_staff_name()}
-        with self.assertRaises(Exception, msg = 'StaffDAO delete test failure'):
-            self.table.get_item(Key = key)['Item']
-    
     def test_retrieve_eligible_staff_to_enrol(self):
         from modules.course_manager import Course
         staff_list = self.dao.retrieve_eligible_staff_to_enrol(Course(IS300))

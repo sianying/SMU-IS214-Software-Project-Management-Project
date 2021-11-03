@@ -12,7 +12,7 @@ except:
 
 
 class Staff:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, staff_dict):
         '''
             __init__(
                 staff_id: int,
@@ -25,31 +25,12 @@ class Staff:
 
             __init__(staff_dict)
         '''
-
-        if len(args) > 1:
-            self.__staff_id = args[0]
-            self.__staff_name = args[1]
-            self.__role = args[2]
-            self.__isTrainer = args[3]
-            
-            try:
-                self.__courses_completed = copy.deepcopy(kwargs['courses_completed'])
-            except:
-                self.__courses_completed = []
-            
-            try:
-                self.__courses_enrolled = copy.deepcopy(kwargs['courses_enrolled'])
-            except:
-                self.__courses_enrolled = []
-
-
-        elif isinstance(args[0], dict):
-            self.__staff_id = args[0]['staff_id']
-            self.__staff_name = args[0]['staff_name']
-            self.__role = args[0]['role']
-            self.__isTrainer = args[0]['isTrainer']
-            self.__courses_enrolled = copy.deepcopy(args[0]['courses_enrolled'])
-            self.__courses_completed = copy.deepcopy(args[0]['courses_completed'])
+        self.__staff_id = staff_dict['staff_id']
+        self.__staff_name = staff_dict['staff_name']
+        self.__role = staff_dict['role']
+        self.__isTrainer = staff_dict['isTrainer']
+        self.__courses_enrolled = copy.deepcopy(staff_dict['courses_enrolled']) if 'courses_enrolled' in staff_dict else []
+        self.__courses_completed = copy.deepcopy(staff_dict['courses_completed']) if 'courses_completed' in staff_dict else []
 
 
     def get_staff_id(self):
@@ -119,30 +100,6 @@ class StaffDAO:
         self.table = session.resource('dynamodb', region_name='ap-southeast-1').Table('Staff')
 
     #Create
-    def insert_staff(self, staff_name, role, isTrainer, staff_id = None, courses_completed= [], courses_enrolled = []):
-        try:
-            if staff_id == None:
-                staff_id = str(uuid4())
-            
-            response = self.table.put_item(
-                Item = {
-                    "staff_id": staff_id,
-                    "staff_name": staff_name,
-                    'role' : role,
-                    'isTrainer': isTrainer,
-                    'courses_completed': courses_completed,
-                    'courses_enrolled': courses_enrolled,
-                },
-                ConditionExpression=Attr("staff_id").not_exists()
-            )
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return Staff(staff_id, staff_name, role, isTrainer, courses_completed=courses_completed, courses_enrolled=courses_enrolled)
-            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
-        except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
-            raise ValueError("Staff already exists")
-        except Exception as e:
-            raise Exception("Insert Failure with Exception: "+str(e))
-    
     def insert_staff_w_dict(self, staff_dict):
         try:
             if 'staff_id' not in staff_dict or staff_dict['staff_id'] == None:
@@ -178,8 +135,6 @@ class StaffDAO:
 
     #Read
     def retrieve_all(self):
-        
-        # retrieve all items and add them to a list of Course objects
         response = self.table.scan()
         data = response['Items']
 
@@ -217,7 +172,6 @@ class StaffDAO:
 
     #Update
     def update_staff(self, StaffObj):
-        # method updates the DB if there is new prereq course, removing of prereq course, adding new class
         # assumes staff_id, staff_name and role cannot be updated
         try:
             response = self.table.update_item(
@@ -237,19 +191,3 @@ class StaffDAO:
             
         except Exception as e:
             raise Exception("Update Failure with Exception: "+str(e))
-
-
-    #Delete
-    def delete_staff(self, StaffObj):
-        try:
-            response = self.table.delete_item(
-                Key = {
-                    'staff_id': StaffObj.get_staff_id(),
-                    'staff_name': StaffObj.get_staff_name()
-                }
-            )
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return 'Staff Deleted'
-            raise ValueError('Delete Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
-        except Exception as e:
-            raise ValueError("Delete Failure with Exception: "+str(e))

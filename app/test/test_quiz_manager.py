@@ -161,15 +161,7 @@ class TestQuizDAO(unittest.TestCase):
         self.table = None
         self.dynamodb = None
 
-    def test_insert_Quiz(self):
-        insertTest = self.dao.insert_quiz(ITEM3['section_id'], ITEM3['time_limit'], ITEM3['quiz_id'], ITEM3['questions']).json()
-        duplicateTest = self.dao.insert_quiz(ITEM3['section_id'], ITEM3['time_limit'], ITEM3['quiz_id'], ITEM3['questions'])
-
-        self.assertEqual(ITEM3, insertTest, "QuizDAO insert test failure")
-
-        self.assertEqual("Quiz already exists", duplicateTest, "QuizDAO insert duplicate test failure")
-
-    def test_insert_Quiz_w_dict(self):
+    def test_insert_quiz_w_dict(self):
         insertTest = self.dao.insert_quiz_w_dict(ITEM3)
 
         self.assertEqual(ITEM3, insertTest.json(), "QuizDAO insert test with dictionary failure")
@@ -178,39 +170,23 @@ class TestQuizDAO(unittest.TestCase):
 
         self.assertTrue("Quiz already exists" == str(context.exception))
 
-
-    def test_retrieve_all(self):
-        quiz_list = self.dao.retrieve_all()
-        self.assertEqual(len(quiz_list), 2, "QuizDAO did not retrieve the correct number of records(2).")
-
-
     def test_retrieve_one(self):
         self.assertEqual(ITEM1, self.dao.retrieve_one(ITEM1['quiz_id']).json(), "QuizDAO did not retrieve the correct quiz by quiz_id, test failure")
         self.assertEqual(None, self.dao.retrieve_one("fakequizid"), "QuizDAO should have returned nothing, test failure (quiz_id)")
-
 
     def test_retrieve_by_section(self):
         self.assertEqual(ITEM2, self.dao.retrieve_by_section(ITEM2['section_id']).json(), "QuizDAO did not retrieve the correct quiz by section_id, test failure")
         self.assertEqual(None, self.dao.retrieve_by_section("fakesection"), "QuizDAO should have returned nothing, test failure (section_id)")
 
-
     def test_update_quiz(self):
         from modules.quiz_manager import Quiz, Question
         quizObj = Quiz(ITEM1)
         quizObj.add_question(Question(question_to_add))
+        quizObj.set_time_limit(100)
         self.dao.update_quiz(quizObj)
         toCheck = Quiz(self.table.get_item(Key={'quiz_id':quizObj.get_quiz_id(), 'section_id':quizObj.get_section_id()})['Item'])
 
         self.assertEqual(quizObj.json(), toCheck.json(), "QuizDAO update test failure")
-
-
-    def test_delete_quiz(self):
-        from modules.quiz_manager import Quiz
-        quizObj = Quiz(ITEM2)
-        self.dao.delete_quiz(quizObj)
-        key = {'quiz_id':quizObj.get_quiz_id(), 'section_id': quizObj.get_section_id()}
-        with self.assertRaises(Exception, msg="QuizDAO did not delete quiz, test failure"):
-            self.table.get_item(Key = key)['Item']
 
 
 if __name__ == "__main__":
