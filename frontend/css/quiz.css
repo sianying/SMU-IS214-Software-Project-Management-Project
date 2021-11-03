@@ -12,11 +12,10 @@
     width: 35%;
 }
 
-/* #add-qn-button, #submit-and-cancel-button{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-} */
+[v-cloak] { 
+    display: none !important; 
+}
+
 #submit-and-cancel-button{
     display: flex;
     justify-content: center;
