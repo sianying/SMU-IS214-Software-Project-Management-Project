@@ -103,7 +103,6 @@ body {
 .card-title > a {
     font-size: 35px !important;
     color: black !important;
-
 }
 
 .form-error {
@@ -116,4 +115,9 @@ body {
     color: black;
     font-size: 12px;
     font-weight: 200;
+}
+
+.edit-button {
+    height: 27px;
+    color: #3C64B1;
 }

@@ -226,17 +226,17 @@ class TrainerDAO:
     #Update
     def update_trainer(self, trainerObj):
         # method updates the DB if there is new prereq course, removing of prereq course, adding new class
-        # assumes staff_id, staff_name and role cannot be updated
+        # assumes staff_id, staff_name cannot be updated
         try:
             response = self.table.update_item(
                 Key = {
                     'staff_id': trainerObj.get_staff_id(),
                     'staff_name': trainerObj.get_staff_name(),
-                    'role': trainerObj.get_role(),
-                    'isTrainer': trainerObj.get_isTrainer()
                 },
-                UpdateExpression= "set courses_completed = :c, courses_enrolled = :e, courses_can_teach = :t, courses_teaching = :x",
+                # role is a reserved keyword, so for now just assume role cannot be updated too.
+                UpdateExpression= "set isTrainer = :it, courses_completed = :c, courses_enrolled = :e, courses_can_teach = :t, courses_teaching = :x",
                 ExpressionAttributeValues ={
+                    ":it": trainerObj.get_isTrainer(),
                     ":c": trainerObj.get_courses_completed(),
                     ':e': trainerObj.get_courses_enrolled(),
                     ':t': trainerObj.get_courses_can_teach(),

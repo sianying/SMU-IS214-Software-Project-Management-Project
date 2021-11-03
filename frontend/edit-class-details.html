@@ -36,7 +36,7 @@
             </nav>
         </div>
 
-        <h4 class="pt-3 pl-2">1. Set Class Details</h4>
+        <h4 class="pt-3 pl-2">Edit Class Details</h4>
         <div class="form-border rounded">
             <form>
                 <div class="form-group">
@@ -45,16 +45,16 @@
                 </div>
                 <div class="form-group">
                     <label for="exampleFormControlInput1">Class Start Time</label><span class="form-error ml-2">{{ error.startDatetime }}</span>
-                    <input type="datetime-local" class="form-control" :min="minDatetime" v-model="startDatetime" @input="validateDateTime">
+                    <input id="classStartTime" type="datetime-local" class="form-control" :min="minDatetime" v-model="classObj.start_datetime" @input="validateDateTime">
                 </div>
                 <div class="form-group">
                     <label for="exampleFormControlInput1">Class End Time</label><span class="form-error ml-2">{{ error.endDatetime }}</span>
-                    <input type="datetime-local" class="form-control" :min="startDatetime" v-model="endDatetime"  @input="validateDateTime">
+                    <input id="classEndTime" type="datetime-local" class="form-control" :min="classObj.start_datetime" v-model="classObj.end_datetime"  @input="validateDateTime">
                 </div>
                 <div class="form-group">
                     <label for="exampleFormControlInput1">Class Size</label>
                     <select v-model="selectedClassSize" class="form-control">
-                        <option v-for="num in 30" >{{num}}</option>
+                        <option v-for="num in (40 - classObj.learners_enrolled.length)" >{{ num + classObj.learners_enrolled.length }}</option>
                     </select>
                 </div>
                 <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
@@ -71,7 +71,7 @@
     </div>
     
 <script type="module">
-import { URL, retrieveAllClasses, createClass } from "./callAPI/endpoints.js";
+import { URL, updateClassDetails } from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -95,12 +95,11 @@ var app = new Vue({
             end_datetime: "",
             class_size: "",
         },
-        className: "G1",
+        className: "",
         startDatetime: "",
         endDatetime: "",
-        selectedClassSize: 1,
+        selectedClassSize: 0,
         createdClass: {},
-
         minDatetime: "",
         error: {
             className: "",
@@ -118,18 +117,19 @@ var app = new Vue({
                 event.preventDefault();
             } else {
             // 2. Set course object and call create course API
-                this.classObj.course_id = this.course.course_id;
-                this.classObj.start_datetime = this.startDatetime + ":00";
-                this.classObj.end_datetime = this.endDatetime + ":00";
-                this.classObj.class_size = this.selectedClassSize
+                const classReqBody = {}
+                classReqBody.class_id = this.classObj.class_id;
+                classReqBody.course_id = this.classObj.course_id;
+                classReqBody.class_size = this.selectedClassSize;
+                classReqBody.start_datetime = this.classObj.start_datetime;
+                classReqBody.end_datetime = this.classObj.end_datetime;
 
-                //Call createClass endpoint
-                createClass(URL, this.classObj).then(result => {
+                //Call updateClassDetails endpoint
+                updateClassDetails(URL, classReqBody).then(result => {
                     this.apiError = false;
-                    if (result.code == 201){
-                        const createdClass = result.data;
-                        // this.createdClass = createdClass;
-                        location.href = "./view-specific-course-HR.html"
+                    if (result.code == 200){
+                        const updatedClass = result.data;
+                        window.location.replace("./view-specific-course-HR.html")
 
                     } else {
                         this.apiError = result.data + ".";
@@ -139,7 +139,7 @@ var app = new Vue({
             }
         },
         validateDateTime() {
-            if (this.startDatetime >=  this.endDatetime){
+            if (this.classObj.start_datetime >=  this.classObj.end_datetime){
                 this.error.startDatetime = this.errorMessages[1]
                 this.error.endDatetime = this.errorMessages[2]
             } else {
@@ -150,12 +150,18 @@ var app = new Vue({
         getTodayDate() {
             const now = new Date;
             //set 1 day after today
-            now.setDate(now.getDate() + 2);
-            // const currentDate = new Date(now.getFullYear(), now.getMonth()+1, now.getDay());
+            now.setDate(now.getDate());
             const currentDateTime = now.toISOString().split("T")[0] + "T00:00";
+            console.log(currentDateTime)
             this.minDatetime = currentDateTime;
-            this.startDatetime = currentDateTime;
-            this.endDatetime = currentDateTime.slice(0, -1) + "1";
+        },
+        pastTodayDate() {
+            if (this.classObj.start_datetime.split("T")[0] <= this.minDatetime.split("T")[0]) {
+                document.getElementById("classStartTime").setAttribute("disabled", true)
+            }
+            // if (this.classObj.end_datetime.split("T")[0] <= this.minDatetime.split("T")[0]) {
+            //     document.getElementById("classEndTime").setAttribute("disabled", true)
+            // }
         },
         setClassId(classId) {
             this.course.class_id = classId;
@@ -164,22 +170,13 @@ var app = new Vue({
         
     },
     created: function() {
-        this.accountDetails  = JSON.parse(localStorage.getItem("accountDetails"));
-        const course = JSON.parse(localStorage.getItem("courseDetails"));
-        this.course = course;
-
-        //Set current datetime
-        this.getTodayDate()
-
-        //call API to get all classes
-        retrieveAllClasses(URL, course.course_id).then(result => {
-            if (result.code === 200){
-                const classList = result.data;
-                this.className = `G${classList.length + 1}`;
-            } else {
-                this.error.className = this.errorMessages[0]
-            }
-        });
+        this.getTodayDate();
+        this.pastTodayDate();
+        this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+        this.course = JSON.parse(localStorage.getItem("courseDetails"));
+        this.classObj = JSON.parse(localStorage.getItem("classDetails"));
+        this.className = "G" + this.classObj.class_id;
+        this.selectedClassSize = this.classObj.class_size;
     }
 
 })

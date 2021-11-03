@@ -65,7 +65,7 @@
                             <b>Availability: </b> {{ getSectionAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
                         </p>
                         <!-- "Add New Class" Button for HR href="engineer_section_page.html"-->
-                        <a @click="setClassId(selectedClass.class_id)" href="./engineer_section_page.html" class="btn btn-outline-info mt-auto">View Sections</a>
+                        <a @click="setClassDetails(selectedClass)" href="./engineer_section_page.html" class="btn btn-outline-info mt-auto">View Sections</a>
                         
                         
                     </div>
@@ -112,9 +112,8 @@ var app = new Vue({
             // returns availability of section
             return (classSize - learnersEnrolled.length).toString() + "/" + (classSize).toString();
         },
-        setClassId(classId) {
-            this.course.class_id = classId;
-            localStorage.setItem("courseDetails", JSON.stringify(this.course));
+        setClassDetails(classDetails) {
+            localStorage.setItem("classDetails", JSON.stringify(classDetails));
         },
         
     },

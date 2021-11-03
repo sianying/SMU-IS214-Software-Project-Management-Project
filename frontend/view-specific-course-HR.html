@@ -17,8 +17,8 @@
     <script>
         //Check for authentication
         if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
-        //Check for courseDetails
-        if (!localStorage.getItem("courseDetails")) { window.location.replace("./view-list-of-courses-HR.html"); }
+        //Check for classDetails
+        if (!localStorage.getItem("classDetails")) { window.location.replace("./view-list-of-courses-HR.html"); }
     </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
@@ -37,16 +37,9 @@
             </nav>
         </div>
 
-        <div v-if="courseCreationSuccess" class="alert alert-success alert-dismissible fade show text-center mx-2" role="alert">
-            <strong>{{ course.course_id }}</strong> successfully created.
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="courseCreationSuccess=false">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-
-        <div v-if="classCreationSuccess" class="alert alert-success alert-dismissible fade show text-center mx-2" role="alert">
-            <strong>G{{ classId }}</strong> successfully created.
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="classCreationSuccess=false">
+        <div v-if="successAlert" class="alert alert-success alert-dismissible fade show text-center mx-2" role="alert">
+            <strong>{{ successAlertMsg }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="successAlert=false">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
@@ -80,16 +73,30 @@
             <div v-for = "selectedClass in classList" class="col-6 p-0 d-flex justify-content-center">
                 <div class="card m-3" style="width: 540px;">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">
-                            <a href="#">G{{ selectedClass.class_id }}</a>
-                        </h5>
+                        <div>
+                            <h5 class="card-title d-flex justify-content-between d-inline-block">
+                                <a>G{{ selectedClass.class_id }}</a>
+                            </h5>
+                            <a class="mr-1" v-if="accountDetails.role === 'HR'" href="./edit-class-details.html" @click="setClassDetails(selectedClass)">
+                                <span class="iconify edit-button mr-1" data-icon="bx:bxs-edit"></span>
+                                Edit Details
+                            </a>
+                            |
+                            <a v-if="accountDetails.role === 'HR'" href="./assign-trainer.html" @click="setClassDetails(selectedClass)">
+                                <span class="iconify edit-button mx-1" data-icon="wpf:add-user"></span>
+                                Assign Trainer
+                            </a>
+                        </div>
+                        
                         <p class="card-text">
                             <b>Duration: </b> {{ datetimeToDate(selectedClass.start_datetime, selectedClass.end_datetime) }}
                             <br>
                             <b>Availability: </b> {{ getSectionAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
+                            <br>
+                            <b>Trainer Assigned: </b> {{ isTrainerAssigned(selectedClass.trainer_name) }}
                         </p>
                         <!-- "Add New Class" Button for HR href="engineer_section_page.html"-->
-                        <a v-if="accountDetails.role === 'HR'"  @click="setClassId(selectedClass.class_id)" href="HR_enrol_learners.html" class="btn btn-outline-info mt-auto">View Class</a>
+                        <a v-if="accountDetails.role === 'HR'" @click="setClassId(selectedClass.class_id)" href="HR_enrol_learners.html" class="btn btn-outline-info mt-auto">View Sections</a>
                         <a v-else-if="isSectionFull(selectedClass.learners_enrolled, selectedClass)" @click="setClassId(selectedClass.class_id); selfEnroll(accountDetails.staff_id, course.course_id, selectedClass.class_id)" class="btn btn-outline-info mt-auto">Enroll</a>
                         <button v-else class="btn btn-light mt-auto" disabled>Enroll</button>
                         
@@ -112,8 +119,8 @@ var app = new Vue({
     el: '#app',
     data: {
         accountDetails: {},
-        courseCreationSuccess: false,
-        classCreationSuccess: false,
+        successAlert: false,
+        successAlertMsg: "",
         classId: "",
         course: {
             course_name: "",
@@ -124,7 +131,7 @@ var app = new Vue({
         },
         classList: [],
         selected: 'not selected',
-        courses:[],
+        courses: [],
         error: false,
         enrollCheck:0,
         selectedClass : ""
@@ -147,6 +154,10 @@ var app = new Vue({
         isSectionFull(learnersEnrolled, classSize) {
             // returns if class is full
             return learnersEnrolled.length === classSize.length ? false : true;
+        },
+        isTrainerAssigned(trainerName) {
+            // returns trainer name if trainer is assigned
+            return trainerName === null ? "Not assigned" : trainerName;
         },
         selfEnroll(staffid,courseid,classid){
             
@@ -177,21 +188,32 @@ var app = new Vue({
             this.classId = classId
             localStorage.setItem("courseDetails", JSON.stringify(this.course));
         },
-        // get the url of last visited page
-        showCourseCreationSuccessAlert() {
+        setClassDetails(classDetails) {
+            localStorage.setItem("classDetails", JSON.stringify(classDetails));
+        },
+        // get the url of last visited page, show create/update course and class success alert
+        showSuccessAlert() {
             const lastVisitedLink = document.referrer.split("/").at(-1);
             //if previous page was add new course, display success alert for course creation
             if (lastVisitedLink == "add-new-course-HR.html"){
-                this.courseCreationSuccess = true;
+                this.successAlert = true;
+                this.successAlertMsg = `Course successfully created`;
             } else if (lastVisitedLink == "add-new-class-HR.html"){
-                this.classCreationSuccess = true;
+                this.successAlert = true;
+                this.successAlertMsg = `Class successfully created`;
+            } else if (lastVisitedLink == "edit-class-details.html"){
+                this.successAlert = true;
+                this.successAlertMsg = `Class successfully updated`;
+            } else if (lastVisitedLink == "assign-trainer.html"){
+                this.successAlert = true;
+                this.successAlertMsg = `Trainer successfully assgined`;
             }
         }
         
     },
     created: function() {
         //show successful course creation alert if applicable
-        this.showCourseCreationSuccessAlert()
+        this.showSuccessAlert()
 
         //retrieve accountDetails
         this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
