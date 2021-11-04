@@ -1083,8 +1083,9 @@ def assign_trainer():
     try:
         trainer_dao = TrainerDAO()
         trainerObj = trainer_dao.retrieve_one(data['staff_id'])
-        trainerObj.add_course_teaching(data['course_id'])
-        trainer_dao.update_trainer(trainerObj)
+        if data['course_id'] not in trainerObj.get_courses_teaching():
+            trainerObj.add_course_teaching(data['course_id'])
+            trainer_dao.update_trainer(trainerObj)
 
         return jsonify(
                 {
