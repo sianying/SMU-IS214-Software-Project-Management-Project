@@ -101,6 +101,19 @@ class TestCourseDAO(unittest.TestCase):
         toCheck = self.table.get_item(Key={'course_id':courseObj.get_course_id(), 'course_name':courseObj.get_course_name()})['Item']
         self.assertEqual(courseObj.json(), toCheck, "CourseDAO update test failure")
 
+    def test_retrieve_all_in_list(self):
+        course_list = self.dao.retrieve_all_in_list(["IS111"])
+        self.assertEqual([ITEM1], [course.json() for course in course_list], "Retrieved list does not match")
+
+        course_list2 = self.dao.retrieve_all_in_list(["IS110","IS111"])
+        self.assertEqual([ITEM1, ITEM2], [course.json() for course in course_list2], "Retrieved list does not match")
+
+        with self.assertRaises(ValueError, msg="Failed to raise exception when passing in empty list") as context:
+            self.dao.retrieve_all_in_list([])
+
+        self.assertTrue('List entered is empty' == str(context.exception))
+
+
     def test_retrieve_all_not_in_list(self):
         course_list = self.dao.retrieve_all_not_in_list(["IS111"])
         self.assertEqual([ITEM2], [course.json() for course in course_list], "Retrieved list does not match")

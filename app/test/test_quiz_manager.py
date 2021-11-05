@@ -170,10 +170,6 @@ class TestQuizDAO(unittest.TestCase):
         self.assertEqual(ITEM1, self.dao.retrieve_one(ITEM1['quiz_id']).json(), "QuizDAO did not retrieve the correct quiz by quiz_id, test failure")
         self.assertEqual(None, self.dao.retrieve_one("fakequizid"), "QuizDAO should have returned nothing, test failure (quiz_id)")
 
-    def test_retrieve_by_section(self):
-        self.assertEqual(ITEM2, self.dao.retrieve_by_section(ITEM2['section_id']).json(), "QuizDAO did not retrieve the correct quiz by section_id, test failure")
-        self.assertEqual(None, self.dao.retrieve_by_section("fakesection"), "QuizDAO should have returned nothing, test failure (section_id)")
-
     def test_update_quiz(self):
         from modules.quiz_manager import Quiz, Question
         quizObj = Quiz(ITEM1)
