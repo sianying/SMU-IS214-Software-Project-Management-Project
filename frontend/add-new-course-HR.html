@@ -37,7 +37,7 @@
             </nav>
         </div>
 
-        <h4 class="pt-3 pl-2">1. Set Course Details</h4>
+        <h4 class="pt-3 pl-2">Add a New Course</h4>
         <div class="form-border rounded">
             <form>
                 <div class="form-group">
@@ -131,12 +131,9 @@ var app = new Vue({
                 };
                 createCourse(URL, course).then(result => {
                     this.apiError = false;
-                    // console.log(result);
                     if (result.code == 201){
                         const course = result.data;
                         this.successAlert = true;
-            // 3. Return 201, pass returned course id to next page
-
                         //set course details for next page usage
                         this.setCourseDetails(course)
                         location.href = "./view-specific-course-HR.html"

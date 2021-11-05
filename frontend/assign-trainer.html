@@ -61,7 +61,7 @@
                 <div class="d-flex justify-content-center">
                     <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
                     <!-- <a v-else class="btn btn-success mt-4" @click="onSubmit">Confirm</a> -->
-                    <a class="btn btn-success mt-4" @click="onSubmit">Confirm</a>
+                    <a id="confirm-button" class="btn btn-success mt-4" @click="onSubmit">Confirm</a>
                 </div>
             </form>
         </div>
@@ -85,7 +85,7 @@ var app = new Vue({
         error: {
             assignedTrainer: "",
         },
-        errorMessages: ["* Eligible trainers are not loaded. Please try again later."],
+        errorMessages: ["* Eligible trainers are not loaded. Please try again later.", "* No eligible trainers found."],
         apiError: false,
         selectedTrainer: "",
         trainersList: [],
@@ -145,8 +145,12 @@ var app = new Vue({
                 //sort courses according to course id in ascending order
                 this.trainersList = trainersList.sort((a, b) => (a.staff_name > b.staff_name) ? 1 : -1);
                 this.selectedTrainer = trainersList[0].staff_id
+            } else if (result.code === 404) {
+                this.error.assignedTrainer = this.errorMessages[1]
+                document.getElementById("confirm-button").classList.add("disabled");
             } else {
                 this.error.assignedTrainer = this.errorMessages[0]
+                document.getElementById("confirm-button").classList.add("disabled");
             }
             
         });

@@ -23,9 +23,9 @@
             <h1>Learn a New Skill Today!</h1>
             
             <div v-cloak id="app" class="mt-4 home-links">
-                <a class="mx-3" @click="authenticateStaff(HRStaffId, HRLink)">HR</a>
-                <a class="mx-3" @click="authenticateStaff(learnerStaffId, learnerLink)">Learner</a>
-                <a class="mx-3" @click="authenticateStaff(trainerStaffId, trainerLink)">Trainer</a>
+                <a class="mx-3" @click="authenticateStaff(HRStaffId, HRLink); setRoleView(false)">HR</a>
+                <a class="mx-3" @click="authenticateStaff(learnerStaffId, learnerLink); setRoleView(true)">Learner</a>
+                <a class="mx-3" @click="authenticateStaff(trainerStaffId, trainerLink); setRoleView(false)">Trainer</a>
             </div>
 
             <!-- <div v-if="error" class="alert alert-success alert-dismissible fade show text-center mx-2 mt-3" role="alert">
@@ -52,46 +52,11 @@ var app = new Vue({
         learnerStaffId: "80e6f2f7-2827-4a3d-828a-0fdcea180641", //Bob
         trainerStaffId: "aae3e316-af31-40ae-9540-0e3a401b20f6", //Tim
         HRLink: "./view-list-of-courses-HR.html",
-        learnerLink: "./view-list-of-courses-HR.html",
-        trainerLink: "./view-list-of-courses-HR.html",
+        learnerLink: "./view-list-of-enrolled-courses.html",
+        trainerLink: "./view-list-of-assigned-courses.html",
         error: false
     },
     methods: {
-        // authenticateHR(){
-        //     const accountDetails = {
-        //     "staff_id": "851252d7-b21c-4d75-95b6-321471ba3910",
-        //     "staff_name": "Jonny",
-        //     "courses_completed": ["IC110", "IC113"],
-        //     "courses_enrolled": [],
-        //     "role": "HR",
-        //     "isTrainer": 0
-        //     }
-        //     localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
-        // },
-
-        // authenticateLearner(){
-        //     const accountDetails = {
-        //     "staff_id": "6724873a-b951-4ee7-a835-cb0f9f784c45",
-        //     "staff_name": "Bob",
-        //     "courses_completed": ["IC111"],
-        //     "courses_enrolled": ["IC112"],
-        //     "role": "Engineer",
-        //     "isTrainer": 0
-        //     }
-        //     localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
-        // },
-        // authenticateLearner(){
-        //     const accountDetails = {
-        //     "staff_id": "80e6f2f7-2827-4a3d-828a-0fdcea180641",
-        //     "staff_name": "Bob",
-        //     "courses_completed": [],
-        //     "courses_enrolled": ["IC114"],
-        //     "role": "Engineer",
-        //     "isTrainer": 0
-        //     }
-        //     localStorage.setItem("accountDetails", JSON.stringify(accountDetails));
-        // },
-
         authenticateStaff(staffId, link){
             retrieveSpecificStaff(URL, staffId).then(result => {
                 if (result.code == 200) {
@@ -103,18 +68,9 @@ var app = new Vue({
                     this.error = true;
                 }
             })
-
-            // const accountDetails = {
-            // "staff_id": "aae3e316-af31-40ae-9540-0e3a401b20f6",
-            // "staff_name": "Tim",
-            // "courses_completed": ["IC110", "IC113"],
-            // "courses_enrolled": ["IC114"],
-            // "role": "Engineer",
-            // "isTrainer": 1,
-            // "courses_teaching": ["IC112"],
-            // "courses_can_teach": []
-            // }
-            
+        },
+        setRoleView(boolean){
+            localStorage.setItem("isLearnerView", JSON.stringify(boolean));
         }
     },
     created: function() {

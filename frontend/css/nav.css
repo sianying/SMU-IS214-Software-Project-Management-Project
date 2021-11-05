@@ -12,8 +12,8 @@ body {
     color: #3C64B1;
 }
 #navbarNav {
-    left: 40%;
-    list-style: none;
+    left: 45%;
+    margin-left: -50px;
     position: absolute;
     font-size: 16px;
     font-weight: 600;
@@ -24,10 +24,33 @@ body {
     background-color: #F3F6FA !important;
 }
 
+.switch-view {
+    /* position: absolute;
+    left: 80%;
+    bottom: 29%; */
+    font-weight: 500
+}
+
+.switch-view:hover {
+    text-decoration: underline;
+    
+}
+
 #profilelogo{
-    width: 30px; height: 30px;left: 91%; bottom: 25%; list-style: none;position: absolute;
+    /* width: 30px; height: 30px;left: 91%; bottom: 25%; list-style: none;position: absolute; */
+    width: 30px; 
+    height: 30px; 
+    list-style: none;
+    
 }
 
 .profileName {
-    position: absolute; left: 94%; bottom: 28%
+    /* position: absolute; left: 94%; bottom: 28% */
+    color: black;
+    display: inline-block;
+}
+
+.profileName:hover {
+    /* position: absolute; left: 94%; bottom: 28% */
+    text-decoration: none;
 }

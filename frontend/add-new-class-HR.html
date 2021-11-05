@@ -36,13 +36,10 @@
             </nav>
         </div>
 
-        <h4 class="pt-3 pl-2">1. Set Class Details</h4>
+        <h4 class="pt-3 pl-2">Add a New Class</h4>
         <div class="form-border rounded">
+            <h4 class="mb-4">Class {{ className }}</h4>
             <form>
-                <div class="form-group">
-                    <label for="exampleFormControlInput1">Class Name</label><span class="form-error ml-2">{{ error.className }}</span>
-                    <input class="form-control" v-model="className" disabled>
-                </div>
                 <div class="form-group">
                     <label for="exampleFormControlInput1">Class Start Time</label><span class="form-error ml-2">{{ error.startDatetime }}</span>
                     <input type="datetime-local" class="form-control" :min="minDatetime" v-model="startDatetime" @input="validateDateTime">
@@ -54,7 +51,7 @@
                 <div class="form-group">
                     <label for="exampleFormControlInput1">Class Size</label>
                     <select v-model="selectedClassSize" class="form-control">
-                        <option v-for="num in 30" >{{num}}</option>
+                        <option v-for="num in 40" >{{num}}</option>
                     </select>
                 </div>
                 <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
@@ -69,7 +66,7 @@
                 <div class="d-flex justify-content-center">
                     <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
                     <!-- <a v-else class="btn btn-success mt-4" @click="onSubmit">Confirm</a> -->
-                    <a class="btn btn-success mt-4" @click="onSubmit">Confirm</a>
+                    <a id="confirm-button" class="btn btn-success mt-4" @click="onSubmit">Confirm</a>
                 </div>
             </form>
         </div>
@@ -101,7 +98,7 @@ var app = new Vue({
             end_datetime: "",
             class_size: "",
         },
-        className: "G1",
+        className: "",
         startDatetime: "",
         endDatetime: "",
         selectedClassSize: 1,
@@ -109,11 +106,10 @@ var app = new Vue({
 
         minDatetime: "",
         error: {
-            className: "",
             startDatetime: "",
             endDatetime: "",
         },
-        errorMessages: ["* Class Name not loaded. Please try again later.", "* Start Date and Time should be before End Date and Time", "* End Date and Time should be after Start Date and Time", "* Please try again later."],
+        errorMessages: ["* Start Date and Time should be before End Date and Time", "* End Date and Time should be after Start Date and Time", "* Please try again later."],
         apiError: false,
         successAlert: false,
     },
@@ -147,10 +143,17 @@ var app = new Vue({
                 
             }
         },
+        getClassName() {
+            if (this.course.class_list.length === 0){
+                this.className = "G1";
+            } else {
+                this.className = `G${this.course.class_list.length + 1}`;
+            }
+        },
         validateDateTime() {
             if (this.startDatetime >=  this.endDatetime){
-                this.error.startDatetime = this.errorMessages[1]
-                this.error.endDatetime = this.errorMessages[2]
+                this.error.startDatetime = this.errorMessages[0]
+                this.error.endDatetime = this.errorMessages[1]
             } else {
                 this.error.startDatetime = ""
                 this.error.endDatetime = ""
@@ -178,17 +181,10 @@ var app = new Vue({
         this.course = course;
 
         //Set current datetime
-        this.getTodayDate()
+        this.getTodayDate();
 
-        //call API to get all classes
-        retrieveAllClasses(URL, course.course_id).then(result => {
-            if (result.code === 200){
-                const classList = result.data;
-                this.className = `G${classList.length + 1}`;
-            } else {
-                this.error.className = this.errorMessages[0]
-            }
-        });
+        //Get class name
+        this.getClassName();
     }
 
 })
