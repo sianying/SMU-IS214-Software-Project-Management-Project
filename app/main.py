@@ -646,16 +646,18 @@ def insert_quiz():
             ), 500
 
 
-@app.route("/attempts/<string:quiz_id>", methods=['POST'])
-def insert_attempt(quiz_id):
+@app.route("/attempts", methods=['POST'])
+def insert_attempt():
+    data = request.get_json()
+
     quiz_dao = QuizDAO()
-    quiz_obj = quiz_dao.retrieve_one(quiz_id)
+    quiz_obj = quiz_dao.retrieve_one(data['quiz_id'])
 
     if quiz_obj == None:
         return jsonify(
             {
                 "code": 404,
-                "data": "No quiz was found with id " + quiz_id
+                "data": "No quiz was found with id " + data['quiz_id']
             }
         ), 404
 
@@ -667,17 +669,17 @@ def insert_attempt(quiz_id):
         correct_answers.append(question.get_correct_option())
         marks.append(question.get_marks())
 
-    data = request.get_json()
+    is_final_quiz = False
+
+    if 'is_final_quiz' in data:
+        is_final_quiz = True
+        data.pop('is_final_quiz')
+
     dao = AttemptDAO()
 
     try:
         results = dao.insert_attempt(data, correct_answers, marks)        
-        return jsonify(
-            {
-                "code": 201,
-                "data": results.json()
-            }
-        ), 201
+        
     except ValueError as e:
         if str(e) == "Attempt already exists":
             return jsonify(
@@ -697,6 +699,46 @@ def insert_attempt(quiz_id):
             {
                 "code": 500,
                 "data": "An error occurred when creating the attempt." + str(e)
+            }
+        ), 500
+
+    try:
+        progress_dao = ProgressDAO()
+        progressObj = progress_dao.retrieve_by_learner_and_course(data['staff_id'], data['course_id'])
+
+        if is_final_quiz:
+            # results stands for the attempt object created
+            current_score = results.get_overall_score()
+            total_score = quiz_obj.get_total_marks()
+
+            if current_score >= 0.85* total_score:
+                progressObj.set_final_quiz_passed(True)
+
+        else:
+            progressObj.add_completed_section(quiz_obj.get_section_id())
+
+        progress_dao.update_progress(progressObj)
+
+        return jsonify(
+            {
+                "code": 201,
+                "data": results.json()
+            }
+        ), 201
+
+    except ValueError as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An error occurred when updating the progress." + str(e)
+            }
+        ), 500
+
+    except Exception as e:
+        return jsonify(
+            {
+                "code": 500,
+                "data": "An exception occurred when updating the progress." + str(e)
             }
         ), 500
 
@@ -1083,8 +1125,9 @@ def assign_trainer():
     try:
         trainer_dao = TrainerDAO()
         trainerObj = trainer_dao.retrieve_one(data['staff_id'])
-        trainerObj.add_course_teaching(data['course_id'])
-        trainer_dao.update_trainer(trainerObj)
+        if data['course_id'] not in trainerObj.get_courses_teaching():
+            trainerObj.add_course_teaching(data['course_id'])
+            trainer_dao.update_trainer(trainerObj)
 
         return jsonify(
                 {

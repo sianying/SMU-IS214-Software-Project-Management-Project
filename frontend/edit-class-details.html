@@ -57,11 +57,17 @@
                         <option v-for="num in (40 - classObj.learners_enrolled.length)" >{{ num + classObj.learners_enrolled.length }}</option>
                     </select>
                 </div>
-                <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
-                    {{ apiError }}
+                <div v-if="errorAlert" class="alert alert-danger mtt-0 text-center" role="alert">
+                    {{ errorAlert }}
+                </div>
+                <div v-if="successAlert" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                    {{ course.course_id }} successfully updated.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="successAlert=false">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="d-flex justify-content-center">
-                    <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
+                    <!-- <a v-if="errorAlert" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
                     <!-- <a v-else class="btn btn-success mt-4" @click="onSubmit">Confirm</a> -->
                     <a class="btn btn-success mt-4" @click="onSubmit">Confirm</a>
                 </div>
@@ -107,7 +113,8 @@ var app = new Vue({
             endDatetime: "",
         },
         errorMessages: ["* Class Name not loaded. Please try again later.", "* Start Date and Time should be before End Date and Time", "* End Date and Time should be after Start Date and Time", "* Please try again later."],
-        apiError: false,
+        errorAlert: false,
+        successAlert: false
     },
     methods: {
         onSubmit() {
@@ -121,18 +128,20 @@ var app = new Vue({
                 classReqBody.class_id = this.classObj.class_id;
                 classReqBody.course_id = this.classObj.course_id;
                 classReqBody.class_size = this.selectedClassSize;
-                classReqBody.start_datetime = this.classObj.start_datetime;
-                classReqBody.end_datetime = this.classObj.end_datetime;
+                classReqBody.start_datetime = this.formatDateTime(this.classObj.start_datetime);
+                classReqBody.end_datetime =  this.formatDateTime(this.classObj.end_datetime);
 
                 //Call updateClassDetails endpoint
                 updateClassDetails(URL, classReqBody).then(result => {
-                    this.apiError = false;
+                    this.errorAlert = false;
                     if (result.code == 200){
                         const updatedClass = result.data;
-                        window.location.replace("./view-specific-course-HR.html")
+                        this.successAlert = true;
+                        // window.location.replace("./view-specific-course-HR.html")
 
                     } else {
-                        this.apiError = result.data + ".";
+                        this.successAlert = false;
+                        this.errorAlert = result.data + ".";
                     }
                 });
                 
@@ -152,7 +161,6 @@ var app = new Vue({
             //set 1 day after today
             now.setDate(now.getDate());
             const currentDateTime = now.toISOString().split("T")[0] + "T00:00";
-            console.log(currentDateTime)
             this.minDatetime = currentDateTime;
         },
         pastTodayDate() {
@@ -162,6 +170,11 @@ var app = new Vue({
             // if (this.classObj.end_datetime.split("T")[0] <= this.minDatetime.split("T")[0]) {
             //     document.getElementById("classEndTime").setAttribute("disabled", true)
             // }
+        },
+        formatDateTime(datetime) {
+            if (datetime.split(":").length === 2) {
+                return datetime + ":00"
+            } return datetime
         },
         setClassId(classId) {
             this.course.class_id = classId;

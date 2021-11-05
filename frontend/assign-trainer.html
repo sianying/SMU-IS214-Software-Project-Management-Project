@@ -31,7 +31,6 @@
                 <ol class="breadcrumb bg-light">
                     <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
                     <li class="breadcrumb-item"><a href="./view-specific-course-HR.html">{{ course.course_id }}</a></li>
-                    <li class="breadcrumb-item"><a href="./trainer_section_page.html">G{{ classObj.class_id }}</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Assign Trainer</li>
                 </ol>
             </nav>
@@ -46,15 +45,18 @@
             <form>
                 <div class="form-group">
                     <label for="exampleFormControlInput1">Assign Trainer</label><span class="form-error ml-2">{{ error.assignedTrainer }}</span>
-                    <select v-if="!apiError" v-model="selectedTrainer" class="form-control">
+                    <select v-model="selectedTrainer" class="form-control">
                         <option v-for="trainer in trainersList" :value="trainer.staff_id">{{ trainer.staff_name }}</option>
                     </select>
                 </div>
                 <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
                     {{ apiError }}
                 </div>
-                <div v-if="apiError" class="alert alert-danger mtt-0 text-center" role="alert">
-                    {{ apiError }}
+                <div v-if="successAlert" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                    Trainer successfully updated.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="successAlert=false">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="d-flex justify-content-center">
                     <!-- <a v-if="apiError" class="btn btn-success mt-4 disabled" @click="onSubmit">Confirm</a> -->
@@ -87,6 +89,7 @@ var app = new Vue({
         apiError: false,
         selectedTrainer: "",
         trainersList: [],
+        successAlert: false
     },
     methods: {
         onSubmit() {
@@ -105,10 +108,12 @@ var app = new Vue({
                     this.apiError = false;
                     if (result.code == 200){
                         const assignedTrainer = result.data;
+                        this.successAlert = true;
                     // Return 200, redirect to next page
-                        window.location.replace("./view-specific-course-HR.html")
+                        // window.location.replace("./view-specific-course-HR.html")
                     } else {
-                        this.apiError = result.data + ".";
+                        this.successAlert = false;
+                        this.apiError = result.data;
                     }
                 });
                 
