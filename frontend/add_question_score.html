@@ -198,7 +198,6 @@
                             if(JSON.parse(localStorage.getItem("selectedQuizId")) != null){
                                 var quizDetails = {
                                         "quiz_id": JSON.parse(localStorage.getItem("selectedQuizId")),
-                                        "section_id": section_id,
                                         "questions": qns,
                                         "time_limit": this.time_limit * 60,
                                         "course_id": this.course_id,
@@ -208,7 +207,7 @@
                             } else {
                                 var quizDetails = {
                                         // "quiz_id": JSON.parse(localStorage.getItem("selectedQuizId")),
-                                        "section_id": section_id,
+                                        // "section_id": section_id,
                                         "questions": qns,
                                         "time_limit": this.time_limit * 60,
                                         "course_id": this.course_id,
@@ -253,11 +252,12 @@
                         } else  {
                             createQuiz(URL, quizDetails).then(result => {
                                 // console.log(result);
-                                console.log(quizDetails)
+                                // console.log(quizDetails)
                                 if (result.code !== 201){
                                     this.error = true;
                                 } else {
                                     window.location.href = "./trainer_section_page.html";
+                                    // console.log(quizDetails)
                                 }
                             
                             })
