@@ -110,12 +110,7 @@ def retrieve_courses_trainer_teaches(staff_id):
         courseObj=course_dao.retrieve_one(course_id)
 
         if courseObj==None:
-            return jsonify(
-                {
-                    "code": 404,
-                    'data': "Course with course_id " + course_id + " could not be found."
-                }
-            ), 404
+            return format_response(404, "Course with course_id "+course_id +" could not be found.")
 
         course_list.append(courseObj)
 
@@ -758,12 +753,7 @@ def retrieve_enrolled_courses(staff_id):
     staff_obj = staff_dao.retrieve_one(staff_id)
 
     if staff_obj == None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Staff with staff_id " + staff_id + " not found."
-            }
-        ), 404
+        return format_response(404, "Staff with staff_id "+ staff_id+" not found.")
 
     enrolled_course_ids = staff_obj.get_courses_enrolled()
     course_dao = CourseDAO()
@@ -773,21 +763,11 @@ def retrieve_enrolled_courses(staff_id):
         course_obj = course_dao.retrieve_one(course_id)
 
         if course_obj == None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "data": "Course with course_id " + str(course_id) + " not found."
-                }
-            ), 404
+            return format_response(404, "Course with course_id "+str(course_id)+ " not found.")
 
         returned_courses.append(course_obj)
 
-    return jsonify(
-        {
-            "code": 200,
-            "data": [course_obj.json() for course_obj in returned_courses]
-        }
-    )
+    return format_response(200, [course_obj.json() for course_obj in returned_courses])
 
 
 @app.route('/classes/enrolled/<string:staff_id>/<string:course_id>')
@@ -796,23 +776,13 @@ def retrieve_enrolled_classes(staff_id, course_id):
     staff_obj = staff_dao.retrieve_one(staff_id)
     
     if staff_obj==None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Staff with staff_id " + staff_id + " not found."
-            }
-        ), 404
+        return format_response(404, "Staff with staff_id "+staff_id +" not found.")
 
     class_dao = ClassDAO()
     class_list = class_dao.retrieve_all_from_course(course_id)
 
     if len(class_list)==0:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "No classes found for course_id " + course_id
-            }
-        ), 404
+        return format_response(404, "No classes found for course_id "+ course_id)
 
     for classObj in class_list:
         learners_enrolled = classObj.get_learners_enrolled()
@@ -823,15 +793,9 @@ def retrieve_enrolled_classes(staff_id, course_id):
             else:
                 class_json['trainer_name'] = None
             
-            return {    
-                "code":200,
-                "data": class_json
-            }
+            return format_response(200, class_json)
 
-    return {
-        "code": 404,
-        "data": "No enrolled classes found for staff " + staff_id + " and course " + course_id
-    }, 404
+    return format_response(404, "No enrolled classes found for staff "+ staff_id + " and course "+course_id)
 
 
 if __name__ == "__main__":
