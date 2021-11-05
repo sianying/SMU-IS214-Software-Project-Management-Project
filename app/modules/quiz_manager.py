@@ -159,14 +159,6 @@ class QuizDAO:
         
         return Quiz(response['Items'][0])
 
-    def retrieve_by_section(self, section_id):
-        response = self.table.query(IndexName = "SectionIndex", KeyConditionExpression=Key('section_id').eq(section_id))
-        
-        if response['Items'] == []:
-            return 
-        
-        return Quiz(response['Items'][0])
-
     #Update
     def update_quiz(self, QuizObj):
         # method updates the DB if one wants to set new questions/delete old questions.

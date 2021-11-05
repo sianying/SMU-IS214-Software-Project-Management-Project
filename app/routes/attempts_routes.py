@@ -6,17 +6,6 @@ from modules.quiz_manager import QuizDAO
 from modules.progress_manager import ProgressDAO
 
 # ============= Read ===================
-@routes.route("/attempts/<string:quiz_id>")
-def retrieve_quiz_attempts(quiz_id):
-    attempt_dao = AttemptDAO()
-    attempts_list = attempt_dao.retrieve_by_quiz(quiz_id)
-
-    if len(attempts_list):
-        return format_response(200, [attemptObj.json() for attemptObj in attempts_list])
-    
-    return format_response(404, "No attempts were found for Quiz {}".format(quiz_id))
-
-
 @routes.route("/attempts/<string:quiz_id>/<string:staff_id>")
 def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
     attempt_dao = AttemptDAO()
@@ -25,7 +14,7 @@ def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
     if len(attempts_list):
         return format_response(200, [attemptObj.json() for attemptObj in attempts_list])
     
-    return format_response(404, "No attempts were found for Quiz {}".format(quiz_id))
+    return format_response(404, "No attempts were found for Staff {} for Quiz {}".format(staff_id,quiz_id))
 
 # ============= Create ==================
 @routes.route("/attempts", methods=['POST'])

@@ -7,7 +7,7 @@ from modules.section_manager import SectionDAO
 from modules.attempt_manager import AttemptDAO
 
 # ============= Read ===================
-@routes.route("/quiz/<string:quiz_id>")
+@routes.route("/quiz/<string:quiz_id>") 
 def retrieve_quiz_by_ID(quiz_id):
     quiz_dao = QuizDAO()
     quizObj = quiz_dao.retrieve_one(quiz_id)
@@ -16,16 +16,6 @@ def retrieve_quiz_by_ID(quiz_id):
         return format_response(200, quizObj.json())
     
     return format_response(404, "No quiz was found with id "+quiz_id)
-
-@routes.route("/quiz/section/<string:section_id>")
-def retrieve_quiz_by_section(section_id):
-    quiz_dao = QuizDAO()
-    quizObj = quiz_dao.retrieve_by_section(section_id)
-
-    if quizObj:
-        return format_response(200, quizObj.json())
-    
-    return format_response(404, "No quiz was found for section "+ section_id)
 
 # ============= Create ==================
 
@@ -110,7 +100,7 @@ def update_quiz():
     
     try:
         quiz_dao.update_quiz(quizObj)
-        return format_response("Quiz Updated")
+        return format_response(200, "Quiz Updated")
 
     except Exception as e:
         return format_response(500, "An error occurred when updating quiz")

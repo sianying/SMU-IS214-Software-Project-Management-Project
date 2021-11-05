@@ -15,6 +15,17 @@ def retrieve_all_courses():
     
     return format_response(404, "No courses found")
 
+@routes.route("/courses/<string:course_id>")
+def retrieve_specific_course(course_id):
+    course_dao = CourseDAO()
+    course = course_dao.retrieve_one(course_id)
+
+    if course != None:
+        return format_response(200, course.json())
+
+    return format_response(404, "No course found with id "+course_id)
+
+
 @routes.route("/courses/eligible/<string:staff_id>")
 def retrieve_eligible_courses(staff_id):
     staff_dao = StaffDAO()
@@ -37,16 +48,6 @@ def retrieve_eligible_courses(staff_id):
     if len(course_list):
         return format_response(200, [course.json() for course in course_list])
     return format_response(404, "No courses found.")
-
-@routes.route("/courses/<string:course_id>")
-def retrieve_specific_course(course_id):
-    course_dao = CourseDAO()
-    course = course_dao.retrieve_one(course_id)
-
-    if course != None:
-        return format_response(200, course.json())
-
-    return format_response(404, "No course found with id "+course_id)
 
 # retrieve those that can teach a course, not those that are currently teaching the course.
 # for HR
@@ -74,14 +75,10 @@ def retrieve_courses_trainer_teaches(staff_id):
         return format_response(404, "No courses were found for the trainer.")
     
     course_dao = CourseDAO()
-    course_list=[]
-    for course_id in course_ids:
-        courseObj=course_dao.retrieve_one(course_id)
-
-        if courseObj==None:
-            return format_response(404, "Course with course_id "+course_id +" could not be found.")
-
-        course_list.append(courseObj)
+    course_list = course_dao.retrieve_all_in_list(course_ids)
+    
+    if course_list == []:
+        return format_response(404, "No courses found for the trainer.")
 
     return format_response(200, [courseObj.json() for courseObj in course_list])
 
@@ -95,17 +92,12 @@ def retrieve_enrolled_courses(staff_id):
 
     enrolled_course_ids = staff_obj.get_courses_enrolled()
     course_dao = CourseDAO()
-    returned_courses = []
+    course_list = course_dao.retrieve_all_in_list(enrolled_course_ids)
+    
+    if course_list == []:
+        return format_response(404, "No courses found for the staff.")    
 
-    for course_id in enrolled_course_ids:
-        course_obj = course_dao.retrieve_one(course_id)
-
-        if course_obj == None:
-            return format_response(404, "Course with course_id "+str(course_id)+ " not found.")
-
-        returned_courses.append(course_obj)
-
-    return format_response(200, [course_obj.json() for course_obj in returned_courses])
+    return format_response(200, [course_obj.json() for course_obj in course_list])
 
 # ============= Create ==================
 @routes.route("/courses", methods =['POST'])

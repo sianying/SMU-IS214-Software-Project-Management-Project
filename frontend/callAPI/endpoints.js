@@ -186,24 +186,6 @@ export async function retrieveQuizById(URL, quizId) {
     
 }
 
-// Retrieve all quizzes by quiz id
-export async function retrieveQuizBySection(URL, sectionId) {
-    try {
-        const response = await fetch(`${URL}/quiz/section/${sectionId}`);
-        if (response) {
-            const result = await response.json();
-            return result;
-        }
-        } catch(e) {
-        const error = {
-            "code": 404,
-            "data": e
-        }
-        return error;
-    }
-    
-}
-
 // Retrieve all attempts by quiz id and staff id
 export async function retrieveAttemptsByLearner(URL, quizId, staffId){
     try {

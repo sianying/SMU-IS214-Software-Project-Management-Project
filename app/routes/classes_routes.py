@@ -10,15 +10,12 @@ from modules.trainer_manager import TrainerDAO
 @routes.route("/class/assigned/<string:course_id>/<string:staff_id>")
 def retrieve_assigned_classes(course_id, staff_id):
     class_dao = ClassDAO()
-    class_list = class_dao.retrieve_trainer_classes(course_id, staff_id)
 
     try:
         class_list = class_dao.retrieve_trainer_classes(course_id, staff_id)
         return format_response(200, [classObj.json() for classObj in class_list])
-
     except ValueError as e:
         return format_response(403, str(e))
-        
     except:
         return format_response(500, "An error occurred while retrieving classes a trainer is assigned to teach.")
 

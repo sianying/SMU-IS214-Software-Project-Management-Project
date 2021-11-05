@@ -23,6 +23,8 @@ class JSONEncoder_Improved(json.JSONEncoder):
 app = Flask(__name__)
 app.json_encoder= JSONEncoder_Improved
 CORS(app)
+
+# register all the routes in the routes folder
 app.register_blueprint(routes)
 
 
@@ -119,7 +121,6 @@ def upload_file(file_binary, filename):
         raise Exception("Error occured when uploading.")
     except Exception as e:
         raise Exception("Error occured when uploading.\nError Message: "+str(e))
-
 
 
 if __name__ == "__main__":
