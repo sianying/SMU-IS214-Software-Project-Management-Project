@@ -38,7 +38,7 @@
         <nav-bar></nav-bar>
     </div>
 
-    <div id="app">
+    <div id="app" v-cloak>
         <div id='breadcrumb-div' class='mx-auto mt-4'>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
@@ -51,12 +51,20 @@
             </nav>
         </div>
         
+        <div class='d-flex justify-content-end mr-5'>
+            <a target='_blank' id='download-material' class="btn btn-info mb-3" href='#'>
+                Download Course Material
+            </a>
+        </div>
         <div class="d-flex align-items-center">
             <div id='iframe-div' class='d-none mx-auto mb-3'></div>
             <div id='video-div' class='d-none mx-auto'>
                 <video controls>
                     <source type="video/mp4">
                 </video>
+            </div>
+            <div id='image-div' class='d-none mx-auto mb-3'>
+                <img id='img' src='#'>
             </div>
         </div>
     </div>
@@ -97,7 +105,7 @@
                         for(let material of section['materials']){
                             if(material['mat_name'] == mat_name){
                                 this.material_name = material['mat_name'];
-                                this.material_type = material['mat_type'];
+                                document.getElementById('download-material').setAttribute('href', material['url']);
                                 if(material['mat_type'] == '.mp4'){
                                     document.getElementById('video-div').classList.remove('d-none');
                                     var video = document.getElementsByTagName('video')[0];
@@ -134,6 +142,9 @@
                                             }
                                         });
                                     }, 4000)
+                                } else if(material['mat_type'] == '.jpg'){
+                                    document.getElementById('image-div').classList.remove('d-none');
+                                    document.getElementById('img').setAttribute("src", material['url']);
                                 }
                                 else{
                                     document.getElementById('iframe-div').classList.remove('d-none');

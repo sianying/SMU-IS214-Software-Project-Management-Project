@@ -38,7 +38,7 @@
     </div>
 
 
-    <div id='app'>
+    <div id='app' v-cloak>
         <div id='breadcrumb-div' class='mx-auto mt-4'>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
@@ -58,8 +58,8 @@
                         There are no uploaded materials, choose a material to upload!
                     </div>
                     <ul id='material-list' class="my-3">
-                        <li v-for='material in materials'>
-                            {{material.mat_name}}
+                        <li v-for='(material, index) in materials'>
+                            <a id='matName' href='#' @click='addMatName(index)'>{{material.mat_name}}</a>
                         </li>
                     </ul>
                 </div>
@@ -122,12 +122,21 @@
                 error: ""
             },
             created: function(){  
+                // const course = JSON.parse(localStorage.getItem("courseDetails"));
+
+                // const course_id = course['course_id'];
+                // this.course_id = course_id;
+
+                // const class_id = course['class_id'];
+                // this.class_id = class_id;
+
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
+                const class_details= JSON.parse(localStorage.getItem("classDetails"));
 
                 const course_id = course['course_id'];
                 this.course_id = course_id;
 
-                const class_id = course['class_id'];
+                const class_id = class_details['class_id'];
                 this.class_id = class_id;
 
                 this.section = JSON.parse(localStorage.getItem('sectionSelectedId'));
@@ -151,7 +160,7 @@
                         };
 
                         uploadMaterial(URL, requestOptions).then(result => {
-                            // console.log(result);
+
                             if (result.code !== 201){
                                 this.error = "An error has occurred, please try again later.";
                             } else {
@@ -205,6 +214,15 @@
                                 }
                             }
                         })  
+                    },
+                    addMatName(ind){
+                        if(this.materials[ind].mat_type == 'Link'){
+                            document.getElementById('matName').setAttribute('href', this.materials[ind].url)
+                        } else  {
+                            localStorage.setItem('matName', JSON.stringify(this.materials[ind].mat_name));
+                            location.href = "./view_material.html";
+                        }
+                        
                     }
             }
         })
