@@ -119,15 +119,16 @@
                             this.answers.push(Number(questionEl.getAttribute('value')));
                         }
                     });
-                    
+                    const course = JSON.parse(localStorage.getItem("courseDetails"))
                     // upload answer
                     var requestBody = {
                         "quiz_id": this.quiz_id,
                         "staff_id": this.accountDetails.staff_id,
-                        "options_selected": this.answers
+                        "options_selected": this.answers,
+                        "course_id": course["course_id"]
                     };
 
-                    if(this.is_final){
+                    if(this.is_final == true){
                         requestBody['is_final_quiz'] =true;
                     }
 
