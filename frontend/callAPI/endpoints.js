@@ -27,7 +27,7 @@ export async function retrieveAllCourses(URL) {
 // Retrieve Specific Course
 export async function retrieveSpecificCourse(URL, courseId) {
     try {
-        const response = await fetch(`${URL}/course/${courseId}`);
+        const response = await fetch(`${URL}/courses/${courseId}`);
         if (response) {
             const result = await response.json();
             return result;
