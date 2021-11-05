@@ -319,7 +319,7 @@ export async function createAttempt(URL, body){
             body: JSON.stringify(body)
         }
 
-        const response = await fetch(`${URL}/attempts/${body.quiz_id}`, data)
+        const response = await fetch(`${URL}/attempts`, data)
         if(response){
             const result = await response.json()
             return result;

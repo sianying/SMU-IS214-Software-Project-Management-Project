@@ -678,7 +678,7 @@ def insert_attempt():
     dao = AttemptDAO()
 
     try:
-        results = dao.insert_attempt(data, correct_answers, marks)        
+        results = dao.insert_attempt(data, correct_answers, marks) 
         
     except ValueError as e:
         if str(e) == "Attempt already exists":
@@ -896,8 +896,8 @@ def insert_files():
                 "data": str(e)
             }
         ), 500
-
-    mat = Material(transformed_name, extension, url)
+    
+    mat = Material({"mat_name":transformed_name, "mat_type":extension, "url":url})
     section.add_material(mat)
     
     try:

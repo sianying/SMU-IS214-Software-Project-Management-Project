@@ -67,6 +67,7 @@
                 questions: null,
                 answers: [],
                 accountDetails: {},
+                is_final: null,
                 timerCount: 0, // get from db
                 secondsCount: 0,
                 minutesCount: 0,  
@@ -78,7 +79,7 @@
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
                 this.quiz_id = urlParams.get('quiz_id');
-
+                this.is_final = urlParams.get('is_final')
                 // To pass section name and quiz_id from prev page
                 retrieveQuizById(URL, this.quiz_id).then(result =>{
                     if(result.code == 200){
@@ -118,13 +119,18 @@
                             this.answers.push(Number(questionEl.getAttribute('value')));
                         }
                     });
-                    
+                    const course = JSON.parse(localStorage.getItem("courseDetails"))
                     // upload answer
                     var requestBody = {
                         "quiz_id": this.quiz_id,
                         "staff_id": this.accountDetails.staff_id,
-                        "options_selected": this.answers
+                        "options_selected": this.answers,
+                        "course_id": course["course_id"]
                     };
+
+                    if(this.is_final != null){
+                        requestBody['is_final_quiz'] =true;
+                    }
 
                     createAttempt(URL, requestBody).then(result => {
                         if(result.code == 201){

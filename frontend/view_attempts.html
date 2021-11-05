@@ -53,7 +53,7 @@
             </p>
             <p class= "mt-1">The timer will start once the button is clicked.</p>
             <p class= "mt-1">Click "Attempt Quiz" to begin.</p>
-            <a class="btn btn-primary" :href="'./attempt_quiz.html?quiz_id='+quiz_id">Attempt Quiz!</a>
+            <button class="btn btn-primary" @click="attempt_quiz()">Attempt Quiz!</button>
         </div>
 
         <div v-if="attempts.length > 0" class="container-fluid width mt-4">
@@ -83,6 +83,7 @@
                 section_name: "",
                 attempts: [],
                 accountDetails: {},
+                is_final: false
             },
             created: function() {
                 this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
@@ -91,7 +92,7 @@
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
                 this.quiz_id = urlParams.get('quiz_id');
-                
+                this.is_final = urlParams.get('is_final')
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
                 const class_details= JSON.parse(localStorage.getItem("classDetails"));
 
@@ -114,8 +115,11 @@
             methods: {
                 view_quiz: function(attempt_index){
                     localStorage.setItem("attempt", JSON.stringify(this.attempts[attempt_index]))
-                    window.location.replace("./review_quiz.html?quiz_id="+this.quiz_id)
+                    window.location.replace(`./review_quiz.html?quiz_id=${this.quiz_id}`)
                 },
+                attempt_quiz: function(){
+                    window.location.replace(`./attempt_quiz.html?quiz_id=${this.quiz_id}&is_final=${this.is_final}`)
+                }
             }
         })
     </script>
