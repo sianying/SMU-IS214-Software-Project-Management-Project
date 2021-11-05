@@ -70,15 +70,18 @@
                             <h5 class="card-title d-flex justify-content-between d-inline-block">
                                 <a>G{{ selectedClass.class_id }}</a>
                             </h5>
-                            <a class="mr-1" v-if="accountDetails.role === 'HR'" href="./edit-class-details.html" @click="setClassDetails(selectedClass)">
-                                <span class="iconify edit-button mr-1" data-icon="bx:bxs-edit"></span>
-                                Edit Details
-                            </a>
-                            |
-                            <a v-if="accountDetails.role === 'HR'" href="./assign-trainer.html" @click="setClassDetails(selectedClass)">
-                                <span class="iconify edit-button mx-1" data-icon="wpf:add-user"></span>
-                                Assign Trainer
-                            </a>
+                            <div v-if="accountDetails.role === 'HR'">
+                                <a href="./edit-class-details.html" class="mr-1"@click="setClassDetails(selectedClass)">
+                                    <span class="iconify edit-button mr-1" data-icon="bx:bxs-edit"></span>
+                                    Edit Details
+                                </a>
+                                |
+                                <a href="./assign-trainer.html" @click="setClassDetails(selectedClass)">
+                                    <span class="iconify edit-button mx-1" data-icon="wpf:add-user"></span>
+                                    Assign Trainer
+                                </a>
+                            </div>
+                            
                         </div>
                         
                         <p class="card-text">
@@ -101,7 +104,7 @@
     </div>
     
 <script type="module">
-import { URL, retrieveSpecificCourse, retrieveAllClasses, retrieveAssignedClasses, retrieveSpecificStaff} from "./callAPI/endpoints.js";
+import { URL, retrieveSpecificCourse, retrieveAllClasses, retrieveSpecificStaff} from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
