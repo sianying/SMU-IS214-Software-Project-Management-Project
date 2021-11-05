@@ -58,20 +58,30 @@
                 There has been a problem enrolling {{selectedName}}!
             </div>
         </div>
+        <div id='confirmation' v-if='enrollCheck === 3'>
+            <div class="alert alert-danger w-50 mx-auto text-center" role="alert">
+                {{selectedName}}'s request to enroll into {{selectedCourse}} Class {{selectedClass}} has been rejected.
+            </div>
+        </div>
         <div id='alert-message' v-if="this.requests.length===0">
             <div class="alert alert-danger mx-auto w-50 text-center" role="alert">
                 There are no eligible learners for selection.
             </div>
         </div>
         <div class='mx-auto' id='learners-div'>
-            <div v-for='request in requests' >
+            <div v-for="(request, index) in requests" :key="index">
                 <span class='h3 ml-1'><b>{{request.staff_name}}</b></span>
                 <span class='h6 ml-2'>{{request.course_id}} Class {{request.class_id}}</span>
-                <div class='mt-2'>
+                <div class='mt-2' >
                     <span class="badge badge-pill badge-success py-2 my-2">Completed pre-requisites</span>
-                    <span class="badge badge-pill badge-warning py-2 my-2">Not Previously enrolled</span>
-                    <span>
-                        <button id='enrol-btn' type='button'  onclick = "this.disabled = true;" v-on:click='processRequest(request.staff_id, request.course_id, request.class_id, request.staff_name)' class="btn btn-primary">Approve</button>
+                    <span  class="badge badge-pill badge-warning py-2 my-2">Not Previously enrolled</span>
+                    
+                    <span  >
+                        <button :id="'reject' + index"  type='button'  onclick = "this.disabled = true;" v-on:click='rejectRequest(request.staff_id, request.course_id, request.class_id, request.staff_name,index)' class="btn btn-danger">Reject</button>
+                    </span>
+                    <span >
+                        <button :id="'accept' + index" type='button'  onclick = "this.disabled = true;" v-on:click='approveRequest(request.staff_id, request.course_id, request.class_id, request.staff_name,index)' class="btn btn-primary" >Accept</button>
+                    
                     </span>
                 </div>
                 <hr>
@@ -104,10 +114,10 @@
                 
             },
             methods: {
-                processRequest(staffid,courseid,classid,staffname){
-                    console.log(staffid);
-                    console.log(courseid);
-                    console.log(classid);
+                approveRequest(staffid,courseid,classid,staffname,index){
+                    
+                    document.getElementById("accept" + index).disabled = true
+                    document.getElementById("reject" + index).disabled = true
                     this.selectedName = staffname;
                     this.selectedCourse = courseid;
                     this.selectedClass = classid;
@@ -117,6 +127,7 @@
                         "class_id" : classid,
                         "req_status" : "approved"
                     }
+                    
                     fetch('http://127.0.0.1:5000/request/update',{
                         method: 'PUT',
                         headers:{
@@ -130,10 +141,40 @@
                         this.enrollCheck = 2
                     }
                     return response
-                })        
-        }
+                })
+                
+                
 
             },
+
+            rejectRequest(staffid,courseid,classid,staffname,index){
+                    document.getElementById("accept" + index).disabled = true
+                    document.getElementById("reject" + index).disabled = true
+                    this.selectedName = staffname;
+                    this.selectedCourse = courseid;
+                    this.selectedClass = classid;
+                    const body = {
+                        "staff_id": staffid,
+                        "course_id" : courseid,
+                        "class_id" : classid,
+                        "req_status" : "rejected"
+                    }
+                    fetch('http://127.0.0.1:5000/request/update',{
+                        method: 'PUT',
+                        headers:{
+                        'Content-Type':'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    }).then(response=>{
+                    if(response.ok){
+                        this.enrollCheck = 3
+                    }else{
+                        this.enrollCheck = 2
+                    }
+                    return response
+                })   
+        }
+    },
            
             mounted: function() {
                 //Retrieve course id from URL
@@ -143,7 +184,6 @@
                 fetch('http://127.0.0.1:5000/request',{
                     }).then(response => response.json())
                 .then(data => {
-                    console.log(data.data);
                     if(data.data != "No pending requests found"){
                         for(let i = 0; i < data.data.length ; i++){
                         this.requests.push(data.data[i]);
