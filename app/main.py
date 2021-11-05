@@ -16,6 +16,8 @@ from modules.request_manager import RequestDAO, Request
 from modules.progress_manager import ProgressDAO
 
 try:
+    os.environ["AWS_ACCESS_KEY_ID"] = "AKIA5T3RCXT7ZUOIFC73"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = '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'
     os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "./aws_credentials"
     session = boto3.Session()
 except:
