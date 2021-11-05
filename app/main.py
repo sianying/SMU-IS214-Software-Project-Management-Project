@@ -36,22 +36,12 @@ CORS(app)
 
 @app.route("/courses")
 def retrieve_all_courses():
-    dao = CourseDAO()
-    course_list = dao.retrieve_all()
+    course_dao = CourseDAO()
+    course_list = course_dao.retrieve_all()
     if len(course_list):
-        return jsonify(
-            {    
-                "code":200,
-                "data": [course.json() for course in course_list]
-            }
-        )
+        return format_response(200, [course.json() for course in course_list])
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No courses found"
-        }
-    ), 404
+    return format_response(404, "No courses found")
 
 
 @app.route("/courses/eligible/<string:staff_id>")
@@ -60,14 +50,9 @@ def retrieve_eligible_courses(staff_id):
     staff = staff_dao.retrieve_one(staff_id)
 
     if staff == None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Staff "+staff_id+" does not exist."
-            }
-        ), 404
+        return format_response(404, "Staff "+staff_id+" does not exist.")
 
-    # If staff is Trainer, need to remove courses he is enrolled in + assigned to teach as well.
+    # if staff is Trainer, need to remove courses he is enrolled in + assigned to teach as well.
     courses_to_remove=staff.get_courses_enrolled()
 
     if staff.get_isTrainer():
@@ -79,62 +64,30 @@ def retrieve_eligible_courses(staff_id):
     course_list = course_dao.retrieve_eligible_course(staff.get_courses_completed(), courses_to_remove)
 
     if len(course_list):
-        return jsonify(
-            {
-                "code":200,
-                'data': [course.json() for course in course_list]
-            }
-        )
-    
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No courses found"
-        }
-    ), 404
+        return format_response(200, [course.json() for course in course_list])
+    return format_response(404, "No courses found.")
 
 
 @app.route("/course/<string:course_id>")
 def retrieve_specific_course(course_id):
-    dao = CourseDAO()
-    course = dao.retrieve_one(course_id)
+    course_dao = CourseDAO()
+    course = course_dao.retrieve_one(course_id)
 
     if course != None:
-        return jsonify(
-            {
-                "code":200,
-                "data": course.json()
-            }
-        )
+        return format_response(200, course.json())
 
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No course found with id "+course_id
-        }
-    ), 404
-
+    return format_response(404, "No course found with id "+course_id)
 
 # retrieve those that can teach a course, not those that are currently teaching the course.
 # for HR
 @app.route("/courses/qualified/<string:course_id>")
 def retrieve_qualified_trainers(course_id):
-    dao = TrainerDAO()
-    trainer_list = dao.retrieve_qualified_trainers(course_id)
+    trainer_dao = TrainerDAO()
+    trainer_list = trainer_dao.retrieve_qualified_trainers(course_id)
     if len(trainer_list):
-        return jsonify(
-            {
-                "code":200,
-                'data': [trainerObj.json() for trainerObj in trainer_list]
-            }
-        )
+        return format_response(200, [trainerObj.json() for trainerObj in trainer_list])
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No trainer found"
-        }
-    ), 404
+    return format_response(404, "No trainer found.")
 
 
 # retrieve all the courses that a trainer is actually teaching.
@@ -142,98 +95,50 @@ def retrieve_qualified_trainers(course_id):
 # for Trainer
 @app.route("/courses/assigned/<string:staff_id>")
 def retrieve_courses_trainer_teaches(staff_id):
-    dao=TrainerDAO()
+    trainer_dao=TrainerDAO()
     try:
-        course_ids = dao.retrieve_courses_teaching(staff_id)
+        course_ids = trainer_dao.retrieve_courses_teaching(staff_id)
     except:
-        return jsonify(
-        {
-            "code": 404,
-            "data": "No trainer found for the given staff_id."
-        }
-    ), 404
+        return format_response(404, "No trainer found for staff_id "+staff_id)
     
     if course_ids==[]:
-        return jsonify(
-        {
-            "code": 404,
-            "data": "No courses were found for the trainer."
-        }
-    ), 404
+        return format_response(404, "No courses were found for the trainer.")
     
     course_dao = CourseDAO()
     course_list=[]
     for course_id in course_ids:
         try:
             courseObj=course_dao.retrieve_one(course_id)
+            course_list.append(courseObj)
         except:
-            return jsonify(
-                {
-                    "code": 404,
-                    'data': "Course with course_id " + course_id + " could not be found."
-                }
-            ), 404
-        course_list.append(courseObj)
+            return format_response(404, "Course with course_id "+course_id+ " could not be found.")
 
-    return jsonify(
-        {
-            "code":200,
-            'data': [courseObj.json() for courseObj in course_list]
-        }
-    )
+    return format_response(200, [courseObj.json() for courseObj in course_list])
     
 
 @app.route("/class/assigned/<string:course_id>/<string:staff_id>")
 def retrieve_assigned_classes(course_id, staff_id):
-    dao = ClassDAO()
-    class_list = dao.retrieve_trainer_classes(course_id, staff_id)
+    class_dao = ClassDAO()
+    class_list = class_dao.retrieve_trainer_classes(course_id, staff_id)
 
     try:
-        class_list = dao.retrieve_trainer_classes(course_id, staff_id)
-        
-        return jsonify(
-            {
-                "code":200,
-                'data': [classObj.json() for classObj in class_list]
-            }
-        )
-    
+        class_list = class_dao.retrieve_trainer_classes(course_id, staff_id)
+        return format_response(200, [classObj.json() for classObj in class_list])
+
     except ValueError as e:
-        if str(e) == "No classes found for the given course_id " + course_id:
-            return jsonify(
-                {
-                    "code": 403,
-                    "data": str(e)
-                }
-            ), 403
+        return format_response(403, str(e))
         
     except:
-        return jsonify(
-            {
-            "code": 404,
-            "data": "An error occured while retrieving classes a trainer is assigned to teach."
-            }
-        ), 404
+        return format_response(500, "An error occurred while retrieving classes a trainer is assigned to teach.")
 
 
 @app.route("/staff/<string:staff_id>")
 def retrieve_specific_staff(staff_id):
-    dao = StaffDAO()
-    staffObj = dao.retrieve_one(staff_id)
+    staff_dao = StaffDAO()
+    staffObj = staff_dao.retrieve_one(staff_id)
     if staffObj != None:
-        return jsonify(
-            {
-                "code":200,
-                'data': staffObj.json()
-            }
-        )
-    
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No staff found with staff_id "+staff_id
-        }
-    ),404
+        return format_response(200, staffObj.json())
+    return format_response(404,"No staff found with staff_id "+ staff_id)
 
 
 @app.route("/staff/eligible/<string:course_id>")
@@ -242,36 +147,21 @@ def retrieve_eligible_staff(course_id):
     courseObj = course_dao.retrieve_one(course_id)
 
     if courseObj == None:
-        return jsonify(
-            {
-                "code":404,
-                "data": course_id + " does not exist."
-            }
-        ), 404
+        return format_response(404, course_id + " does not exist.")
     
     staff_dao = StaffDAO()
     staff_list = staff_dao.retrieve_eligible_staff_to_enrol(courseObj)
 
     if len(staff_list):
-        return jsonify(
-            {
-                "code":200,
-                'data': [staff.json() for staff in staff_list]
-            }
-        )
+        return format_response(200, [staff.json() for staff in staff_list])
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No staff found"
-        }
-    ), 404    
+    return format_response(404, "No staff found.")
 
 
 @app.route("/class/<string:course_id>")
 def retrieve_all_classes(course_id):
-    dao = ClassDAO()
-    class_list = dao.retrieve_all_from_course(course_id)
+    class_dao = ClassDAO()
+    class_list = class_dao.retrieve_all_from_course(course_id)
     staff_dao = StaffDAO()
     toReturn = []
 
@@ -286,144 +176,74 @@ def retrieve_all_classes(course_id):
 
 
     if len(class_list):
-        return jsonify(
-            {    
-                "code":200,
-                "data": toReturn
-            }
-        )
+        return format_response(200, toReturn)
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No classes found for course "+course_id
-        }
-    ), 404
+    return format_response(404, "No classes found for course " + course_id)
 
 
 @app.route("/section/<string:course_id>/<int:class_id>")
 def retrieve_all_section_from_class(course_id, class_id):
-    dao = SectionDAO()
-    section_list = dao.retrieve_all_from_class(course_id, class_id)
+    section_dao = SectionDAO()
+    section_list = section_dao.retrieve_all_from_class(course_id, class_id)
     if len(section_list):
-        return jsonify(
-            {
-                "code": 200,
-                "data": [sectionObj.json() for sectionObj in section_list]
-            }
-        )
+        return format_response(200, [sectionObj.json() for sectionObj in section_list])
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No section found for Course {}, Class {}".format(course_id, class_id)
-        }
-    ), 404
+    return format_response(404, "No section found for Course {}, Class {}".format(course_id, class_id))
 
 
 @app.route("/section/<string:section_id>")
 def retrieve_specific_section(section_id):
-    dao = SectionDAO()
-    section = dao.retrieve_one(section_id)
+    section_dao = SectionDAO()
+    section = section_dao.retrieve_one(section_id)
 
     if section != None:
-        return jsonify(
-            {
-                "code":200,
-                "data": section.json()
-            }
-        )
+        return format_response(200, section.json())
 
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No section found with id "+section_id
-        }
-    ), 404
+    return format_response(404, "No section found with id "+section_id)
 
 
 @app.route("/quiz/<string:quiz_id>")
 def retrieve_quiz_by_ID(quiz_id):
-    dao = QuizDAO()
-    quizObj = dao.retrieve_one(quiz_id)
+    quiz_dao = QuizDAO()
+    quizObj = quiz_dao.retrieve_one(quiz_id)
 
     if quizObj:
-        return jsonify(
-            {
-                "code":200,
-                "data": quizObj.json()
-            }
-        )
+        return format_response(200, quizObj.json())
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No quiz was found with id " + quiz_id
-        }
-    ), 404
+    return format_response(404, "No quiz was found with id "+quiz_id)
 
 
 @app.route("/quiz/section/<string:section_id>")
 def retrieve_quiz_by_section(section_id):
-    dao = QuizDAO()
-    quizObj = dao.retrieve_by_section(section_id)
+    quiz_dao = QuizDAO()
+    quizObj = quiz_dao.retrieve_by_section(section_id)
 
     if quizObj:
-        return jsonify(
-            {
-                "code":200,
-                "data": quizObj.json()
-            }
-        )
+        return format_response(200, quizObj.json())
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No quiz was found for section " + section_id
-        }
-    ), 404
+    return format_response(404, "No quiz was found for section "+ section_id)
 
 
 @app.route("/attempts/<string:quiz_id>")
 def retrieve_quiz_attempts(quiz_id):
-    dao = AttemptDAO()
-    attempts_list = dao.retrieve_by_quiz(quiz_id)
+    attempt_dao = AttemptDAO()
+    attempts_list = attempt_dao.retrieve_by_quiz(quiz_id)
 
     if len(attempts_list):
-        return jsonify(
-            {
-                "code": 200,
-                "data": [attemptObj.json() for attemptObj in attempts_list]
-            }
-        )
+        return format_response(200, [attemptObj.json() for attemptObj in attempts_list])
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No attempts were found for Quiz {}".format(quiz_id)
-        }
-    ), 404
+    return format_response(404, "No attempts were found for Quiz {}".format(quiz_id))
 
 
 @app.route("/attempts/<string:quiz_id>/<string:staff_id>")
 def retrieve_quiz_attempts_by_learner(quiz_id, staff_id):
-    dao = AttemptDAO()
-    attempts_list = dao.retrieve_by_learner(quiz_id, staff_id)
+    attempt_dao = AttemptDAO()
+    attempts_list = attempt_dao.retrieve_by_learner(quiz_id, staff_id)
 
     if len(attempts_list):
-        return jsonify(
-            {
-                "code": 200,
-                "data": [attemptObj.json() for attemptObj in attempts_list]
-            }
-        )
+        return format_response(200, [attemptObj.json() for attemptObj in attempts_list])
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No attempts were found for Quiz {}".format(quiz_id)
-        }
-    ), 404
+    return format_response(404, "No attempts were found for Quiz {}".format(quiz_id))
 
 
 @app.route("/request")
@@ -441,103 +261,52 @@ def retrieve_all_pending():
 
 
     if len(request_list):
-        return jsonify(
-            {
-                "code": 200,
-                "data": toReturn
-            }
-        )
+        return format_response(200, toReturn)
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No pending requests found"
-        }
-    ), 404
+    return format_response(404, "No pending requests found")
 
 @app.route("/request/<string:staff_id>")
 def retrieve_all_request_by_staff(staff_id):
-    dao = RequestDAO()
-    request_list = dao.retrieve_all_from_staff(staff_id)
+    request_dao = RequestDAO()
+    request_list = request_dao.retrieve_all_from_staff(staff_id)
 
     if len(request_list):
-        return jsonify(
-            {
-                "code": 200,
-                "data": [requestObj.json() for requestObj in request_list]
-            }
-        )
+        return format_response(200, [requestObj.json() for requestObj in request_list])
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "No requests found"
-        }
-    ), 404
+    return format_response(404, "No requests found")
 
 
 @app.route("/progress/<string:staff_id>/<string:course_id>")
 def check_learner_progress(staff_id, course_id):
-    dao = ProgressDAO()
-    progressObj = dao.retrieve_by_learner_and_course(staff_id, course_id)
+    progress_dao = ProgressDAO()
+    progressObj = progress_dao.retrieve_by_learner_and_course(staff_id, course_id)
 
     if progressObj:
-        return jsonify(
-            {
-                "code":200,
-                "data": progressObj.json()
-            }
-        )
+        return format_response(200, progressObj.json())
     
-    return jsonify(
-        {
-            "code": 404,
-            "data": "Could not find any progress for staff " + staff_id + " and course " + course_id
-        }
-    ), 404
+    return format_response(404, "Could not find any progress for staff {} and course {}".format(staff_id, course_id))
 
 
 # ============= Create ==================
 @app.route("/courses", methods =['POST'])
 def insert_course():
     data = request.get_json()
-    dao = CourseDAO()
+    course_dao = CourseDAO()
     try:
-        results = dao.insert_course_w_dict(data)
-        return jsonify(
-            {
-                "code": 201,
-                "data": results.json()
-            }
-        ), 201
+        results = course_dao.insert_course_w_dict(data)
+        return format_response(201, results.json())
     except ValueError as e:
         if str(e) == "Course already exists":
-            return jsonify(
-                {
-                    "code": 403,
-                    "data": str(e)
-                }
-            ), 403
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the course."
-            }
-        ), 500
+            return format_response(403, str(e))
+        return format_response(500, "An error occurred when creating the course")
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the course."
-            }
-        ), 500
+        return format_response(500, "An error occurred when creating the course")
 
 
 @app.route("/quiz/create", methods=['POST'])
 def insert_quiz():
-    #TODO: make sure section id is a fixed value for final quiz
     data=request.get_json()
-    dao = QuizDAO()
+    quiz_dao = QuizDAO()
 
     is_final_quiz = False
     if 'is_final_quiz' in data:
@@ -546,29 +315,14 @@ def insert_quiz():
         class_id = data['class_id']
     
     try:
-        results = dao.insert_quiz_w_dict(data)
+        results = quiz_dao.insert_quiz_w_dict(data)
         
     except ValueError as e:
         if str(e) == "Quiz already exists":
-            return jsonify(
-                {
-                    "code": 403,
-                    "data": str(e)
-                }
-            ), 403
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the quiz."
-            }
-        ), 500
+            return format_response(403, str(e))
+        return format_response(500, "An error occured when creating the quiz.")
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the quiz."
-            }
-        ), 500      
+        return format_response(500, "An error occured when creating the quiz.")
 
 
     #if quiz is a final graded quiz, need to update class object too.
@@ -578,35 +332,14 @@ def insert_quiz():
             classObj = class_dao.retrieve_one(course_id, class_id)
             classObj.set_final_quiz_id(results.get_quiz_id())
             class_dao.update_class(classObj)
-
-            return jsonify(
-                {
-                    "code": 201,
-                    "data": results.json()
-                }
-            ), 201
-
         except ValueError as e:
             if "Update Failure with code:" in str(e):
-                return jsonify(
-                    {
-                        "code": 403,
-                        "data": str(e) + ' for final graded quiz.'
-                    }
-                ), 403
-            return jsonify(
-                {
-                    "code": 500,
-                    "data": str(e) + " for final graded quiz."
-                }
-            ), 500
+                return format_response(403, str(e) + ' for final graded quiz.')
+            
+            return format_response(500, "An error occurred when updating class for final graded quiz.")
         except Exception as e:
-            return jsonify(
-                {
-                    "code": 500,
-                    "data": str(e) + ' for final graded quiz'
-                }
-            ), 500
+            return format_response(500, "An error occurred when updating class for final graded quiz.")
+    
     #UPDATE SECTION OBJECT TOO, if quiz is not FINAL and not GRADED
     else:
         section_dao = SectionDAO()
@@ -614,36 +347,14 @@ def insert_quiz():
             sectionObj = section_dao.retrieve_one(results.get_section_id())
             sectionObj.add_quiz(results.get_quiz_id())
             section_dao.update_section(sectionObj)
-            
-            #return the results from successfully inserting the quiz previously
-            return jsonify(
-                {
-                    "code": 201,
-                    "data": results.json()
-                }
-            ), 201
-
         except ValueError as e:
             if "Update Failure with code:" in str(e):
-                return jsonify(
-                    {
-                        "code": 403,
-                        "data": str(e) + ' for ungraded quiz.'
-                    }
-                ), 403
-            return jsonify(
-                {
-                    "code": 500,
-                    "data": "An error occurred when updating the section for ungraded quiz."
-                }
-            ), 500
+                return format_response(403, str(e) + ' for ungraded quiz.')
+            return format_response(500, "An error occurred when updating section for ungraded quiz.")
         except Exception as e:
-            return jsonify(
-                {
-                    "code": 500,
-                    "data": "An error occurred when updating the section for ungraded quiz."
-                }
-            ), 500
+            return format_response(500, "An error occurred when updating section for ungraded quiz.")
+    
+    return format_response(201, results.json())
 
 
 @app.route("/attempts", methods=['POST'])
@@ -654,12 +365,7 @@ def insert_attempt():
     quiz_obj = quiz_dao.retrieve_one(data['quiz_id'])
 
     if quiz_obj == None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "No quiz was found with id " + data['quiz_id']
-            }
-        ), 404
+        return format_response(404, "No quiz was found with id "+data['quiz_id'])
 
     quiz_questions = quiz_obj.get_questions()
 
@@ -675,32 +381,17 @@ def insert_attempt():
         is_final_quiz = True
         data.pop('is_final_quiz')
 
-    dao = AttemptDAO()
+    attempt_dao = AttemptDAO()
 
     try:
-        results = dao.insert_attempt(data, correct_answers, marks) 
+        results = attempt_dao.insert_attempt(data, correct_answers, marks) 
         
     except ValueError as e:
         if str(e) == "Attempt already exists":
-            return jsonify(
-                {
-                    "code": 403,
-                    "data": str(e)
-                }
-            ), 403
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the attempt."
-            }
-        ), 500
+            return format_response(403, str(e))
+        return format_response(500, "An error occurred when creating the attempt.")
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the attempt." + str(e)
-            }
-        ), 500
+        return format_response(500, "An error occurred when creating the attempt.")
 
     try:
         progress_dao = ProgressDAO()
@@ -713,34 +404,14 @@ def insert_attempt():
 
             if current_score >= 0.85* total_score:
                 progressObj.set_final_quiz_passed(True)
-
         else:
             progressObj.add_completed_section(quiz_obj.get_section_id())
 
         progress_dao.update_progress(progressObj)
 
-        return jsonify(
-            {
-                "code": 201,
-                "data": results.json()
-            }
-        ), 201
-
-    except ValueError as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating the progress." + str(e)
-            }
-        ), 500
-
+        return format_response(201, results.json())
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An exception occurred when updating the progress." + str(e)
-            }
-        ), 500
+        return format_response(500, "An error occured when updating the progress.")
 
 
 @app.route("/class", methods =['POST'])
@@ -748,24 +419,14 @@ def insert_class():
     data = request.get_json()
 
     if "course_id" not in data:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "course_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "course_id not in Request Body")
     
     course_dao = CourseDAO()
 
     course = course_dao.retrieve_one(data["course_id"])
 
     if course == None:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "Course to insert class in does not exist"
-            }
-        ), 400
+        return format_response(400, "course to insert class in does not exist")
 
     if "class_id" not in data:
         data["class_id"] = len(course.get_class_list())+1
@@ -776,89 +437,40 @@ def insert_class():
         results = class_dao.insert_class_w_dict(data)
         course.add_class(results.get_class_id())
         course_dao.update_course(course)
-        return jsonify(
-            {
-                "code": 201,
-                "data": results.json()
-            }
-        ), 201
+        return format_response(201, results.json())
     except ValueError as e:
         if str(e) == "Class already exists":
-            return jsonify(
-                {
-                    "code": 403,
-                    "data": str(e)
-                }
-            ), 403
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the class." 
-            }
-        ), 500
-    except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the class."
-            }
-        ), 500
+            return format_response(403, str(e))
 
+        return format_response(500, "An error occurred when creating the class.")
+    except Exception as e:
+        return format_response(500, "An error occurred when creating the class.")
 
 @app.route("/section", methods=['POST'])
 def insert_section():
     data = request.get_json()
 
     if "course_id" not in data or "class_id" not in data:
-        return jsonify(
-            {
-                "code":400,
-                "data": "course_id or class_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "course_id or class_id not in Request Body")
     
     class_dao = ClassDAO()
     class_obj = class_dao.retrieve_one(data['course_id'], data['class_id'])
     if class_obj == None:
-        return jsonify(
-            {
-                "code":400,
-                "data": "Class does not exist"
-            }
-        ), 400
+        return format_response(400, "Class does not exist")
     
     section_dao = SectionDAO()
     try:
         results = section_dao.insert_section_w_dict(data)
         class_obj.add_section(results.get_section_id())
         class_dao.update_class(class_obj)
-        return jsonify(
-            {
-                "code": 201,
-                "data": results.json()
-            }
-        ), 201
+        return format_response(201, results.json())
     except ValueError as e:
         if str(e) == "Section already exists":
-            return jsonify(
-                {
-                    "code": 403,
-                    "data": str(e)
-                }
-            ), 403
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the section."
-            }
-        ), 500
+            return format_response(403, str(e))
+        
+        return format_response(500, "An error occurred when creating the section.")
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when creating the section."
-            }
-        ), 500
+        return format_response(500, "An error occurred when creating the section.")
 
 
 @app.route("/materials/file",methods =['POST'])
@@ -867,54 +479,29 @@ def insert_files():
         file = request.files.get('file')
         section_id = request.form.get('section_id')
     except Exception as e:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "Error in uploading file " + str(e)
-            }
-        ), 400
+        return format_response(400, "Error in uploading file "+str(e))
     
     section_dao = SectionDAO()
     section = section_dao.retrieve_one(section_id)
     
     if section == None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Section {} does not exist".format(section_id)
-            }
-        ), 404
+        return format_response(404, "Section {} does not exist".format(section_id))
 
     filename, extension = os.path.splitext(file.filename)
     transformed_name = transform_file_name(filename, extension)
     try:
         url = upload_file(file, transformed_name)
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": str(e)
-            }
-        ), 500
+        return format_response(500, str(e))
     
     mat = Material({"mat_name":transformed_name, "mat_type":extension, "url":url})
     section.add_material(mat)
     
     try:
         section_dao.update_section(section)
-        return jsonify(
-            {
-                "code": 201,
-                "data": mat.json()
-            }
-        ),201
+        return format_response(201, mat.json())
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating section object."
-            }
-        ), 500
+        return format_response(500, "An error occurred when updating section object.")
 
 
 @app.route("/materials/link", methods = ['POST'])
@@ -922,61 +509,33 @@ def insert_links():
     data = request.get_json()
 
     if "section_id" not in data:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "section_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "section_id not in Request Body")
     
     section_dao = SectionDAO()
     section = section_dao.retrieve_one(data['section_id'])
     
     if section == None:
-        return jsonify({
-            "code": 404,
-            "data": "Section {} does not exist".format(data['section_id'])
-        }), 404
+        return format_response(404, "Section {} does not exist".format(data['section_id']))
 
     try:
         mat = Material(data['mat_name'], data['mat_type'], data['url'])
     except:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "In proper request body."
-            }
-        ), 400
+        return format_response(400, "Not proper request body.")
     
     section.add_material(mat)
     
     try:
         section_dao.update_section(section)
-        return jsonify(
-            {
-                "code": 201,
-                "data": mat.json()
-            }
-        ), 201
+        return format_response(201, mat.json())
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating section object."
-            }
-        ), 500
+        return format_response(500, "An error occurred when updating section object.")
 
 
 @app.route("/request", methods =['POST'])
 def insert_request():
     data = request.get_json()
     if "staff_id" not in data or "course_id" not in data or "class_id" not in data:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "course_id, class_id or staff_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "course_id, class_id or staff_id not in Request Body")
     
     class_dao = ClassDAO()
     class_to_enroll = class_dao.retrieve_one(data['course_id'], data['class_id'])
@@ -984,30 +543,14 @@ def insert_request():
     staff = staff_dao.retrieve_one(data['staff_id'])
 
     if class_to_enroll == None or staff == None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Class or Staff to enroll not found"
-            }
-        ), 404
+        return format_response(404, "Class or Staff to enroll not found")
     
     try:
         request_dao = RequestDAO()
         requestObj = request_dao.insert_request_w_dict(data)
-
-        return jsonify(
-            {
-                "code": 201,
-                "data": requestObj.json()
-            }
-        ), 201
+        return format_response(201, requestObj.json())
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when inserting request" + str(e)
-            }
-        ), 500
+        return format_response(500, "An error occurred when inserting request")
 
 
 # ============= Update ==================
@@ -1017,12 +560,7 @@ def enroll_learners(data = None):
         data = request.get_json()
 
     if "course_id" not in data or "class_id" not in data or "staff_id" not in data:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "course_id, class_id or staff_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "course_id, class_id or staff_id not in Request Body")
 
     class_dao = ClassDAO()
     class_to_enroll = class_dao.retrieve_one(data['course_id'], data['class_id'])
@@ -1030,51 +568,19 @@ def enroll_learners(data = None):
     staff = staff_dao.retrieve_one(data['staff_id'])
 
     if class_to_enroll == None or staff == None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Class or Staff to enroll not found"
-            }
-        ), 404
+        return format_response(404, "Class or Staff to enroll not found")
 
 
     try:
         class_to_enroll.enrol_learner(data['staff_id'])
-    except ValueError as e:
-        return jsonify(
-            {
-                "code":403,
-                "data": str(e)
-            }
-        ), 403
-    
-    try:
         staff.add_enrolled(data['course_id'])
-    except ValueError as e:
-        return jsonify(
-            {
-                "code": 403,
-                "data": str(e)
-            }
-        ), 403
-
-    try:
         staff_dao.update_staff(staff)
         class_dao.update_class(class_to_enroll)
-
-        return jsonify(
-            {
-                "code": 200,
-                "data": "Staff enrolled"
-            }
-        )
+        return format_response(200, "Staff enrolled")
+    except ValueError as e:
+        return format_response(403, str(e))
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when enrolling staff"
-            }
-        ), 500
+        return format_response(500, "An error occurred when enrolling staff")
 
 
 @app.route("/class/trainer", methods = ['PUT'])
@@ -1082,12 +588,7 @@ def assign_trainer():
     data = request.get_json()
 
     if "course_id" not in data or "class_id" not in data or "staff_id" not in data:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "course_id, class_id or staff_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "course_id, class_id or staff_id not in Request Body")
 
     class_dao = ClassDAO()
     class_to_assign = class_dao.retrieve_one(data['course_id'], data['class_id'])
@@ -1095,31 +596,16 @@ def assign_trainer():
     staff = staff_dao.retrieve_one(data['staff_id'])
 
     if class_to_assign == None or staff == None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Class or Staff to assign not found"
-            }
-        ), 404
+        return format_response(404, "Class or Staff to assign not found")
 
 
     try:
         class_to_assign.set_trainer(data['staff_id'])
         class_dao.update_class(class_to_assign)
     except ValueError as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating class: " + str(e)
-            }
-        ), 500
+        return format_response(500, "An error occurred when updating class: "+ str(e))
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An exception occurred when updating class: " + str(e)
-            }
-        ), 500
+        return format_response(500, "An error occurred when updating class: "+ str(e))
 
 
     try:
@@ -1129,50 +615,25 @@ def assign_trainer():
             trainerObj.add_course_teaching(data['course_id'])
             trainer_dao.update_trainer(trainerObj)
 
-        return jsonify(
-                {
-                    "code": 200,
-                    "data": "Staff assigned"
-                }
-            )
+        return format_response(200, "Staff assigned")
     except ValueError as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating trainer: " + str(e)
-            }
-        ), 500
+        return format_response(500, "An error occurred when updating trainer: "+str(e))
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An exception occurred when updating trainer: " + str(e)
-            }
-        ), 500
+        return format_response(500, "An error occurred when updating trainer: "+str(e))
 
 
 @app.route("/class/edit", methods = ['PUT'])
 def edit_class():
     data = request.get_json()
     if "course_id" not in data or "class_id" not in data:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "course_id or class_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "course_id or class_id not in Request Body")
     
     class_dao = ClassDAO()
 
     class_obj = class_dao.retrieve_one(data['course_id'], data['class_id'])
 
     if class_obj == None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Class does not exist."
-            }
-        ), 404
+        return format_response(404, "Class does not exist.")
 
     if "class_size" in data:
         class_obj.set_class_size(data['class_size'])
@@ -1185,54 +646,29 @@ def edit_class():
     
     try:
         class_dao.update_class(class_obj)
-        return jsonify(
-            {
-                "code": 200,
-                "data": "Class Updated"
-            }
-        )
+        return format_response(200, "Class Updated")
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when assigning staff"
-            }
-        ), 500
+        return format_response(500, "An error occurred when assigning staff")
 
 
 @app.route("/quiz/update", methods=['PUT'])
 def update_quiz():
     data = request.get_json()
     if "quiz_id" not in data:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "quiz_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "quiz_id not in Request Body")
 
     quiz_dao = QuizDAO()
     quizObj = quiz_dao.retrieve_one(data['quiz_id'])
 
     if quizObj==None:
-        return jsonify(
-            {
-                "code": 404,
-                "data": "Quiz does not exist."
-            }
-        ), 404
+        return format_response(404, "Quiz does not exist.")
 
     # Before updating, check if any attempts have been made before
     attempt_dao = AttemptDAO()
     attempt_list = attempt_dao.retrieve_by_quiz(data['quiz_id'])
 
     if len(attempt_list):
-        return jsonify(
-                {
-                    "code": 401,
-                    "data": "Quiz cannot be updated because there are already existing attempts."
-                }
-            ), 401
+        return format_response(401, "Quiz cannot be updated because there are already existing attempts.")
 
     if "time_limit" in data:
         quizObj.set_time_limit(data['time_limit'])
@@ -1242,32 +678,17 @@ def update_quiz():
     
     try:
         quiz_dao.update_quiz(quizObj)
-        return jsonify(
-            {
-                "code": 200,
-                "data": "Quiz Updated"
-            }
-        )
+        return format_response("Quiz Updated")
 
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating quiz: " + str(e)
-            }
-        ), 500
+        return format_response(500, "An error occurred when updating quiz")
 
 
 @app.route("/request/update", methods = ['PUT'])
 def update_request():
     data = request.get_json()
     if "course_id" not in data or "class_id" not in data or "staff_id" not in data:
-        return jsonify(
-            {
-                "code": 400,
-                "data": "course_id, class_id or staff_id not in Request Body"
-            }
-        ), 400
+        return format_response(400, "course_id, class_id or staff_id not in Request Body")
 
     request_dao = RequestDAO()
     requestObj = Request(data)
@@ -1276,20 +697,9 @@ def update_request():
         if data['req_status'] == "approved":
             return enroll_learners(data)
         
-        return jsonify(
-            {
-                "code": 200,
-                "data": "Staff request rejected."
-            }
-        )
+        return format_response(200, "Staff request rejected")
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "data": "An error occurred when updating request."
-            }
-        ), 500
-
+        return format_response(500, "An error occurred when updating request")
 
 # ============= Utility ==================
 
@@ -1327,6 +737,13 @@ def upload_file(file_binary, filename):
     except Exception as e:
         raise Exception("Error occured when uploading.\nError Message: "+str(e))
 
+def format_response(code, data):
+    return jsonify(
+        {
+            "code": code,
+            "data": data
+        }
+    ), code
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port = 5000, debug= True)
