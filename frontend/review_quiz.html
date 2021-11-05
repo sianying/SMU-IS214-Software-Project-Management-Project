@@ -31,14 +31,14 @@
     </div>
 
     
-    <div id='app'>
+    <div id='app' v-cloak>
         <div id='breadcrumb-div' class='mx-auto mt-4'>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">Course Id here</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class Id here</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#">Section Name Here</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{courseId}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class G{{classId}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#">{{section_name}}</a></li>
                     <li class="breadcrumb-item"><a id ='breadcrumb-5' :href="'./view_attempts.html?quiz_id='+quiz_id">All Attempts</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Quiz Attempt {{attempt.attempt_id}}</li>
                 </ol>
@@ -93,12 +93,23 @@
                 questions: null,
                 answers: [],
                 accountDetails: {},
-                score: 0
+                score: 0,
+                classId: "",
+                courseId: ""
             },
             created: function() {
                 this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
                 this.section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
                 this.attempt = JSON.parse(localStorage.getItem('attempt'));
+                const course = JSON.parse(localStorage.getItem("courseDetails"));
+                const class_details= JSON.parse(localStorage.getItem("classDetails"));
+
+
+                const courseId = course['course_id'];
+                this.courseId = courseId;
+
+                const classId = class_details['class_id'];
+                this.classId = classId;
                 // this.attempt = {
                 //     "quiz_id":"4301fff4-6adb-4bd4-b995-40fcf6a4b4ee",
                 //     "attempt_uuid":"63d98d98-6dcc-4001-996b-c555fe919cfd",

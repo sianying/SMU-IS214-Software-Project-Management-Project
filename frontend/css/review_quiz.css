@@ -10,3 +10,7 @@
 #breadcrumb-div{
     width: 95%;
 }
+
+[v-cloak] { 
+    display: none !important; 
+}
