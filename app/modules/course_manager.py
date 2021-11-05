@@ -9,7 +9,6 @@ except:
     session = boto3.Session(profile_name="EC2")
 
 class Course:
-
     def __init__(self, course_dict):
         '''
             __init__(course_dict)
@@ -100,47 +99,56 @@ class CourseDAO:
     def retrieve_all(self):
         # retrieve all items and add them to a list of Course objects
         response = self.table.scan()
-        course_dict = response['Items']
+        course_list = response['Items']
 
         # When last evaluated key is present in response it means the results return exceeds the scan limits -> recall scan and explicitly include the key to start at
         while 'LastEvaluatedKey' in response:
             response = self.table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-            course_dict.extend(response['Items'])
+            course_list.extend(response['Items'])
 
-        course_list = []
-
-        for item in course_dict:
-            course_list.append(Course(item))
-
-        return course_list
+        return [Course(item) for item in course_list]
     
     def retrieve_one(self, course_id):
         response = self.table.query(KeyConditionExpression=Key('course_id').eq(course_id))
         
         if response['Items'] == []:
-            return 
+            return
         
         return Course(response['Items'][0])
 
-    def retrieve_all_not_in_list(self, course_list):
+    def retrieve_all_in_list(self, course_list):
         try:
             response = self.table.scan(
-                FilterExpression=~Attr("course_id").is_in(course_list)
+                FilterExpression=Attr("course_id").is_in(course_list)
             )
-            course_dict = response['Items']
+            course_list = response['Items']
 
             while 'LastEvaluatedKey' in response:
                 response = self.table.scan(
                     FilterExpression= Attr("course_id").is_in(course_list),
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
-                course_dict.extend(response['Items'])
+                course_list.extend(response['Items'])
             
-            course_list = []
-            for item in course_dict:
-                course_list.append(Course(item))
+            return [Course(item) for item in course_list]
+        except Exception as e:
+            raise ValueError("List entered is empty")
+
+    def retrieve_all_not_in_list(self, course_list):
+        try:
+            response = self.table.scan(
+                FilterExpression=~Attr("course_id").is_in(course_list)
+            )
+            course_list = response['Items']
+
+            while 'LastEvaluatedKey' in response:
+                response = self.table.scan(
+                    FilterExpression=~Attr("course_id").is_in(course_list),
+                    ExclusiveStartKey=response['LastEvaluatedKey']
+                )
+                course_list.extend(response['Items'])
             
-            return course_list
+            return [Course(item) for item in course_list]
         except Exception as e:
             raise ValueError("List entered is empty")
 

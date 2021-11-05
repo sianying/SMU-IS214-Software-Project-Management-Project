@@ -27,7 +27,7 @@ export async function retrieveAllCourses(URL) {
 // Retrieve Specific Course
 export async function retrieveSpecificCourse(URL, courseId) {
     try {
-        const response = await fetch(`${URL}/course/${courseId}`);
+        const response = await fetch(`${URL}/courses/${courseId}`);
         if (response) {
             const result = await response.json();
             return result;
@@ -172,24 +172,6 @@ export async function retrieveSpecificSection(URL, sectionId) {
 export async function retrieveQuizById(URL, quizId) {
     try {
         const response = await fetch(`${URL}/quiz/${quizId}`);
-        if (response) {
-            const result = await response.json();
-            return result;
-        }
-        } catch(e) {
-        const error = {
-            "code": 404,
-            "data": e
-        }
-        return error;
-    }
-    
-}
-
-// Retrieve all quizzes by quiz id
-export async function retrieveQuizBySection(URL, sectionId) {
-    try {
-        const response = await fetch(`${URL}/quiz/section/${sectionId}`);
         if (response) {
             const result = await response.json();
             return result;

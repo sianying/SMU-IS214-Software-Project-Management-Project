@@ -31,18 +31,16 @@
                 <ol class="breadcrumb bg-light">
                     <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
                     <li class="breadcrumb-item"><a href="./view-specific-course-HR.html">{{ course.course_id }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Add New Class</li>
+                    <li class="breadcrumb-item active" aria-current="page">Class G{{ classObj.class_id }}</li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Class<li>
                 </ol>
             </nav>
         </div>
 
         <h4 class="pt-3 pl-2">Edit Class Details</h4>
         <div class="form-border rounded">
+            <h4 class="mb-4">Class {{ className }}</h4>
             <form>
-                <div class="form-group">
-                    <label for="exampleFormControlInput1">Class Name</label><span class="form-error ml-2">{{ error.className }}</span>
-                    <input class="form-control" v-model="className" disabled>
-                </div>
                 <div class="form-group">
                     <label for="exampleFormControlInput1">Class Start Time</label><span class="form-error ml-2">{{ error.startDatetime }}</span>
                     <input id="classStartTime" type="datetime-local" class="form-control" :min="minDatetime" v-model="classObj.start_datetime" @input="validateDateTime">
@@ -96,6 +94,7 @@ var app = new Vue({
             class_list: []
         },
         classObj: {
+            class_id: "",
             course_id: "",
             start_datetime: "",
             end_datetime: "",

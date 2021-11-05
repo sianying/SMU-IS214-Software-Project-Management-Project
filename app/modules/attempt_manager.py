@@ -84,7 +84,6 @@ class AttemptDAO:
             if 'attempt_uuid' not in attempt_dict:
                 attempt_dict['attempt_uuid'] = str(uuid4())
 
-
             options_selected=attempt_dict['options_selected']
             individual_scores=[]
             #assume that options_selected and correct_options will have same length.
@@ -123,12 +122,7 @@ class AttemptDAO:
         response = self.table.query(KeyConditionExpression=Key('quiz_id').eq(quiz_id))
         data = response['Items']
 
-        attempt_list = []
-
-        for item in data:
-            attempt_list.append(Attempt(item))
-
-        return attempt_list
+        return [Attempt(item) for item in data]
 
     #for the learner to see different attempts for the same quiz
     def retrieve_by_learner(self, quiz_id, staff_id):
@@ -137,10 +131,4 @@ class AttemptDAO:
         response= self.table.query(IndexName="StaffIndex", KeyConditionExpression=Key('quiz_id').eq(quiz_id) & Key('staff_id').eq(staff_id))
         data = response['Items']
 
-        attempts_list = []
-
-        for item in data:
-            attempts_list.append(Attempt(item))
-
-        return attempts_list
-
+        return [Attempt(item) for item in data]
