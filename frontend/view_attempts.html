@@ -83,6 +83,7 @@
                 section_name: "",
                 attempts: [],
                 accountDetails: {},
+                is_final: false
             },
             created: function() {
                 this.accountDetails = JSON.parse(localStorage.getItem('accountDetails'));
@@ -91,7 +92,7 @@
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
                 this.quiz_id = urlParams.get('quiz_id');
-                
+                this.is_final = urlParams.get('is_final')
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
                 const class_details= JSON.parse(localStorage.getItem("classDetails"));
 
@@ -114,7 +115,7 @@
             methods: {
                 view_quiz: function(attempt_index){
                     localStorage.setItem("attempt", JSON.stringify(this.attempts[attempt_index]))
-                    window.location.replace("./review_quiz.html?quiz_id="+this.quiz_id)
+                    window.location.replace(`./review_quiz.html?quiz_id=${this.quiz_id}&is_final=${this.is_final}`)
                 },
             }
         })
