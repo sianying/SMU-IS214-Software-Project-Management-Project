@@ -52,33 +52,59 @@
         <div id='error' class='alert alert-danger w-50 mx-auto text-center d-none'>There are currently no sections for this class.</div>
         <div id='sections-div' class='d-none'>
             <div id='sections' v-for='(section, index) in sections' class='section-card mx-auto'>
-                <div class="card my-4">
-                    <div class="card-header h3">
-                        {{section.section_name}}
-                    </div>
-                    <div class="card-body"> 
-                        <p class="card-text">{{section.sectionDescription}}</p>
-                        <p>
-                            <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
-                                View Materials
-                            </a>
-                            <a :href="'./view_attempts.html?quiz_id=' + section.quiz" @click='addSectionName(index)' v-if='section.quiz' class="btn btn-warning ml-2">View Attempts</a>
-                        </p>
-                        <div class="collapse" :id="'collapseExample' + index">
-                            <div class="card card-body">
-                                <div v-if='section.materials.length == 0'>No materials</div>
-                                <div v-for ='material in section.materials'>
-                                    <a v-if="material.mat_type=='Link'" :href="material.url" target='_blank'>{{material.mat_name}}</a>
-                                    <a v-else href="view_material.html" @click="addMatName(material.mat_name, index)" target='_blank'>{{material.mat_name}}</a>
+                <div v-if='checkIfSectionUnlocked(section.section_id)'>
+                    <div class="card my-4">
+                        <div class="card-header h3">
+                            {{section.section_name}}
+                        </div>
+                        <div class="card-body"> 
+                            <p>
+                                <a class="btn btn-primary" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                    View Materials
+                                </a>
+                                <a :href="'./view_attempts.html?quiz_id=' + section.quiz" @click='addSectionName(index)' v-if='section.quiz' class="btn btn-warning ml-2">View Attempts</a>
+                            </p>
+                            <div class="collapse" :id="'collapseExample' + index">
+                                <div class="card card-body">
+                                    <div v-if='section.materials.length == 0'>No materials</div>
+                                    <div v-for ='material in section.materials'>
+                                        <a v-if="material.mat_type=='Link'" :href="material.url" target='_blank'>{{material.mat_name}}</a>
+                                        <a v-else href="view_material.html" @click="addMatName(material.mat_name, index)">{{material.mat_name}}</a>
+                                    </div>
                                 </div>
-                            </div>
-                        </div> 
+                            </div> 
+                        </div>
+                    </div>
+                </div>
+                <div v-else>
+                    <div class="card my-4">
+                        <div class="card-header h3">
+                            {{section.section_name}}
+                        </div>
+                        <div class="card-body"> 
+                            <p>
+                                <a class="btn btn-secondary disabled" data-toggle="collapse" :href="'#collapseExample' + index" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                    View Materials
+                                </a>
+                                <a :href="'./view_attempts.html?quiz_id=' + section.quiz" @click='addSectionName(index)' v-if='section.quiz' class="btn btn-secondary ml-2 disabled">View Attempts</a>
+                            </p>
+                            <div class="collapse" :id="'collapseExample' + index">
+                                <div class="card card-body">
+                                    <div v-if='section.materials.length == 0'>No materials</div>
+                                    <div v-for ='material in section.materials'>
+                                        <a v-if="material.mat_type=='Link'" :href="material.url" target='_blank'>{{material.mat_name}}</a>
+                                        <a v-else href="view_material.html" @click="addMatName(material.mat_name, index)">{{material.mat_name}}</a>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
                     </div>
                 </div>
             </div>
         </div> 
-        <div id = 'finalQuiz' class='d-flex justify-content-center d-none'>
-            <a :href="'./view_attempts.html?quiz_id=' + final_quiz_id" v-if='final_quiz_id' class="btn btn-info mb-4">View Final Quiz Attempts</a>
+        <div id = 'finalQuiz' class='d-flex justify-content-center d-none mx-auto'>
+            <a v-if='able_to_take_final_quiz' :href="'./view_attempts.html?quiz_id=' + final_quiz_id + '&is_final=true'" v-if='final_quiz_id' @click='setFinalSection' class="btn btn-info mb-4">View Final Quiz Attempts</a>
+            <a v-if='!able_to_take_final_quiz' :href="'./view_attempts.html?quiz_id=' + final_quiz_id + '&is_final=true'" v-if='final_quiz_id' @click='setFinalSection' class="btn btn-secondary mb-4 disabled" >View Final Quiz Attempts</a>
         </div>
     </div>
     
@@ -89,21 +115,28 @@
             el: '#nav-bar-component'
         });
 
-        import { URL, retrieveAllSectionsFromClass } from "./callAPI/endpoints.js";
+        import { URL, retrieveAllSectionsFromClass, retrieveLearnerProgress } from "./callAPI/endpoints.js";
 
         var app = new Vue({
             el: '#app',
             data: {
-                sections: "",
+                sections: [],
                 course_id: null,
                 class_id: null,
                 final_section: null,
-                final_quiz_id: null
+                final_quiz_id: null,
+                able_to_take_final_quiz: false,
+                unlocked_sections: [],
+                locked_sections: [],
+                latest_completed_section: ""
             },
 
             created: function() {
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
                 const class_details= JSON.parse(localStorage.getItem("classDetails"));
+                const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+
+                const staff_id = accountDetails['staff_id'];
 
                 const course_id = course['course_id'];
                 this.course_id = course_id;
@@ -128,7 +161,11 @@
                         this.sections = "";
                         document.getElementById('error').classList.remove('d-none');
                     }
-                })            
+
+                    this.checkProgress();
+                })  
+                
+                
             },
             methods: {
                 addMatName: function(mat_name, ind){
@@ -138,16 +175,56 @@
                 },
                 addSectionName: function(ind){
                     localStorage.setItem('sectionSelectedName', JSON.stringify(this.sections[ind].section_name));
-                }
-            },
-            computed: {
-                checkIfEligibleForFinalQuiz(){
-                    if(this.sections_completed.includes(this.final_section)){
+                    localStorage.setItem('selectedQuizId', JSON.stringify(this.sections[ind].quiz));
+                },
+                setFinalSection: function(){
+                    localStorage.setItem('sectionSelectedName', JSON.stringify("Final Graded Quiz"));
+                    localStorage.setItem('selectedQuizId', JSON.stringify(this.final_quiz_id));
+                },
+                checkIfSectionUnlocked: function(section){
+                    if(this.unlocked_sections.includes(section)){
                         return true
                     } else {
                         return false
                     }
+                },
+                checkProgress: function(){
+                    const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
+                    const staff_id = accountDetails['staff_id'];
+
+                    retrieveLearnerProgress(URL, staff_id, this.course_id).then(result =>{
+                        if(result.code == 200){
+                            if(result.data.sections_completed.length == 0){
+                                this.unlocked_sections.push(this.sections[0].section_id);
+                            } else {
+                                for(let section_id of result.data.sections_completed){
+                                    this.unlocked_sections.push(section_id);
+                                } 
+                            }
+                        }
+
+                        this.latest_completed_section = this.unlocked_sections[this.unlocked_sections.length - 1];
+
+                        for(let index in this.sections){
+                            if(!this.unlocked_sections.includes(this.sections[index].section_id)){
+                                let current_latest_completed_index = this.sections.findIndex((element) => element.section_id == this.latest_completed_section)
+                                if(current_latest_completed_index == index-1 && result.data.sections_completed.length !== 0){
+                                        this.unlocked_sections.push(this.sections[index].section_id);                               
+                                } else{
+                                    this.locked_sections.push(this.sections[index].section_id);
+                                }
+                                
+                            }
+                        }
+
+                        // this.latest_unlocked_section = this.unlocked_sections[this.unlocked_sections.length - 1];
+
+                        if(this.latest_completed_section == this.final_section){
+                            this.able_to_take_final_quiz = true;
+                        } 
+                    });
                 }
+                
             }
         })
     </script>
