@@ -67,12 +67,14 @@ class Quiz:
                 section_id: string,
                 time_limit: int,
                 questions = []: List
+                total_marks: int
             }
         '''
         self.__section_id= quiz_dict['section_id']
         self.__quiz_id = quiz_dict['quiz_id']
         self.__time_limit = int(quiz_dict['time_limit'])
         self.__questions = [Question(ques_dict) for ques_dict in quiz_dict['questions']] if 'questions' in quiz_dict else []
+        self.__total_marks = int(quiz_dict['total_marks'])
         
     def get_quiz_id(self):
         return self.__quiz_id
@@ -86,26 +88,30 @@ class Quiz:
     def get_questions(self):
         return self.__questions
 
+    def get_total_marks(self):
+        return self.__total_marks
+
     def set_time_limit(self, time_limit):
         self.__time_limit= time_limit
 
     def set_questions(self, questions):
-        self.__questions = [Question(question) for question in questions]
-    
-    def add_question(self, question):
-        if not isinstance(question, Question):
-            raise ValueError('Object added is not a Question Object')
-        self.__questions.append(question)
-    
-    def remove_question(self, question_index):
-        self.__questions.pop(question_index)
+        question_list = []
+        total_marks = 0
+        for question in questions:
+            question_obj= Question(question)
+            question_list.append(question_obj)
+            total_marks+= question_obj.get_marks()
+
+        self.__questions = question_list
+        self.__total_marks = total_marks
 
     def json(self):
         return {
             "section_id": self.get_section_id(),
             "quiz_id": self.get_quiz_id(),
             "time_limit": self.get_time_limit(),
-            "questions": [question.json() for question in self.get_questions()]
+            "questions": [question.json() for question in self.get_questions()],
+            "total_marks": self.get_total_marks()
         }
 
 class QuizDAO:
@@ -120,13 +126,20 @@ class QuizDAO:
 
             if 'quiz_id' not in quiz_dict:
                 quiz_dict['quiz_id'] = str(uuid4())
+                
+            if 'total_marks' not in quiz_dict:
+                total_marks = 0
+                for question in quiz_dict['questions']:
+                    total_marks += question['marks']
+                quiz_dict['total_marks'] = total_marks
 
             response = self.table.put_item(
                 Item = {
                     "quiz_id": quiz_dict['quiz_id'],
                     "section_id": quiz_dict['section_id'],
                     "time_limit": quiz_dict['time_limit'],
-                    "questions": quiz_dict['questions']
+                    "questions": quiz_dict['questions'],
+                    "total_marks": quiz_dict['total_marks']
                 },
                 ConditionExpression=Attr("quiz_id").not_exists(),
             )
@@ -156,18 +169,20 @@ class QuizDAO:
 
     #Update
     def update_quiz(self, QuizObj):
-        # method updates the DB if one wants to add a new question/delete an existing question.
-        # assumes quiz_id cannot be updated
+        # method updates the DB if one wants to set new questions/delete old questions.
+        # total_score is recalculated too
+        # assumes quiz_id and section_id cannot be updated
         try:
             response = self.table.update_item(
                 Key = {
                     'quiz_id': QuizObj.get_quiz_id(),
                     'section_id': QuizObj.get_section_id()
                 },
-                UpdateExpression= "set time_limit = :t, questions = :q",
+                UpdateExpression= "set time_limit = :t, questions = :q, total_marks = :m",
                 ExpressionAttributeValues ={
                     ":t": QuizObj.get_time_limit(),
                     ":q": [question.json() for question in QuizObj.get_questions()],
+                    ":m": QuizObj.get_total_marks(),
                 }
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
