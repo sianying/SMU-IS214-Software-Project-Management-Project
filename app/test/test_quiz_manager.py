@@ -26,7 +26,8 @@ ITEM1= {
             "correct_option": 2, # 2 refers to index 2-> 1 hour
             "marks": 2
         }
-    ]
+    ],
+    "total_marks":3
 
 }
 
@@ -36,23 +37,24 @@ ITEM2 = {
     "time_limit": 200,
     "questions": [
         {
-            "question_no": 3,
+            "question_no": 1,
             "isMCQ": False,
             "question_name": "Are you motivated?",
             "options":["True", "False"],
             "correct_option": 0, #True
-            "marks": 1
+            "marks": 2
         },
 
         {
-            "question_no": 4,
+            "question_no": 2,
             "isMCQ": True,
             "question_name": "How many days do you work per week",
             "options":["4 days", "5 days", "6 days", "7 days"],
             "correct_option": 1, #5 days
             "marks": 2
         }
-    ]
+    ],
+    "total_marks":4
 }
 
 # Final Quiz is not tied to a section but rather a class, so section_id can be None. 
@@ -62,18 +64,19 @@ ITEM3 = {
     "time_limit": 400,
     "questions": [
         {
-            "question_no": 5,
+            "question_no": 1,
             "isMCQ": False,
             "question_name": "You enjoyed studying the material provided.",
             "options":["True", "False"],
             "correct_option": 0, #True
-            "marks": 3
+            "marks": 5
         },
-    ]
+    ],
+    "total_marks": 5
 }
 
-question_to_add= {
-    "question_no": 6,
+question1= {
+    "question_no": 1,
     "isMCQ": True,
     "question_name": "Should you arrive on time to work?",
     "options":["True", "False"],
@@ -81,8 +84,8 @@ question_to_add= {
     "marks": 1
 }
 
-question_to_remove={
-    "question_no": 3,
+question2={
+    "question_no": 1,
     "isMCQ": False,
     "question_name": "Are you motivated?",
     "options":["True", "False"],
@@ -94,15 +97,15 @@ question_to_remove={
 class TestQuestion(unittest.TestCase):
     def setUp(self):
         from modules.quiz_manager import Question
-        self.test_question = Question(question_to_add)
+        self.test_question = Question(question1)
     
     def tearDown(self):
         self.test_question = None
     
     def test_json(self):
         self.assertTrue(isinstance(self.test_question.json(), dict), "Question JSON is not a dictionary")
-        self.assertEqual(question_to_add, self.test_question.json(), "Question JSON does not match")
-        self.assertNotEqual(question_to_remove, self.test_question.json(), "Question JSON matched when it should not")
+        self.assertEqual(question1, self.test_question.json(), "Question JSON does not match")
+        self.assertNotEqual(question2, self.test_question.json(), "Question JSON matched when it should not")
 
 
 class testQuiz(unittest.TestCase):
@@ -119,26 +122,19 @@ class testQuiz(unittest.TestCase):
         self.assertTrue(isinstance(self.test_quiz.json(),dict), "Quiz JSON is not a dictionary object")
         self.assertEqual(ITEM1, self.test_quiz.json(), "Quiz does not match")
         self.assertNotEqual(ITEM2, self.test_quiz.json(), "Quiz matched when it should not")
-    
-    def test_add_question(self):
-        from modules.quiz_manager import Question
-        self.test_quiz.add_question(Question(question_to_add))
-        questions=self.test_quiz.get_questions()
 
-        ITEM1['questions'].append(question_to_add)
-        check_against=ITEM1['questions']
+    def test_set_question(self):
+        initial_questions = self.test_quiz.get_questions()
+        initial_marks = self.test_quiz.get_total_marks()
 
-        self.assertTrue(question_to_add in [question.json() for question in questions], "Question was not successfully added.")
-        self.assertEqual(check_against, [question.json() for question in questions], "Questions do not match, before and after addition")
+        question_list = [question1, question2]
+        self.test_quiz.set_questions(question_list)
+        new_questions=self.test_quiz.get_questions()
+        new_marks= self.test_quiz.get_total_marks()
 
-    def test_remove_question(self):
-        check_against=[ITEM2['questions'][1]]
-
-        self.test_quiz2.remove_question(0)
-        questions=self.test_quiz2.get_questions()
-
-        self.assertFalse(question_to_remove in [question.json() for question in questions], "Question was not successfully removed.")
-        self.assertEqual(check_against, [question.json() for question in questions], "Questions do not match, before and after removal.")
+        self.assertNotEqual(initial_questions, new_questions, "Questions were not successfully updated")
+        self.assertEqual(question_list, [question.json() for question in new_questions], "Questions do not match when they should.")
+        self.assertNotEqual(initial_marks, new_marks, "Marks match when they should not. Initially should be 3, After should be 2.")
 
 
 @mock_dynamodb2
@@ -181,7 +177,7 @@ class TestQuizDAO(unittest.TestCase):
     def test_update_quiz(self):
         from modules.quiz_manager import Quiz, Question
         quizObj = Quiz(ITEM1)
-        quizObj.add_question(Question(question_to_add))
+        quizObj.set_questions([question1, question2])
         quizObj.set_time_limit(100)
         self.dao.update_quiz(quizObj)
         toCheck = Quiz(self.table.get_item(Key={'quiz_id':quizObj.get_quiz_id(), 'section_id':quizObj.get_section_id()})['Item'])
