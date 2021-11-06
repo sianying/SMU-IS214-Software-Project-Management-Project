@@ -1,7 +1,6 @@
 import boto3
 import os
 from boto3.dynamodb.conditions import Key
-from uuid import uuid4
 
 try:
     os.environ["AWS_SHARED_CREDENTIALS_FILE"] = "../aws_credentials"
@@ -79,14 +78,16 @@ class ProgressDAO:
                     "class_id": progress_dict['class_id'],
                     "final_quiz_passed": progress_dict['final_quiz_passed'],
                     "sections_completed": progress_dict['sections_completed']
-                }
+                },
+                ConditionExpression='attribute_not_exists(staff_id) AND attribute_not_exists(course_id)',
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return Progress(progress_dict)
-            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+            raise ValueError('Insert Progress Failure: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+        except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
+            raise ValueError("Progress already exists")
         except Exception as e:
-            print(e)
-            raise Exception("Insert Failure with Exception: "+str(e))
+            raise Exception("Insert Failure with Exception: " + str(e))
     
     #Read
     #to retrieve learner's progress for a specific course
