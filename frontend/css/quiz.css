@@ -3,8 +3,13 @@
     /* justify-content: center; */
 }
 
-#breadcrumb-div, #finalQuiz, #error{
+/* #breadcrumb-div, #finalQuiz, #error{
     width: 95%;
+} */
+
+.wrapper {
+    padding:0;
+    margin:0;
 }
 
 #alert-no-qn{

@@ -37,13 +37,13 @@
         <nav-bar></nav-bar>
     </div>
 
-    <div id ='app' v-cloak>
-        <div id='breadcrumb-div' class='mx-auto mt-4'>
+    <div id ='app' class='wrapper container mx-auto' v-cloak>
+        <div class='mx-auto mt-4'>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{course_id}}</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class G{{class_id}}</a></li>
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="./view-list-of-enrolled-courses.html">Courses</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="./view-specific-enrolled-course.html">{{course_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="./engineer_section_page.html">Class G{{class_id}}</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Sections</li>
                 </ol>
             </nav>
@@ -51,7 +51,7 @@
 
         <div id='error' class='alert alert-danger w-50 mx-auto text-center d-none'>There are currently no sections for this class.</div>
         <div id='sections-div' class='d-none'>
-            <div id='sections' v-for='(section, index) in sections' class='section-card mx-auto'>
+            <div id='sections' v-for='(section, index) in sections' class='mx-auto'>
                 <div v-if='checkIfSectionUnlocked(section.section_id)'>
                     <div class="card my-4">
                         <div class="card-header h3">
@@ -103,8 +103,8 @@
             </div>
         </div> 
         <div id = 'finalQuiz' class='d-flex justify-content-center d-none mx-auto'>
-            <a v-if='able_to_take_final_quiz' :href="'./view_attempts.html?quiz_id=' + final_quiz_id + '&is_final=true'" v-if='final_quiz_id' @click='setFinalSection' class="btn btn-info mb-4">View Final Quiz Attempts</a>
-            <a v-if='!able_to_take_final_quiz' :href="'./view_attempts.html?quiz_id=' + final_quiz_id + '&is_final=true'" v-if='final_quiz_id' @click='setFinalSection' class="btn btn-secondary mb-4 disabled" >View Final Quiz Attempts</a>
+            <a v-if='able_to_take_final_quiz && sections.length!==0' :href="'./view_attempts.html?quiz_id=' + final_quiz_id + '&is_final=true'" v-if='final_quiz_id' @click='setFinalSection' class="btn btn-info mb-4">View Final Quiz Attempts</a>
+            <a v-if='!able_to_take_final_quiz && sections.length!==0' :href="'./view_attempts.html?quiz_id=' + final_quiz_id + '&is_final=true'" v-if='final_quiz_id' @click='setFinalSection' class="btn btn-secondary mb-4 disabled" >View Final Quiz Attempts</a>
         </div>
     </div>
     

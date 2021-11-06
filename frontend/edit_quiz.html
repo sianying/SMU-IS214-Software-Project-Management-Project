@@ -33,135 +33,137 @@
         <nav-bar></nav-bar>
     </div>
 
-    <div id='breadcrumb-div' class='mx-auto mt-4'>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Edit Quiz</li>
-            </ol>
-        </nav>
-    </div>
-
-    <div id='app' v-cloak>
-        <div id='existing-questions' class='mx-auto limitDivWidth'> 
-            <div class='text-center'>
-                <h2>Edit Quiz</h2>
-            </div>
-            
-            <div id='alert-and-button' class='my-3'>
-                <div id='alertToAddQn' class='d-none'>
-                    <div id='alert-no-qn' class="alert alert-warning mx-auto" role="alert">
-                        Click on one of the buttons below to add a question!
-                    </div>
+    <div class='wrapper container mx-auto'>
+        <div class='mx-auto mt-4'>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Quiz</li>
+                </ol>
+            </nav>
+        </div>
+    
+        <div id='app' v-cloak>
+            <div id='existing-questions' class='mx-auto'> 
+                <div class='text-center'>
+                    <h2>Edit Quiz</h2>
                 </div>
-                <div id='qnButtons'>
-                    <div id='add-qn-button' class='mx-2'>
-                        <button id='true-false-button' type="button" class="btn btn-outline-info" v-on:click='createTFQuestion'>Add New T/F Question</button>
+                
+                <div id='alert-and-button' class='my-3'>
+                    <div id='alertToAddQn' class='d-none'>
+                        <div id='alert-no-qn' class="alert alert-warning mx-auto" role="alert">
+                            Click on one of the buttons below to add a question!
+                        </div>
                     </div>
-                    <div id='add-mcq-qn-button' class='mx-2'>
-                        <button id='mcq-button' type="button" class="btn btn-outline-secondary" v-on:click='createMCQQuestion'>Add New MCQ Question</button>
-                    </div>
-                </div>
-            </div>
-            <div v-for='(question, index) in questionsList' class='mt-4 limitDivWidth mx-auto'>
-                <div :id="'question' + index">
-                    {{index + 1}}. {{question.question_name}}
-                    <span><button :id="'editBtn' + index" type='button' v-on:click='editQuestion(index)' class="btn btn-primary btn-sm ml-2">Edit Question</button></span>
-                    <div v-if='question.isMCQ==true' v-for='(option, ind) in question.options' class='ml-3 mt-2'>{{ind + 1}}. {{option}}</div>
-                    <div v-if='question.isMCQ==false' v-for='(option, ind) in question.options' class='ml-3 mt-2'>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions">
-                            <label class="form-check-label" for="inlineRadio1">{{option}}</label>
+                    <div id='qnButtons'>
+                        <div id='add-qn-button' class='mx-2'>
+                            <button id='true-false-button' type="button" class="btn btn-outline-info" v-on:click='createTFQuestion'>Add New T/F Question</button>
+                        </div>
+                        <div id='add-mcq-qn-button' class='mx-2'>
+                            <button id='mcq-button' type="button" class="btn btn-outline-secondary" v-on:click='createMCQQuestion'>Add New MCQ Question</button>
                         </div>
                     </div>
                 </div>
-
-                <div id='edit' class=''>
-                    <div :id="'editQuestions' + index" class='mt-4 d-none'>
-                        <label for="questions">Question Title</label>
-                        <div>
-                            <!-- <input type="text" maxlength="128" class="form-control" id="question" v-model='questionsList[index].question_name'> -->
-                            <input type="text" maxlength="128" id="question" class='form-control my-2' v-model='questionsList[index].question_name'>
-                        </div>
-                        <label for="answers">Answer Options</label>
-                        <div v-if='question.isMCQ==true' v-for='(option, ind) in question.options'>
-                            <!-- {{ind + 1}}. {{option}} -->
-                            <input type="text" id="question" class='form-control mb-1' v-model='question.options[ind]'>
-                        </div>
-                        <div v-if='question.isMCQ==false' v-for='(option, ind) in question.options' class='ml-3'>
+                <div v-for='(question, index) in questionsList' class='mt-4 limitDivWidth mx-auto'>
+                    <div :id="'question' + index">
+                        {{index + 1}}. {{question.question_name}}
+                        <span><button :id="'editBtn' + index" type='button' v-on:click='editQuestion(index)' class="btn btn-primary btn-sm ml-2">Edit Question</button></span>
+                        <div v-if='question.isMCQ==true' v-for='(option, ind) in question.options' class='ml-3 mt-2'>{{ind + 1}}. {{option}}</div>
+                        <div v-if='question.isMCQ==false' v-for='(option, ind) in question.options' class='ml-3 mt-2'>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="inlineRadioOptions">
                                 <label class="form-check-label" for="inlineRadio1">{{option}}</label>
                             </div>
                         </div>
-                        <div class='container'>
-                            <div class='row'>
-                                <div class="col"></div>
-                                <div class='col mb-3 d-flex justify-content-center'>
-                                    <button type="button" class="btn btn-secondary mt-3"><a style='color:white' href="#" v-on:click='confirmEdit(index)'>Confirm</a></button>
-                                </div>
-                                <div class='col'></div>
+                    </div>
+    
+                    <div id='edit' class=''>
+                        <div :id="'editQuestions' + index" class='mt-4 d-none'>
+                            <label for="questions">Question Title</label>
+                            <div>
+                                <!-- <input type="text" maxlength="128" class="form-control" id="question" v-model='questionsList[index].question_name'> -->
+                                <input type="text" maxlength="128" id="question" class='form-control my-2' v-model='questionsList[index].question_name'>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div v-if='error!=""' id='error'>
-                <div id='duplicate-alert' class="alert alert-danger mx-auto w-75 text-center justify-content-center limitDivWidth" role="alert">
-                    {{error}}
-                </div>
-            </div>
-            <div id='form-div' class='my-3 d-none limitDivWidth mx-auto'>
-                <div id='TFQn' class='d-none'>
-                    <div class="form-group">
-                        <label for="question">Question Title</label>
-                        <input type="text" maxlength="128" class="form-control" id="TFquestion">
-                    </div>
-                    <button id='question-title-submit-btn' type='button' v-on:click='addTFQuestion' class="btn btn-primary">Add T/F Question</button>
-                </div>
-                <div id='MCQQn' class='d-none edit'>
-                    <div class="form-group">
-                        <label for="question">Question Title</label>
-                        <input type="text" maxlength="128" class="form-control" id="MCQquestion">
-                    </div>
-                    <button id='question-title-submit-btn' type='button' v-on:click='addMCQQuestion' class="btn btn-primary">Add MCQ Question</button>
-                </div>
-            </div>
-            <div id='answer-div' class='d-none my-3 limitDivWidth mx-auto'>
-                <div id='answerOptions'>
-                    <div class="form-group">
-                        <div id='completedAnswerOptions' class='d-none'>
+                            <label for="answers">Answer Options</label>
+                            <div v-if='question.isMCQ==true' v-for='(option, ind) in question.options'>
+                                <!-- {{ind + 1}}. {{option}} -->
+                                <input type="text" id="question" class='form-control mb-1' v-model='question.options[ind]'>
+                            </div>
+                            <div v-if='question.isMCQ==false' v-for='(option, ind) in question.options' class='ml-3'>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions">
+                                    <label class="form-check-label" for="inlineRadio1">{{option}}</label>
+                                </div>
+                            </div>
                             <div class='container'>
                                 <div class='row'>
                                     <div class="col"></div>
-                                    <div class='col mb-3 d-flex justify-content-center' id='confirmAnswerOptions'>
-                                        <button type="button" class="btn btn-secondary"><a id='addAnswers' style='color:white' href="#" v-on:click='addAnswers'>Confirm</a></button>
+                                    <div class='col mb-3 d-flex justify-content-center'>
+                                        <button type="button" class="btn btn-secondary mt-3"><a style='color:white' href="#" v-on:click='confirmEdit(index)'>Confirm</a></button>
                                     </div>
                                     <div class='col'></div>
                                 </div>
                             </div>
                         </div>
-                        <label for="answers">Add answer options</label>
-                        <input type="text" maxlength="128" class="form-control" id="answer">
                     </div>
-                    <button id='question-title-submit-btn' type='button' v-on:click='addAnswerOptions' class="btn btn-primary">Add Answer Option</button>
+                </div>
+                
+                <div v-if='error!=""' id='error'>
+                    <div id='duplicate-alert' class="alert alert-danger mx-auto w-75 text-center justify-content-center limitDivWidth" role="alert">
+                        {{error}}
+                    </div>
+                </div>
+                <div id='form-div' class='my-3 d-none limitDivWidth mx-auto'>
+                    <div id='TFQn' class='d-none'>
+                        <div class="form-group">
+                            <label for="question">Question Title</label>
+                            <input type="text" maxlength="128" class="form-control" id="TFquestion">
+                        </div>
+                        <button id='question-title-submit-btn' type='button' v-on:click='addTFQuestion' class="btn btn-primary">Add T/F Question</button>
+                    </div>
+                    <div id='MCQQn' class='d-none edit'>
+                        <div class="form-group">
+                            <label for="question">Question Title</label>
+                            <input type="text" maxlength="128" class="form-control" id="MCQquestion">
+                        </div>
+                        <button id='question-title-submit-btn' type='button' v-on:click='addMCQQuestion' class="btn btn-primary">Add MCQ Question</button>
+                    </div>
+                </div>
+                <div id='answer-div' class='d-none my-3 limitDivWidth mx-auto'>
+                    <div id='answerOptions'>
+                        <div class="form-group">
+                            <div id='completedAnswerOptions' class='d-none'>
+                                <div class='container'>
+                                    <div class='row'>
+                                        <div class="col"></div>
+                                        <div class='col mb-3 d-flex justify-content-center' id='confirmAnswerOptions'>
+                                            <button type="button" class="btn btn-secondary"><a id='addAnswers' style='color:white' href="#" v-on:click='addAnswers'>Confirm</a></button>
+                                        </div>
+                                        <div class='col'></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <label for="answers">Add answer options</label>
+                            <input type="text" maxlength="128" class="form-control" id="answer">
+                        </div>
+                        <button id='question-title-submit-btn' type='button' v-on:click='addAnswerOptions' class="btn btn-primary">Add Answer Option</button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id='confirm'>
-            <div v-if='questionsList.length > 0' id='submit-btn' class='limitDivWidth mx-auto'>
-                <div class='container'>
-                    <div class='row'>
-                        <div class="col"></div>
-                        <div class='col mx-auto mb-3' id='submit-and-cancel-button'>
-                            <button type="button" class="btn btn-success mr-2"><a id='confirmBtn' href="#" v-on:click='checkEmpty' style='color:white'>Confirm</a></button>
-                            <button type="button" class="btn btn-danger ml-2"><a href='./trainer_section_page.html' style='color:white'>Cancel</a></button>
+            <div id='confirm'>
+                <div v-if='questionsList.length > 0' id='submit-btn' class='limitDivWidth mx-auto'>
+                    <div class='container'>
+                        <div class='row'>
+                            <div class="col"></div>
+                            <div class='col mx-auto mb-3' id='submit-and-cancel-button'>
+                                <button type="button" class="btn btn-success mr-2"><a id='confirmBtn' href="#" v-on:click='checkEmpty' style='color:white'>Confirm</a></button>
+                                <button type="button" class="btn btn-danger ml-2"><a href='./trainer_section_page.html' style='color:white'>Cancel</a></button>
+                            </div>
+                            <div class='col'></div>
                         </div>
-                        <div class='col'></div>
                     </div>
                 </div>
             </div>
