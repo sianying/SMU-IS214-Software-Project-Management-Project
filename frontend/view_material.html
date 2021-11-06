@@ -38,21 +38,21 @@
         <nav-bar></nav-bar>
     </div>
 
-    <div id="app" v-cloak>
-        <div id='breadcrumb-div' class='mx-auto mt-4'>
+    <div id="app" class='wrapper container mx-auto' v-cloak>
+        <div class='mx-auto mt-4'>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{course_id}}</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class G{{class_id}}</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="./view-list-of-enrolled-courses.html">Courses</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="./view-specific-enrolled-course.html">{{course_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="./engineer_section_page.html">Class G{{class_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="./engineer_section_page.html"></a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{material_name}}</li>
                 </ol>
             </nav>
         </div>
         
         <div class='d-flex justify-content-end mr-5'>
-            <a target='_blank' id='download-material' class="btn btn-info mb-3" href='#'>
+            <a id='download-material' class="btn btn-info mb-3" href='#'>
                 Download Course Material
             </a>
         </div>
@@ -86,11 +86,12 @@
             },
             created: function() {
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
+                const class_details = JSON.parse(localStorage.getItem("classDetails"));
 
                 const course_id = course['course_id'];
                 this.course_id = course_id;
 
-                const class_id = course['class_id'];
+                const class_id = class_details['class_id'];
                 this.class_id = class_id;
 
                 var section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
@@ -142,7 +143,7 @@
                                             }
                                         });
                                     }, 4000)
-                                } else if(material['mat_type'] == '.jpg'){
+                                } else if(material['mat_type'] == '.jpg' || material['mat_type'] == '.png'){
                                     document.getElementById('image-div').classList.remove('d-none');
                                     document.getElementById('img').setAttribute("src", material['url']);
                                 }

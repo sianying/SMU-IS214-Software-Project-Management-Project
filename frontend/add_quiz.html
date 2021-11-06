@@ -33,93 +33,95 @@
         <nav-bar></nav-bar>
     </div>
 
-    <div id='breadcrumb-div' class='mx-auto mt-4'>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#"></a></li>
-                <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Add Quiz</li>
-            </ol>
-        </nav>
-    </div>
-
-    <div id='app' v-cloak>
-        <div id='alert-and-button'>
-            <div v-if='questionsList.length == 0' id='alert-no-qn' class="alert alert-danger mx-auto" role="alert">
-                There are no questions. Add one by clicking a button below!
-            </div>
-            <div id='alertToAddQn' class='d-none'>
-                <div id='alert-no-qn' class="alert alert-warning mx-auto" role="alert">
-                    Click on one of the buttons below to add a question!
-                </div>
-            </div>
-            <div id='qnButtons'>
-                <div id='add-qn-button' class='mx-2'>
-                    <button id='true-false-button' type="button" class="btn btn-outline-info" v-on:click='createTFQuestion'>Add T/F Question</button>
-                </div>
-                <div id='add-mcq-qn-button' class='mx-2'>
-                    <button id='mcq-button' type="button" class="btn btn-outline-secondary" v-on:click='createMCQQuestion'>Add MCQ Question</button>
-                </div>
-            </div>
+    <div class='wrapper container mx-auto'>
+        <div class='mx-auto mt-4'>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light">
+                    <!-- <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li> -->
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="./view-specific-assigned-course.html"></a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="./trainer_section_page.html"></a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="./trainer_section_page.html"></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add Quiz</li>
+                </ol>
+            </nav>
         </div>
-
-        <div v-if='error!=""' id='error'>
-            <div id='duplicate-alert' class="alert alert-danger mx-auto text-center justify-content-center limitDivWidth" role="alert">
-                {{error}}
-            </div>
-        </div>
-        <div id='form-div' class='mx-auto d-none limitDivWidth'>
-            <div id='TFQn' class='d-none'>
-                <div class="form-group">
-                    <label for="question">Question Title</label>
-                    <input type="text" maxlength="128" class="form-control" id="TFquestion">
+    
+        <div id='app' v-cloak>
+            <div id='alert-and-button'>
+                <div v-if='questionsList.length == 0' id='alert-no-qn' class="alert alert-danger mx-auto" role="alert">
+                    There are no questions. Add one by clicking a button below!
                 </div>
-                <button id='question-title-submit-btn' type='button' v-on:click='addTFQuestion' class="btn btn-primary">Add T/F Question</button>
-            </div>
-            <div id='MCQQn' class='d-none'>
-                <div class="form-group">
-                    <label for="question">Question Title</label>
-                    <input type="text" maxlength="128" class="form-control" id="MCQquestion">
+                <div id='alertToAddQn' class='d-none'>
+                    <div id='alert-no-qn' class="alert alert-warning mx-auto" role="alert">
+                        Click on one of the buttons below to add a question!
+                    </div>
                 </div>
-                <button id='question-title-submit-btn' type='button' v-on:click='addMCQQuestion' class="btn btn-primary">Add MCQ Question</button>
+                <div id='qnButtons'>
+                    <div id='add-qn-button' class='mx-2'>
+                        <button id='true-false-button' type="button" class="btn btn-outline-info" v-on:click='createTFQuestion'>Add T/F Question</button>
+                    </div>
+                    <div id='add-mcq-qn-button' class='mx-2'>
+                        <button id='mcq-button' type="button" class="btn btn-outline-secondary" v-on:click='createMCQQuestion'>Add MCQ Question</button>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div id='question-div' class='question-div'></div>
-        <div id='answer-div' class='mx-auto d-none limitDivWidth'>
-            <div id='answerOptions'>
-                <div class="form-group">
-                    <div id='completedAnswerOptions' class='d-none'>
-                        <div class='container'>
-                            <div class='row'>
-                                <div class="col"></div>
-                                <div class='col mb-3 d-flex justify-content-center' id='confirmAnswerOptions'>
-                                    <button type="button" class="btn btn-secondary"><a id='addAnswers' style='color:white' href="#" v-on:click='addAnswers'>Confirm</a></button>
+    
+            <div v-if='error!=""' id='error'>
+                <div id='duplicate-alert' class="alert alert-danger mx-auto text-center justify-content-center limitDivWidth" role="alert">
+                    {{error}}
+                </div>
+            </div>
+            <div id='form-div' class='mx-auto d-none limitDivWidth'>
+                <div id='TFQn' class='d-none'>
+                    <div class="form-group">
+                        <label for="question">Question Title</label>
+                        <input type="text" maxlength="128" class="form-control" id="TFquestion">
+                    </div>
+                    <button id='question-title-submit-btn' type='button' v-on:click='addTFQuestion' class="btn btn-primary">Add T/F Question</button>
+                </div>
+                <div id='MCQQn' class='d-none'>
+                    <div class="form-group">
+                        <label for="question">Question Title</label>
+                        <input type="text" maxlength="128" class="form-control" id="MCQquestion">
+                    </div>
+                    <button id='question-title-submit-btn' type='button' v-on:click='addMCQQuestion' class="btn btn-primary">Add MCQ Question</button>
+                </div>
+            </div>
+            <div id='question-div' class='question-div'></div>
+            <div id='answer-div' class='mx-auto d-none limitDivWidth'>
+                <div id='answerOptions'>
+                    <div class="form-group">
+                        <div id='completedAnswerOptions' class='d-none'>
+                            <div class='container'>
+                                <div class='row'>
+                                    <div class="col"></div>
+                                    <div class='col mb-3 d-flex justify-content-center' id='confirmAnswerOptions'>
+                                        <button type="button" class="btn btn-secondary"><a id='addAnswers' style='color:white' href="#" v-on:click='addAnswers'>Confirm</a></button>
+                                    </div>
+                                    <div class='col'></div>
                                 </div>
-                                <div class='col'></div>
                             </div>
                         </div>
+                        <label for="answers">Add answer options</label>
+                        <input type="text" maxlength="128" class="form-control" id="answer">
                     </div>
-                    <label for="answers">Add answer options</label>
-                    <input type="text" maxlength="128" class="form-control" id="answer">
-                </div>
-                <button id='question-title-submit-btn' type='button' v-on:click='addAnswerOptions' class="btn btn-primary">Add Answer Option</button>
-            </div>
-        </div>
-        <div v-if='questionsList.length > 0' id='submit-btn'>
-            <div class='container'>
-                <div class='row'>
-                    <div class="col"></div>
-                    <div class='col mx-auto mb-3' id='submit-and-cancel-button'>
-                        <button type="button" class="btn btn-success mr-2"><a id='confirmBtn' href="#" v-on:click='checkEmpty' style='color:white'>Confirm</a></button>
-                        <button type="button" class="btn btn-danger ml-2"><a href='./trainer_section_page.html' style='color:white'>Cancel</a></button>
-                    </div>
-                    <div class='col'></div>
+                    <button id='question-title-submit-btn' type='button' v-on:click='addAnswerOptions' class="btn btn-primary">Add Answer Option</button>
                 </div>
             </div>
+            <div v-if='questionsList.length > 0' id='submit-btn'>
+                <div class='container'>
+                    <div class='row'>
+                        <div class="col"></div>
+                        <div class='col mx-auto mb-3' id='submit-and-cancel-button'>
+                            <button type="button" class="btn btn-success mr-2"><a id='confirmBtn' href="#" v-on:click='checkEmpty' style='color:white'>Confirm</a></button>
+                            <button type="button" class="btn btn-danger ml-2"><a href='./trainer_section_page.html' style='color:white'>Cancel</a></button>
+                        </div>
+                        <div class='col'></div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </div>   
 
 
 
