@@ -34,8 +34,8 @@
     </div>
 </head>
 <body>
-    <div id='app'>
-        <div id="breadcrumb">
+    <div id='app' v-cloak>
+        <div id="breadcrumb" class="wrapper container mx-auto">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-light">
                     <li class="breadcrumb-item"><a href="./view-list-of-courses-HR.html">Courses</a></li>
@@ -50,7 +50,7 @@
         </div>
         <div id='confirmation' v-if='enrollCheck === 1'>
             <div class="alert alert-success w-50 mx-auto text-center" role="alert">
-                {{selectedName}} has been enrolled into {{selectedCourse}} Class {{selectedClass}} successfully!
+                {{selectedName}} has been enrolled into {{selectedCourse}} Class G{{selectedClass}} successfully!
             </div>
         </div>
         <div id='confirmation' v-if='enrollCheck === 2'>
@@ -60,12 +60,12 @@
         </div>
         <div id='confirmation' v-if='enrollCheck === 3'>
             <div class="alert alert-danger w-50 mx-auto text-center" role="alert">
-                {{selectedName}}'s request to enroll into {{selectedCourse}} Class {{selectedClass}} has been rejected.
+                {{selectedName}}'s request to enroll into {{selectedCourse}} Class G{{selectedClass}} has been rejected.
             </div>
         </div>
         <div id='alert-message' v-if="this.requests.length===0">
             <div class="alert alert-danger mx-auto w-50 text-center" role="alert">
-                There are no eligible learners for selection.
+                There are no pending requests.
             </div>
         </div>
         <div class='mx-auto' id='learners-div'>
@@ -93,7 +93,7 @@
 
     <script type="module">
         
-        import { URL, retrieveSpecificCourse, retrieveAllClasses, enrollLearners, retrieveEligibleCourses} from "./callAPI/endpoints.js";
+        import { URL, retrieveRequest,updateRequest} from "./callAPI/endpoints.js";
         import navBar from "./components/navBar.js"
         var flag = false;
         new Vue({
@@ -127,24 +127,14 @@
                         "class_id" : classid,
                         "req_status" : "approved"
                     }
+                    updateRequest(URL,body).then(result =>{
+                        if(result.code == 200){
+                            this.enrollCheck = 3
+                        }else{
+                            this.enrollCheck = 2
+                        }
+                    })
                     
-                    fetch('http://127.0.0.1:5000/request/update',{
-                        method: 'PUT',
-                        headers:{
-                        'Content-Type':'application/json'
-                        },
-                        body: JSON.stringify(body)
-                    }).then(response=>{
-                    if(response.ok){
-                        this.enrollCheck = 1
-                    }else{
-                        this.enrollCheck = 2
-                    }
-                    return response
-                })
-                
-                
-
             },
 
             rejectRequest(staffid,courseid,classid,staffname,index){
@@ -159,20 +149,13 @@
                         "class_id" : classid,
                         "req_status" : "rejected"
                     }
-                    fetch('http://127.0.0.1:5000/request/update',{
-                        method: 'PUT',
-                        headers:{
-                        'Content-Type':'application/json'
-                        },
-                        body: JSON.stringify(body)
-                    }).then(response=>{
-                    if(response.ok){
-                        this.enrollCheck = 3
-                    }else{
-                        this.enrollCheck = 2
-                    }
-                    return response
-                })   
+                    updateRequest(URL,body).then(result =>{
+                        if(result.code == 200){
+                            this.enrollCheck = 1
+                        }else{
+                            this.enrollCheck = 2
+                        }
+                    })
         }
     },
            
@@ -180,16 +163,14 @@
                 //Retrieve course id from URL
                 const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
                 const courseDetails = (JSON.parse(localStorage.getItem("courseDetails")));
-                
-                fetch('http://127.0.0.1:5000/request',{
-                    }).then(response => response.json())
-                .then(data => {
-                    if(data.data != "No pending requests found"){
-                        for(let i = 0; i < data.data.length ; i++){
-                        this.requests.push(data.data[i]);
+                retrieveRequest(URL).then(result => {
+                    if (result.code == 200) {
+                        for(let i = 0; i < result.data.length ; i++){
+                        this.requests.push(result.data[i]);
+                        }
                     }
-                    }
-                    })
+                })
+               
             }
 })
 
