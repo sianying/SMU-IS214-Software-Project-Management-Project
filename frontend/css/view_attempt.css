@@ -7,10 +7,15 @@
     border-radius: 4px;
 }
 
-#breadcrumb-div{
+/* #breadcrumb-div{
     width: 95%;
-}
+} */
 
 [v-cloak] { 
     display: none !important; 
+}
+
+.wrapper {
+    padding:0;
+    margin:0;
 }

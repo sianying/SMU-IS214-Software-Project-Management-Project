@@ -31,14 +31,15 @@
     </div>
 
     
-    <div id='app' v-cloak>
-        <div id='breadcrumb-div' class='mx-auto mt-4'>
+    <div id='app' class='wrapper container mx-auto' v-cloak>
+        <div class='mx-auto mt-4'>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="#">Home</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="#">{{course_id}}</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="#">Class G{{class_id}}</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="#">{{section_name}}</a></li>
+                <ol class="breadcrumb bg-light">
+                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="./view-list-of-enrolled-courses.html">Courses</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="./view-specific-enrolled-course.html">{{course_id}}</a></li>
+                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="./engineer_section_page.html">Class G{{class_id}}</a></li>
+                    <li v-if="section_name == 'Final Graded Quiz'" class="breadcrumb-item active">{{section_name}}</li>
+                    <li v-if="section_name != 'Final Graded Quiz'" class="breadcrumb-item"><a id ='breadcrumb-4' href="./engineer_section_page.html">{{section_name}}</a></li>
                     <li class="breadcrumb-item active" aria-current="page">All Attempts</li>
                 </ol>
             </nav>
