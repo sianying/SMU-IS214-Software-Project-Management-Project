@@ -1,6 +1,6 @@
 import boto3
 import os
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 from uuid import uuid4
 
 try:
@@ -106,11 +106,14 @@ class AttemptDAO:
                     "attempt_uuid": attempt_dict['attempt_uuid'],
                     "options_selected": attempt_dict['options_selected'],
                     "individual_scores": attempt_dict['individual_scores']
-                }
+                },
+                ConditionExpression=Attr("attempt_uuid").not_exists(),
             )
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return Attempt(attempt_dict)
-            raise ValueError('Insert Failure with code: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+            raise ValueError('Insert Progress Failure: '+ str(response['ResponseMetadata']['HTTPStatusCode']))
+        except self.table.meta.client.exceptions.ConditionalCheckFailedException as e:
+            raise ValueError("Attempt already exists")
         except Exception as e:
             raise Exception("Insert Failure with Exception: "+str(e))
     

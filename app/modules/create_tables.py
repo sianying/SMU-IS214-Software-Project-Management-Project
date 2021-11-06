@@ -359,10 +359,6 @@ def create_progress_table(dynamodb):
                     'AttributeName': 'course_id',
                     'AttributeType': 'S'
                 },
-                {
-                    "AttributeName": 'class_id',
-                    'AttributeType': 'S'
-                }
             ], 
             ProvisionedThroughput={
                 'ReadCapacityUnits':2,
@@ -385,6 +381,8 @@ if __name__ == "__main__":
     attempt_table = create_attempt_table(dynamodb)
     staff_table = create_staff_table(dynamodb)
     request_table = create_request_table(dynamodb)
+    progress_table = create_progress_table(dynamodb)
+
     print("Course Table status:", course_table)
     print("Class Table status:", class_table)
     print("Section Table status:", section_table)
@@ -392,3 +390,4 @@ if __name__ == "__main__":
     print("Attempt Table status:", attempt_table)
     print("Staff Table status:", staff_table)
     print("Request Table status:", request_table)
+    print("Progress Table status:", progress_table)
