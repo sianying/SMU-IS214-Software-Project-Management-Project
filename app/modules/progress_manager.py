@@ -23,7 +23,7 @@ class Progress:
         '''
         self.__staff_id= progress_dict['staff_id']
         self.__course_id= progress_dict['course_id']
-        self.__class_id = progress_dict['class_id']
+        self.__class_id = int(progress_dict['class_id'])
         self.__final_quiz_passed = progress_dict['final_quiz_passed']
         self.__sections_completed = progress_dict['sections_completed'] if 'sections_completed' in progress_dict else []
 
