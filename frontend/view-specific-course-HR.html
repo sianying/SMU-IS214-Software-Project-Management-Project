@@ -201,8 +201,6 @@ var app = new Vue({
         this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         //Retrieve course id from URL
         this.course = JSON.parse(localStorage.getItem("courseDetails"));
-
-        
         
         // Call retrieveAllClasses API to retrieve all classes
         retrieveAllClasses(URL, this.course.course_id).then(result => {

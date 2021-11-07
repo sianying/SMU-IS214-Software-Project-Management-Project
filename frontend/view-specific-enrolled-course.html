@@ -49,23 +49,24 @@
         </div>
 
         <div v-if="error" class="alert alert-warning m-2 mt-3 text-center" role="alert">
-            The sections are currently unavailable. Please try again later.
+            The classes are currently unavailable. Please try again later.
         </div>
 
         <div v-else class="row">
-            <div v-for = "selectedClass in classList" class="col-6 p-0 d-flex justify-content-center">
+            <div class="col-6 p-0 d-flex justify-content-center">
                 <div class="card m-3" style="width: 540px;">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">
-                            <a href="#">G{{ selectedClass.class_id }}</a>
+                            <a href="#">G{{ classObj.class_id }}</a>
                         </h5>
                         <p class="card-text">
-                            <b>Duration: </b> {{ datetimeToDate(selectedClass.start_datetime, selectedClass.end_datetime) }}
+                            <b>Duration: </b> {{ datetimeToDate(classObj.start_datetime, classObj.end_datetime) }}
                             <br>
-                            <b>Availability: </b> {{ getSectionAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
+                            <b>Availability: </b> {{ sectionAvailability }}
+                            <br>
+                            <b>Trainer Assigned: </b> {{ isTrainerAssigned(classObj.trainer_name) }}
                         </p>
-                        <!-- "Add New Class" Button for HR href="engineer_section_page.html"-->
-                        <a @click="setClassDetails(selectedClass)" href="./engineer_section_page.html" class="btn btn-outline-info mt-auto">View Sections</a>
+                        <a @click="setClassDetails(classObj)" href="./engineer_section_page.html" class="btn btn-outline-info mt-auto">View Sections</a>
                         
                         
                     </div>
@@ -76,7 +77,7 @@
     </div>
     
 <script type="module">
-import { URL, retrieveSpecificCourse, retrieveAllClasses } from "./callAPI/endpoints.js";
+import { URL, retrieveSpecificCourse, retrieveAllClasses, retrieveEnrolledClassByCourse } from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -94,7 +95,8 @@ var app = new Vue({
             prerequisite_course: [],
             class_list: []
         },
-        classList: [],
+        classObj: {},
+        sectionAvailability: "",
         error: false,
     },
     methods: {
@@ -112,6 +114,10 @@ var app = new Vue({
             // returns availability of section
             return (classSize - learnersEnrolled.length).toString() + "/" + (classSize).toString();
         },
+        isTrainerAssigned(trainerName) {
+            // returns trainer name if trainer is assigned
+            return trainerName === null ? "Not assigned" : trainerName;
+        },
         setClassDetails(classDetails) {
             localStorage.setItem("classDetails", JSON.stringify(classDetails));
         },
@@ -121,28 +127,15 @@ var app = new Vue({
         //retrieve accountDetails
         this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         //Retrieve course id from URL
-        this.course = JSON.parse(localStorage.getItem("courseDetails"));
+        const course = JSON.parse(localStorage.getItem("courseDetails"));
+        this.course = course;
 
-        //Call retrieveSpecificCourse API
-        // retrieveSpecificCourse(URL, course.course_id).then(result => {
-        //     // Initialize course object
-        //     if (result.code == 200){
-        //         const course = result.data;
-        //         this.course = course;
-        //         console.log(course)
-        //         console.log(this.course)
-        //     }
-        // });
-
-        retrieveAllClasses(URL, this.course.course_id).then(result => {
+        retrieveEnrolledClassByCourse(URL, this.accountDetails.staff_id, this.course.course_id).then(result => {
                 if (result.code == 200){
                     this.error = false;
-                    const classes = result.data;
-                    // filter out courses that are not enrolled
-                    const classEnrolledList = classes.filter(classObj => {
-                        return classObj.learners_enrolled.includes(this.accountDetails.staff_id) && classObj
-                    })
-                    this.classList = classEnrolledList;
+                    this.classObj = result.data;
+                    console.log(result.data)
+                    this.sectionAvailability = this.getSectionAvailability(this.classObj.learners_enrolled, this.classObj.class_size)
                 } else {
                     this.error = true;
                 }

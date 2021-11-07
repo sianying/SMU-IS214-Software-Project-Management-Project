@@ -91,6 +91,7 @@ var app = new Vue({
         courses: [],
         // e.g. accountDetails taken from session e.g. session.accountDetails
         accountDetails: {},
+        isLearnerView: "",
         error: false
     },
     methods: {
@@ -98,12 +99,15 @@ var app = new Vue({
             localStorage.setItem("courseDetails", JSON.stringify(courseDetails))
         }
     },
-    mounted: function () {
+    created: function () {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
+        const isLearnerView = JSON.parse(localStorage.getItem("isLearnerView"));
+        this.isLearnerView = isLearnerView;
 
         //call retrieveAllCourses API to get all courses if role is HR
-        if (this.accountDetails.role == "HR"){
+        if (this.accountDetails.role === "HR" && !this.isLearnerView){
+            console.log("hr")
             retrieveAllCourses(URL).then(result => {
                 if (result.code == 200) {
                     this.error = false;
@@ -119,19 +123,9 @@ var app = new Vue({
             retrieveEligibleCourses(URL, this.accountDetails.staff_id).then(result => {
                 if (result.code == 200) {
                     this.error = false;
-                    let courses = result.data.filter(course => {
-                        //filter out enrolled courses
-                        return !this.accountDetails.courses_enrolled.includes(course.course_id) && course
-                    });
-                    // if isTrainer filter out assigned courses also
-                    if (this.accountDetails.isTrainer === 1){
-                        const filteredCourses = courses.filter(course => {
-                            return !this.accountDetails.courses_teaching.includes(course.course_id) && course
-                        })
-                        this.courses = filteredCourses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
-                    } else {
-                        this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
-                    }
+                    let courses = result.data;
+                    //sort courses by course code
+                    this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
                 } else {
                     this.error = true;
                 }

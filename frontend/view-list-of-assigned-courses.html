@@ -55,11 +55,6 @@
                             <p class="card-text">{{ course.course_description }}</p>
                             <a href="./view-specific-assigned-course.html" @click="setCourseDetails(course)" class="btn btn-outline-info mt-auto">View Details</a>
                             <div class="ml-auto">
-                                <!-- <span v-if = "validateEligibility(course, accountDetails.courses_completed)" class="badge badge-success">Eligible</span>
-                                <span v-else class="badge badge-danger">Not Eligible</span> -->
-                                <!-- <span v-if = "course.prerequisite_course.length === 0" class="badge badge-info mr-1">No pre-requisites</span>
-                                <span v-if = "accountDetails.role ==='HR'" v-for ="prereq in course.prerequisite_course" class="badge badge-info mr-1">{{ prereq }}</span>
-                                <span v-else class="badge badge-info mr-1">Pre-requisites completed</span> -->
                                 <span class="badge badge-success mr-1">Assigned</span>
                             </div>
                         </div>

@@ -63,10 +63,14 @@
                             <b>Duration: </b> {{ datetimeToDate(selectedClass.start_datetime, selectedClass.end_datetime) }}
                             <br>
                             <b>Availability: </b> {{ getSectionAvailability(selectedClass.learners_enrolled, selectedClass.class_size) }}
+                            <br>
+                            
                         </p>
                         <!-- "Add New Class" Button for HR href="engineer_section_page.html"-->
                         <a @click="setClassDetails(selectedClass)" href="./trainer_section_page.html" class="btn btn-outline-info mt-auto">View Sections</a>
-                        
+                        <div class="ml-auto">
+                            <span class="badge badge-success mr-1">Assigned</span>
+                        </div>
                         
                     </div>
                 </div>
@@ -112,6 +116,10 @@ var app = new Vue({
             // returns availability of section
             return (classSize - learnersEnrolled.length).toString() + "/" + (classSize).toString();
         },
+        isTrainerAssigned(trainerName) {
+            // returns trainer name if trainer is assigned
+            return trainerName === null ? "Not assigned" : trainerName;
+        },
         setClassDetails(classDetails) {
             localStorage.setItem("classDetails", JSON.stringify(classDetails));
         },
@@ -122,17 +130,6 @@ var app = new Vue({
         this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         //Retrieve course id from URL
         this.course = JSON.parse(localStorage.getItem("courseDetails"));
-
-        //Call retrieveSpecificCourse API
-        // retrieveSpecificCourse(URL, course.course_id).then(result => {
-        //     // Initialize course object
-        //     if (result.code == 200){
-        //         const course = result.data;
-        //         this.course = course;
-        //         console.log(course)
-        //         console.log(this.course)
-        //     }
-        // });
 
         retrieveAssignedClasses(URL, this.course.course_id, this.accountDetails.staff_id).then(result => {
                 if (result.code == 200){

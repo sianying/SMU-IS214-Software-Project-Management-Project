@@ -72,7 +72,7 @@
 </div>
 
 <script type="module">
-import { URL, retrieveAllCourses } from "./callAPI/endpoints.js";
+import { URL, retrieveEnrolledCourses } from "./callAPI/endpoints.js";
 import navBar from "./components/navBar.js"
 
 new Vue({
@@ -116,18 +116,14 @@ var app = new Vue({
     created: function () {
         const accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.accountDetails = accountDetails;
-        // this.coursesEnrolled = accountDetails.courses_enrolled;
 
         // if courses enrolled is zero, display no courses enrolled
         if (this.accountDetails.courses_enrolled.length !== 0){
             this.hideErrorNoCoursesEnrolled();
-            retrieveAllCourses(URL).then(result => {
+            retrieveEnrolledCourses(URL, this.accountDetails.staff_id).then(result => {
                 if (result.code == 200) {
                     this.errorAPI = false;
-                    const courses = result.data.filter(course => {
-                        // return course if its an enrolled course
-                        return this.accountDetails.courses_enrolled.includes(course.course_id) && course;
-                    });
+                    const courses = result.data
                     //sort courses according to course id in ascending order if there are more than 1 enrolled course
                     if (courses.length > 1){
                         this.courses = courses.sort((a, b) => (a.course_id > b.course_id) ? 1 : -1);
