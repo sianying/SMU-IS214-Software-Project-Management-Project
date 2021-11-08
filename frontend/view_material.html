@@ -42,10 +42,17 @@
         <div class='mx-auto mt-4'>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-light">
-                    <li class="breadcrumb-item"><a id ='breadcrumb-1' href="./view-list-of-enrolled-courses.html">Courses</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-2' href="./view-specific-enrolled-course.html">{{course_id}}</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-3' href="./engineer_section_page.html">Class G{{class_id}}</a></li>
-                    <li class="breadcrumb-item"><a id ='breadcrumb-4' href="./engineer_section_page.html"></a></li>
+                    <li v-if='isTrainer === true' class="breadcrumb-item"><a id ='breadcrumb-1' href="./view-list-of-assigned-courses.html">Courses</a></li>
+                    <li v-if='isTrainer === false' class="breadcrumb-item"><a id ='breadcrumb-1' href="./view-list-of-enrolled-courses.html">Courses</a></li>
+
+                    <li v-if='isTrainer === true' class="breadcrumb-item"><a id ='breadcrumb-2' href="./view-specific-assigned-course.html">{{course_id}}</a></li>
+                    <li v-if='isTrainer === false' class="breadcrumb-item"><a id ='breadcrumb-2' href="./view-specific-enrolled-course.html">{{course_id}}</a></li>
+
+                    <li v-if='isTrainer === true' class="breadcrumb-item"><a id ='breadcrumb-3' href="./trainer_section_page.html">Class G{{class_id}}</a></li>
+                    <li v-if='isTrainer === false' class="breadcrumb-item"><a id ='breadcrumb-3' href="./engineer_section_page.html">Class G{{class_id}}</a></li>
+
+                    <li v-if='isTrainer === true' class="breadcrumb-item"><a id ='breadcrumb-4' href="./trainer_section_page.html">{{section_name}}</a></li>
+                    <li v-if='isTrainer === false' class="breadcrumb-item"><a id ='breadcrumb-4' href="./engineer_section_page.html">{{section_name}}</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{material_name}}</li>
                 </ol>
             </nav>
@@ -83,10 +90,13 @@
                 material_type: "",
                 course_id: "",
                 class_id: "",
+                isTrainer: null, 
+                section_name: ""
             },
             created: function() {
                 const course = JSON.parse(localStorage.getItem("courseDetails"));
                 const class_details = JSON.parse(localStorage.getItem("classDetails"));
+                const account_details = JSON.parse(localStorage.getItem("accountDetails"));
 
                 const course_id = course['course_id'];
                 this.course_id = course_id;
@@ -95,10 +105,18 @@
                 this.class_id = class_id;
 
                 var section_name = JSON.parse(localStorage.getItem('sectionSelectedName'));
-                document.getElementById('breadcrumb-4').innerText = section_name;
+                // document.getElementById('breadcrumb-4').innerText = section_name;
+                this.section_name = section_name;
 
                 const section_id = JSON.parse(localStorage.getItem('sectionSelectedId'));
                 const mat_name = JSON.parse(localStorage.getItem('matName'));
+
+                if(account_details.isTrainer === true){
+                    this.isTrainer = true;
+                }
+                else {
+                    this.isTrainer = false;
+                }
                 
                 retrieveSpecificSection(URL, section_id).then(result => {
                     if(result.code == 200){
