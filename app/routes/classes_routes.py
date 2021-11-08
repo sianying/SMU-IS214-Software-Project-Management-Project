@@ -1,10 +1,12 @@
 from flask import request
 from . import routes
 from .utility import *
+from .request_routes import update_request
 from modules.class_manager import ClassDAO
 from modules.course_manager import CourseDAO
 from modules.staff_manager import StaffDAO
 from modules.trainer_manager import TrainerDAO
+from modules.request_manager import RequestDAO
 
 # ============= Read ===================
 @routes.route("/class/assigned/<string:course_id>/<string:staff_id>")
@@ -123,6 +125,13 @@ def enroll_learners(data = None):
         staff.add_enrolled(data['course_id'])
         staff_dao.update_staff(staff)
         class_dao.update_class(class_to_enroll)
+
+        request_dao = RequestDAO()
+        request_obj = request_dao.retrieve_one(data['staff_id'], data['course_id'])
+
+        if request_obj != None:
+            update_request({**data, "req_status":"approved"})
+
         return format_response(200, "Staff enrolled")
     except ValueError as e:
         return format_response(403, str(e))

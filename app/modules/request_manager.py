@@ -97,6 +97,15 @@ class RequestDAO:
         
         return [Request(item) for item in data]
     
+    def retrieve_one(self, staff_id, course_id):
+        response = self.table.get_item(Key={'staff_id': staff_id, 'course_id': course_id})
+        
+        if 'Item' in response:
+            return Request(response['Item'])
+        
+        return
+
+
     #Update
     def update_request(self, requestObj):
         try:

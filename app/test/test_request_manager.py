@@ -83,7 +83,10 @@ class TestRequestDAO(unittest.TestCase):
     def test_retrieve_all_pending(self):
         request_list = self.dao.retrieve_all_pending()
         self.assertEqual([ITEM1, ITEM2, ITEM3], [request.json() for request in request_list], "Retrieved list does not match")
-        
+    
+    def test_retrieve_one(self):
+        self.assertEqual(ITEM1, self.dao.retrieve_one(ITEM1['staff_id'], ITEM1['course_id']).json(), "RequestDAO retrieve existing one test failure")
+        self.assertEqual(None, self.dao.retrieve_one("abcdea", "abcd"), "ClassDAO retrieve not existing one test failure")
 
     def test_retrieve_all_from_staff(self):
         request_list = self.dao.retrieve_all_from_staff("aae3e316-af31-40ae-9540-0e3a401b20f6")
