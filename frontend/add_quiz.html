@@ -291,10 +291,10 @@
                     // }
                     else{
                         var numOptions = true;
-                        for(let question in this.questionsList){
+                        for(let question of this.questionsList){
                             if(question.isMCQ == true){
-                                numOptions = question.options.length;
-                                if(numOptions <3){
+                                let numOptionsCount = question.options.length;
+                                if(numOptionsCount <3){
                                     numOptions = false;
                                 }
                             }  
