@@ -1,7 +1,6 @@
 from flask import request
 from . import routes
 from .utility import *
-from .request_routes import update_request
 from modules.class_manager import ClassDAO
 from modules.course_manager import CourseDAO
 from modules.staff_manager import StaffDAO
@@ -130,7 +129,8 @@ def enroll_learners(data = None):
         request_obj = request_dao.retrieve_one(data['staff_id'], data['course_id'])
 
         if request_obj != None:
-            update_request({**data, "req_status":"approved"})
+            request_obj.update_req_status("approved")
+            request_dao.update_request(request_obj)
 
         return format_response(200, "Staff enrolled")
     except ValueError as e:

@@ -61,9 +61,8 @@ def insert_request():
 # ============= Update ==================
 
 @routes.route("/request/update", methods = ['PUT'])
-def update_request(data = None):
-    if data == None:
-        data = request.get_json()
+def update_request():
+    data = request.get_json()
 
     if "course_id" not in data or "class_id" not in data or "staff_id" not in data:
         return format_response(400, "course_id, class_id or staff_id not in Request Body")
