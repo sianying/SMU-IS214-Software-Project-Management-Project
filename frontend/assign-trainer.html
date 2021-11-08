@@ -110,7 +110,7 @@ var app = new Vue({
                         const assignedTrainer = result.data;
                         this.successAlert = true;
                     // Return 200, redirect to next page
-                        // window.location.replace("./view-specific-course-HR.html")
+                        window.location.replace("./view-specific-course-HR.html")
                     } else {
                         this.successAlert = false;
                         this.apiError = result.data;
