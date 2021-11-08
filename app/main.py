@@ -74,7 +74,7 @@ def insert_links():
         return format_response(404, "Section {} does not exist".format(data['section_id']))
 
     try:
-        mat = Material(data['mat_name'], data['mat_type'], data['url'])
+        mat = Material(data)
     except:
         return format_response(400, "Not proper request body.")
     
