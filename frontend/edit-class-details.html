@@ -163,12 +163,14 @@ var app = new Vue({
             this.minDatetime = currentDateTime;
         },
         pastTodayDate() {
+            // disable start_datetime if past current date
             if (this.classObj.start_datetime.split("T")[0] <= this.minDatetime.split("T")[0]) {
                 document.getElementById("classStartTime").setAttribute("disabled", true)
             }
-            // if (this.classObj.end_datetime.split("T")[0] <= this.minDatetime.split("T")[0]) {
-            //     document.getElementById("classEndTime").setAttribute("disabled", true)
-            // }
+            // disable end_datetime if past current date
+            if (this.classObj.end_datetime.split("T")[0] <= this.minDatetime.split("T")[0]) {
+                document.getElementById("classEndTime").setAttribute("disabled", true)
+            }
         },
         formatDateTime(datetime) {
             if (datetime.split(":").length === 2) {
@@ -182,13 +184,13 @@ var app = new Vue({
         
     },
     created: function() {
-        this.getTodayDate();
-        this.pastTodayDate();
         this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         this.course = JSON.parse(localStorage.getItem("courseDetails"));
         this.classObj = JSON.parse(localStorage.getItem("classDetails"));
         this.className = "G" + this.classObj.class_id;
         this.selectedClassSize = this.classObj.class_size;
+        this.getTodayDate();
+        this.pastTodayDate();
     }
 
 })

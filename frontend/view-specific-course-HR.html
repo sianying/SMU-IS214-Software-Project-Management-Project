@@ -63,7 +63,7 @@
             There are no classes available currently.
         </div>
         <div class="row">
-            <div v-for = "selectedClass in classList" class="col-6 p-0 d-flex justify-content-center">
+            <div v-for = "(selectedClass, index) in classList" class="col-6 p-0 d-flex justify-content-center">
                 <div class="card m-3" style="width: 540px;">
                     <div class="card-body d-flex flex-column">
                         <div>
@@ -92,7 +92,8 @@
                             <b>Trainer Assigned: </b> {{ isTrainerAssigned(selectedClass.trainer_name) }}
                         </p>
                         <!-- "Add New Class" Button for HR href="engineer_section_page.html"-->
-                        <a v-if="accountDetails.role === 'HR'" @click="setClassId(selectedClass.class_id)" href="HR_enrol_learners.html" class="btn btn-outline-info mt-auto">View Sections</a>
+                        <a v-if="accountDetails.role === 'HR' && !isLearnerView" @click="setClassId(selectedClass.class_id)" href="HR_enrol_learners.html" class="btn btn-outline-info mt-auto">View Sections</a>
+                        <button v-else-if="classDisabled[index]" class="btn btn-light mt-auto" disabled>Course has started</button>
                         <a v-else-if="isSectionFull(selectedClass.learners_enrolled, selectedClass)" @click="setClassId(selectedClass.class_id); selfEnroll(accountDetails.staff_id, course.course_id, selectedClass.class_id)" class="btn btn-outline-info mt-auto">Enroll</a>
                         <button v-else class="btn btn-light mt-auto" disabled>Enroll</button>
                         
@@ -129,7 +130,9 @@ var app = new Vue({
         courses: [],
         error: false,
         enrollCheck:0,
-        selectedClass : ""
+        selectedClass : "",
+        classDisabled: [],
+        isLearnerView: ""
     },
     methods: {
         datetimeToDate(startDatetime, endDatetime) {
@@ -191,6 +194,19 @@ var app = new Vue({
                     this.error = true;
                 }
             })
+        },
+        disableCoursesInProgress(){
+            const now = new Date;
+            const currentDate = now.toISOString().split("T")[0]
+            // const filteredClass = classes.filter(classes => {
+            //     return classes.start_datetime.split("T")[0] >= currentDate && classes
+            // })
+            // update false to true for disabled button
+            for (let i=0; i<this.classList.length; i++){
+                if (this.classList[i].start_datetime.split("T")[0] >= currentDate) {
+                    this.classDisabled[i] = true;
+                }
+            }
         }
         
     },
@@ -201,33 +217,18 @@ var app = new Vue({
         this.accountDetails = JSON.parse(localStorage.getItem("accountDetails"));
         //Retrieve course id from URL
         this.course = JSON.parse(localStorage.getItem("courseDetails"));
-
-        
+        this.isLearnerView = JSON.parse(localStorage.getItem("isLearnerView"));
         
         // Call retrieveAllClasses API to retrieve all classes
         retrieveAllClasses(URL, this.course.course_id).then(result => {
             if (result.code == 200){
                 this.error = false;
                 const classes = result.data;
-                
-                let today = new Date();
-
-                let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-
-                let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-
-                let currentDateTime =new Date(date+' '+time);
-                
-                for(let i = 0; i < classes.length; i++){
-                    let classStartDate = new Date(classes[i].start_datetime)
-                    if(currentDateTime < classStartDate){
-                        this.classList.push(classes[i])
-                        
-                    }
-                    
-                }
-                if(this.classList.length === 0 ){
-                    this.error = true;
+                this.classList = classes
+                // initialize list of false for disabled button (for each class)
+                this.classDisabled = new Array(classes.length).fill(false);
+                if (this.isLearnerView){
+                    this.disableCoursesInProgress()
                 }
                 
             } else {

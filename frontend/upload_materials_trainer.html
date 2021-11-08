@@ -59,7 +59,7 @@
                     </div>
                     <ul id='material-list' class="my-3">
                         <li v-for='(material, index) in materials'>
-                            <a id='matName' href='#' @click='addMatName(index)'>{{material.mat_name}}</a>
+                            <a :id="'matName' + index" href='#' @click='addMatName(index)'>{{material.mat_name}}</a>
                         </li>
                     </ul>
                 </div>
@@ -184,6 +184,7 @@
                         } else{ 
                             this.error = ""
                             uploadLink(URL, fd).then(result =>{
+                                console.log(fd)
                                 if (result.code !== 201){
                                     // console.log("failed")
                                     this.error = "An error has occurred, please try again later.";
@@ -206,18 +207,20 @@
                                     if(section['section_id'] == this.section){
                                         // console.log(section)
                                         this.materials = section.materials;
-                                        // console.log("hello")
                                     }
                                 }
                                 if(this.materials.length == 0){
-                                    document.getElementById('no-materials').classList.remove('d-none')
+                                    document.getElementById('no-materials').classList.remove('d-none');
+                                } else{
+                                    document.getElementById('no-materials').classList.add('d-none');
                                 }
                             }
                         })  
                     },
                     addMatName(ind){
                         if(this.materials[ind].mat_type == 'Link'){
-                            document.getElementById('matName').setAttribute('href', this.materials[ind].url)
+                            document.getElementById(`matName${ind}`).setAttribute('href', this.materials[ind].url)
+                            document.getElementById(`matName${ind}`).setAttribute('target', '_blank')
                         } else  {
                             localStorage.setItem('matName', JSON.stringify(this.materials[ind].mat_name));
                             location.href = "./view_material.html";

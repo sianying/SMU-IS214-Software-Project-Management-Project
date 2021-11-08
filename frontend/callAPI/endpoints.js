@@ -97,10 +97,46 @@ export async function retrieveEligibleCourses(URL, staffId) {
     
 }
 
+// Retrieve Enrolled Courses
+export async function retrieveEnrolledCourses(URL, staffId) {
+    try {
+        const response = await fetch(`${URL}/courses/enrolled/${staffId}`);
+        if (response) {
+            const result = await response.json();
+            return result;
+        }
+    } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+    
+}
+
 // Retrieve all classes
 export async function retrieveAllClasses(URL, courseId) {
     try {
         const response = await fetch(`${URL}/class/${courseId}`);
+        if (response) {
+            const result = await response.json();
+            return result;
+        }
+        } catch(e) {
+        const error = {
+            "code": 404,
+            "data": e
+        }
+        return error;
+    }
+    
+}
+
+// Retrieve enrolled class of a specific course
+export async function retrieveEnrolledClassByCourse(URL, staffId, courseId) {
+    try {
+        const response = await fetch(`${URL}/classes/enrolled/${staffId}/${courseId}`);
         if (response) {
             const result = await response.json();
             return result;

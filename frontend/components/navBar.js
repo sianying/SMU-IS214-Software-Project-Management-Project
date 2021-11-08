@@ -18,19 +18,33 @@ export default Vue.component("nav-bar", {
                 "view-list-of-courses-HR.html",
                 "view-specific-course-HR.html",
             ],
+            pendingRequestLink: "HR_view_requests.html",
             isActive: [],
-            isHR: 0
         }
     },
     methods: {
         setSelectedNavLink() {
             // get the url of current page; if its from add new course, display success alert for course creation
             this.currentPageLink = window.location.href.split("/").at(-1);
-            if (this.coursesLinks.includes(this.currentPageLink)) {
-                this.isActive = ["active", 0]
+            // isLearnerView is true
+            if (this.isLearnerView){
+                if (this.coursesLinks.includes(this.currentPageLink)) {
+                    // enrollable courses
+                    this.isActive = ["active", 0]
+                } else {
+                    // enrolled courses
+                    this.isActive = [0, "active"]
+                }
+            // HR view
             } else {
-                this.isActive = [0, "active"]
+                if (this.currentPageLink === this.pendingRequestLink) {
+                    this.isActive = [0, "active"]
+                } else {
+                    // all courses page
+                    this.isActive = ["active", 0]
+                }
             }
+            
         },
         setCurrentView() {
             if (this.isLearnerView) {
@@ -81,18 +95,6 @@ export default Vue.component("nav-bar", {
 
         this.setSelectedNavLink();
         this.setSwitchViewLink();
-        if(this.role == "HR"){
-            this.isHR = true;
-        }
-        // get the url of current page; if its from add new course, display success alert for course creation
-        this.currentPageLink = window.location.href.split("/").at(-1);
-        if (this.currentPageLink === "view-list-of-courses-HR.html" || this.currentPageLink === "view-specific-course-HR.html") {
-            this.isActive = ["active", 0, 0]
-        } else if (this.currentPageLink === "view-list-of-enrolled-courses.html") {
-            this.isActive = [0, "active", 0]
-        } else {
-            this.isActive = [0, 0, "active"]
-        }
 
     },
     template: `<nav class="navbar navbar-expand-sm navbar-light bg-light d-flex justify-content-between">
@@ -100,11 +102,11 @@ export default Vue.component("nav-bar", {
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <div class="navbar-nav text-align-center">
                             <a class="nav-link" href="./home.html">Home</a>
-                            <a v-if="role === 'HR' && !isLearnerView" class="nav-link active" href="./view-list-of-courses-HR.html" >All Courses</a>
+                            <a v-if="role === 'HR' && !isLearnerView" :class="['nav-link', isActive[0]]" href="./view-list-of-courses-HR.html" >All Courses</a>
+                            <a v-if="role === 'HR' && !isLearnerView" :class="['nav-link', isActive[1]]" href="HR_view_requests.html">Pending Requests</a>
                             <a v-if="isLearnerView" :class="['nav-link', isActive[0]]" href="./view-list-of-courses-HR.html" >Enrollable Courses</a>
                             <a v-if="isLearnerView" :class="['nav-link', isActive[1]]" href="./view-list-of-enrolled-courses.html">Courses Enrolled</a>
                             <a v-if="isTrainer && !isLearnerView" class="nav-link active" href="view-list-of-assigned-courses.html">Courses Assigned</a>
-                            <a v-if="isHR" :class="['nav-link', isActive[2]]" href="HR_view_requests.html">Pending Requests</a>
                         </div>
                     </div>
                     <div class="profile">

@@ -17,6 +17,7 @@
     <!-- Check for authentication -->
     <script>
         if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+        if (!localStorage.getItem("courseDetails")) { window.location.replace("./home.html"); }
     </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
@@ -117,7 +118,7 @@ var app = new Vue({
         onSubmit() {
             // 1. Validate form
             this.validateDateTime();
-            if (this.error.className.length !== 0 || this.error.startDatetime.length !== 0 || this.error.endDatetime.length !== 0) {
+            if (this.error.startDatetime.length !== 0 || this.error.endDatetime.length !== 0) {
                 event.preventDefault();
             } else {
             // 2. Set course object and call create course API
