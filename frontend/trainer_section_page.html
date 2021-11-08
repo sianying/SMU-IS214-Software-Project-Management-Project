@@ -165,9 +165,10 @@
                 },
                 addFinalQuiz: function(){
                     localStorage.setItem('isFinalQuiz', true);
+                    localStorage.setItem('finalQuizId', null)
                 },
                 editFinalQuiz: function(){
-                    localStorage.setItem('selectedQuizId', JSON.stringify(this.final_quiz_id));
+                    localStorage.setItem('finalQuizId', JSON.stringify(this.final_quiz_id));
                 }
             }
         })

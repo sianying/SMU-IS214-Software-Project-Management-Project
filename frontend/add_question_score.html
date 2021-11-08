@@ -195,7 +195,7 @@
 
                     if(errorCheck === false){
                         if(JSON.parse(localStorage.getItem("isFinalQuiz")) == true){
-                            if(JSON.parse(localStorage.getItem("selectedQuizId")) != null){
+                            if(JSON.parse(localStorage.getItem("finalQuizId")) != null){
                                 var quizDetails = {
                                         "quiz_id": JSON.parse(localStorage.getItem("selectedQuizId")),
                                         "questions": qns,
