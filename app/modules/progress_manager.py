@@ -46,7 +46,8 @@ class Progress:
         self.__final_quiz_passed = final_quiz_passed
 
     def add_completed_section(self, section_uuid):
-        self.__sections_completed.append(section_uuid)
+        if section_uuid not in self.__sections_completed:
+            self.__sections_completed.append(section_uuid)
 
     def json(self):
         return {
