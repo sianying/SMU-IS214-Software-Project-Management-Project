@@ -207,11 +207,12 @@
                                     if(section['section_id'] == this.section){
                                         // console.log(section)
                                         this.materials = section.materials;
-                                        // console.log("hello")
                                     }
                                 }
                                 if(this.materials.length == 0){
-                                    document.getElementById('no-materials').classList.remove('d-none')
+                                    document.getElementById('no-materials').classList.remove('d-none');
+                                } else{
+                                    document.getElementById('no-materials').classList.add('d-none');
                                 }
                             }
                         })  

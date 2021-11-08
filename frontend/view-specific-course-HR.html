@@ -63,7 +63,7 @@
             There are no classes available currently.
         </div>
         <div class="row">
-            <div v-for = "selectedClass in classList" class="col-6 p-0 d-flex justify-content-center">
+            <div v-for = "(selectedClass, index) in classList" class="col-6 p-0 d-flex justify-content-center">
                 <div class="card m-3" style="width: 540px;">
                     <div class="card-body d-flex flex-column">
                         <div>
@@ -93,6 +93,7 @@
                         </p>
                         <!-- "Add New Class" Button for HR href="engineer_section_page.html"-->
                         <a v-if="accountDetails.role === 'HR' && !isLearnerView" @click="setClassId(selectedClass.class_id)" href="HR_enrol_learners.html" class="btn btn-outline-info mt-auto">View Sections</a>
+                        <button v-else-if="classDisabled[index]" class="btn btn-light mt-auto" disabled>Course has started</button>
                         <a v-else-if="isSectionFull(selectedClass.learners_enrolled, selectedClass)" @click="setClassId(selectedClass.class_id); selfEnroll(accountDetails.staff_id, course.course_id, selectedClass.class_id)" class="btn btn-outline-info mt-auto">Enroll</a>
                         <button v-else class="btn btn-light mt-auto" disabled>Enroll</button>
                         
@@ -130,6 +131,7 @@ var app = new Vue({
         error: false,
         enrollCheck:0,
         selectedClass : "",
+        classDisabled: [],
         isLearnerView: ""
     },
     methods: {
@@ -193,13 +195,18 @@ var app = new Vue({
                 }
             })
         },
-        filterCoursesInProgress(classes){
+        disableCoursesInProgress(){
             const now = new Date;
             const currentDate = now.toISOString().split("T")[0]
-            const filteredClass = classes.filter(classes => {
-                return classes.start_datetime.split("T")[0] >= currentDate && classes
-            })
-            return filteredClass
+            // const filteredClass = classes.filter(classes => {
+            //     return classes.start_datetime.split("T")[0] >= currentDate && classes
+            // })
+            // update false to true for disabled button
+            for (let i=0; i<this.classList.length; i++){
+                if (this.classList[i].start_datetime.split("T")[0] >= currentDate) {
+                    this.classDisabled[i] = true;
+                }
+            }
         }
         
     },
@@ -217,10 +224,11 @@ var app = new Vue({
             if (result.code == 200){
                 this.error = false;
                 const classes = result.data;
+                this.classList = classes
+                // initialize list of false for disabled button (for each class)
+                this.classDisabled = new Array(classes.length).fill(false);
                 if (this.isLearnerView){
-                    this.classList = this.filterCoursesInProgress(classes)
-                } else {
-                    this.classList = classes
+                    this.disableCoursesInProgress()
                 }
                 
             } else {
