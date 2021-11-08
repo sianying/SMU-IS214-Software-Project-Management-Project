@@ -120,12 +120,14 @@
                         }
                     });
                     const course = JSON.parse(localStorage.getItem("courseDetails"))
+                    const class_details= JSON.parse(localStorage.getItem("classDetails"));
                     // upload answer
                     var requestBody = {
                         "quiz_id": this.quiz_id,
                         "staff_id": this.accountDetails.staff_id,
                         "options_selected": this.answers,
-                        "course_id": course["course_id"]
+                        "course_id": course["course_id"],
+                        "class_id": class_details['class_id']
                     };
 
                     if(this.is_final == true){
