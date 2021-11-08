@@ -205,7 +205,12 @@
                 error: ""
             },
             created: function() {
-                var quiz_id = JSON.parse(localStorage.getItem('selectedQuizId'));
+                if(JSON.parse(localStorage.getItem('selectedQuizId')) !== null){
+                    var quiz_id = JSON.parse(localStorage.getItem('selectedQuizId'));
+                } else if(JSON.parse(localStorage.getItem('finalQuizId')) !== null){
+                    var quiz_id = JSON.parse(localStorage.getItem('finalQuizId'));
+                }
+                
                 retrieveQuizById(URL, quiz_id).then(result => {
                     if(result.code == 200){
                         // console.log(result.data)

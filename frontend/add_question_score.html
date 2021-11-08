@@ -197,7 +197,7 @@
                         if(JSON.parse(localStorage.getItem("isFinalQuiz")) == true){
                             if(JSON.parse(localStorage.getItem("finalQuizId")) != null){
                                 var quizDetails = {
-                                        "quiz_id": JSON.parse(localStorage.getItem("selectedQuizId")),
+                                        "quiz_id": JSON.parse(localStorage.getItem("finalQuizId")),
                                         "questions": qns,
                                         "time_limit": this.time_limit * 60,
                                         "course_id": this.course_id,
@@ -234,9 +234,9 @@
                                 }
                             }
                         } 
-                        if(JSON.parse(localStorage.getItem("selectedQuizId")) != null) {
+                        if(JSON.parse(localStorage.getItem("selectedQuizId")) !== null || JSON.parse(localStorage.getItem("finalQuizId")) !== null) {
                             updateQuiz(URL, quizDetails).then(result => {
-                                // console.log(quizDetails)
+                                console.log(quizDetails)
                                 // console.log(result)
                                 if (result.code !== 200){
                                     if(result.code === 401){
@@ -251,6 +251,7 @@
                             })
                         } else  {
                             createQuiz(URL, quizDetails).then(result => {
+                                console.log(quizDetails)
                                 // console.log(result);
                                 // console.log(quizDetails)
                                 if (result.code !== 201){
