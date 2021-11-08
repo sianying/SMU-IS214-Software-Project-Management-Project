@@ -133,6 +133,9 @@ class QuizDAO:
                     total_marks += question['marks']
                 quiz_dict['total_marks'] = total_marks
 
+            if 'section_id' not in quiz_dict:
+                quiz_dict['section_id'] = 'final'
+
             response = self.table.put_item(
                 Item = {
                     "quiz_id": quiz_dict['quiz_id'],
