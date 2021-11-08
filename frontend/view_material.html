@@ -163,7 +163,10 @@
                                     }, 4000)
                                 } else if(material['mat_type'] == '.jpg' || material['mat_type'] == '.png'){
                                     document.getElementById('image-div').classList.remove('d-none');
-                                    document.getElementById('img').setAttribute("src", material['url']);
+                                    var img = document.getElementById('img')
+                                    img.setAttribute("src", material['url']);
+                                    img.setAttribute("width", "900px");
+                                    img.setAttribute("height", "800px");
                                 }
                                 else{
                                     document.getElementById('iframe-div').classList.remove('d-none');

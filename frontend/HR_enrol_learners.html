@@ -47,6 +47,11 @@
         </div>
         <div id='confirmation' v-if='enrollCheck === 2'>
             <div class="alert alert-danger w-50 mx-auto text-center" role="alert">
+                You are unable to enroll a learner into a class that is full!
+            </div>
+        </div>
+        <div id='confirmation' v-if='enrollCheck === 3'>
+            <div class="alert alert-danger w-50 mx-auto text-center" role="alert">
                 There has been a problem enrolling {{selectedName}}!
             </div>
         </div>
@@ -112,8 +117,11 @@
                     enrollLearners(URL,body).then(result => {
                         if (result.code == 200){
                             this.enrollCheck = 1
-                        }else{
+                        }else if(result.code == 403){
                             this.enrollCheck = 2
+                        }
+                        else{
+                            this.enrollCheck = 3
                         }
                     })
                     

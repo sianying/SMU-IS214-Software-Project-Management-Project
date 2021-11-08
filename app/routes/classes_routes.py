@@ -6,6 +6,7 @@ from modules.course_manager import CourseDAO
 from modules.staff_manager import StaffDAO
 from modules.trainer_manager import TrainerDAO
 from modules.request_manager import RequestDAO
+from modules.progress_manager import ProgressDAO
 
 # ============= Read ===================
 @routes.route("/class/assigned/<string:course_id>/<string:staff_id>")
@@ -131,6 +132,9 @@ def enroll_learners(data = None):
         if request_obj != None:
             request_obj.update_req_status("approved")
             request_dao.update_request(request_obj)
+
+        progress_dao = ProgressDAO()
+        progress_dao.insert_progress(data)
 
         return format_response(200, "Staff enrolled")
     except ValueError as e:

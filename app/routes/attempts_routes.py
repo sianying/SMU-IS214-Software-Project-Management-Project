@@ -57,10 +57,6 @@ def insert_attempt():
         progress_dao = ProgressDAO()
         progressObj = progress_dao.retrieve_by_learner_and_course(data['staff_id'], data['course_id'])
 
-        if progressObj == None:
-            progressObj = progress_dao.insert_progress(data)
-
-
         if is_final_quiz:
             # results stands for the attempt object created
             current_score = results.get_overall_score()
