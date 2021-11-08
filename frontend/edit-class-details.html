@@ -163,12 +163,14 @@ var app = new Vue({
             this.minDatetime = currentDateTime;
         },
         pastTodayDate() {
-            if (this.classObj.start_datetime.split("T")[0] <= this.minDatetime.split("T")[0]) {
+            // disable start_datetime if past current date
+            if (this.classObj.start_datetime.split("T")[0] >= this.minDatetime.split("T")[0]) {
                 document.getElementById("classStartTime").setAttribute("disabled", true)
             }
-            // if (this.classObj.end_datetime.split("T")[0] <= this.minDatetime.split("T")[0]) {
-            //     document.getElementById("classEndTime").setAttribute("disabled", true)
-            // }
+            // disable end_datetime if past current date
+            if (this.classObj.end_datetime.split("T")[0] >= this.minDatetime.split("T")[0]) {
+                document.getElementById("classEndTime").setAttribute("disabled", true)
+            }
         },
         formatDateTime(datetime) {
             if (datetime.split(":").length === 2) {

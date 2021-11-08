@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    triggers{
+        githubPush()
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/staging']], extensions: [], userRemoteConfigs: [[credentialsId: 'lyihaoo', url: 'git@github.com:sianying/spm-project.git']]])
+            }
+        }
+        stage('build'){
+            steps {
+                sh '''
+                python3 -m venv env
+                source env/bin/activate
+                pip3 install -r requirements.txt
+                deactivate
+                exit
+                '''
+            }
+        }
+        stage('Unit_Test') {
+            steps {
+            sh '''
+            source env/bin/activate
+            cd app/test
+            python3 -m unittest discover
+            deactivate
+            exit
+            '''
+        }
+}
+
+    }
+}
