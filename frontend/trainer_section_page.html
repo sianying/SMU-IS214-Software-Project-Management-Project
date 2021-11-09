@@ -162,13 +162,17 @@
                         localStorage.setItem('selectedQuizId', null);
                     }
                     localStorage.setItem('isFinalQuiz', null);
+                    localStorage.setItem('finalQuizId', null);
                 },
                 addFinalQuiz: function(){
                     localStorage.setItem('isFinalQuiz', true);
-                    localStorage.setItem('finalQuizId', null)
+                    localStorage.setItem('finalQuizId', null);
+                    localStorage.setItem('selectedQuizId', null);
                 },
                 editFinalQuiz: function(){
+                    localStorage.setItem('isFinalQuiz', true);
                     localStorage.setItem('finalQuizId', JSON.stringify(this.final_quiz_id));
+                    localStorage.setItem('selectedQuizId', null);
                 }
             }
         })

@@ -135,7 +135,6 @@ var app = new Vue({
                 if (result.code == 200){
                     this.error = false;
                     this.classObj = result.data;
-                    console.log(result.data)
                     this.sectionAvailability = this.getSectionAvailability(this.classObj.learners_enrolled, this.classObj.class_size)
                 } else {
                     this.error = true;

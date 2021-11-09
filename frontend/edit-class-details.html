@@ -17,6 +17,7 @@
     <!-- Check for authentication -->
     <script>
         if (!localStorage.getItem("accountDetails")) { window.location.replace("./home.html"); }
+        if (!localStorage.getItem("courseDetails")) { window.location.replace("./home.html"); }
     </script>
     <!-- NavBar -->
     <div id="nav-bar-component">
@@ -52,7 +53,7 @@
                 <div class="form-group">
                     <label for="exampleFormControlInput1">Class Size</label>
                     <select v-model="selectedClassSize" class="form-control">
-                        <option v-for="num in (40 - classObj.learners_enrolled.length)" >{{ num + classObj.learners_enrolled.length }}</option>
+                        <option v-for="num in (40 - classObj.learners_enrolled.length + 1)" >{{ num + classObj.learners_enrolled.length -1 }}</option>
                     </select>
                 </div>
                 <div v-if="errorAlert" class="alert alert-danger mtt-0 text-center" role="alert">
