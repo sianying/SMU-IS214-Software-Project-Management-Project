@@ -183,7 +183,7 @@
                             document.getElementById('timeLimitError').innerText = "";
                             document.getElementById('error-quiz-creation').classList.add('d-none');
                             // setting questions body
-                            qnObj.isMCQ = false;
+                            qnObj.isMCQ = question.isMCQ;
                             qnObj.marks = question.marks;
                             qnObj.question_name = question.question_name;
                             qnObj.question_no = question.question_no;
