@@ -74,9 +74,8 @@ var app = new Vue({
         }
     },
     created: function() {
-        localStorage.removeItem("accountDetails");
-        localStorage.removeItem("courseDetails");
-        localStorage.removeItem("classDetails");
+        localStorage.clear();
+
     }
     
     
