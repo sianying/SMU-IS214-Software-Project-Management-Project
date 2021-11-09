@@ -163,9 +163,13 @@
 
                             if (result.code !== 201){
                                 this.error = "An error has occurred, please try again later.";
+                                document.getElementById('success').classList.add('d-none');
+                                document.getElementById('error').classList.remove('d-none');
+
                             } else {
                                 // console.log("passed")
-                                document.getElementById('success').classList.remove('d-none')
+                                document.getElementById('success').classList.remove('d-none');
+                                document.getElementById('error').classList.add('d-none');
                                 this.retrieveUploadedMaterials()
                             }
                             
@@ -184,12 +188,16 @@
                         } else{ 
                             this.error = ""
                             uploadLink(URL, fd).then(result =>{
-                                console.log(fd)
+                                // console.log(fd)
                                 if (result.code !== 201){
                                     // console.log("failed")
                                     this.error = "An error has occurred, please try again later.";
+                                    document.getElementById('success').classList.add('d-none');
+                                    document.getElementById('error').classList.remove('d-none');
+
                                 } else {
                                     document.getElementById('success').classList.remove('d-none');
+                                    document.getElementById('error').classList.add('d-none');
                                     this.retrieveUploadedMaterials();
                                     document.getElementById('mat_name').value = "";
                                     document.getElementById('mat_link').value = "";
