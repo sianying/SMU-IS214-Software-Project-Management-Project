@@ -43,22 +43,6 @@ ITEM3 = {
     "courses_teaching":[]
 }
 
-IS111 = {
-    "course_id": "IS111",
-    "course_name": "Intro to Programming",
-    "course_description": "lorem ipsum",
-    "prerequisite_course": ["IS110", "IS113"],
-    "class_list": [1, 2]
-}
-
-IS300 = {
-    "course_id": "IS300",
-    "course_name": "Advanced Programming",
-    "course_description": "lorem ipsum",
-    "prerequisite_course": [],
-    "class_list": [1, 2]
-}
-
 class TestTrainer(unittest.TestCase):
     def setUp(self):
         from modules.trainer_manager import Trainer
