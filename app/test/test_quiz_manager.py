@@ -173,7 +173,7 @@ class TestQuizDAO(unittest.TestCase):
         self.assertEqual(None, self.dao.retrieve_one("fakequizid"), "QuizDAO should have returned nothing, test failure (quiz_id)")
 
     def test_update_quiz(self):
-        from modules.quiz_manager import Quiz, Question
+        from modules.quiz_manager import Quiz
         quizObj = Quiz(ITEM1)
         quizObj.set_questions([question1, question2])
         quizObj.set_time_limit(100)
